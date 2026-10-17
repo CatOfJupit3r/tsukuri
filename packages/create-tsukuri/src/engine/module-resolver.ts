@@ -27,8 +27,15 @@ function compareModules(left: iModuleManifest, right: iModuleManifest) {
 export class ModuleResolver {
   constructor(private readonly registry: ModuleRegistry) {}
 
-  /** Expands `selected` with always-included and required modules, validates the set, and orders it. */
-  public resolve(selected: readonly ModuleId[]): iResolvedModules {
+  /**
+   * Expands `selected` with always-included and required modules, validates the set, and orders
+   * it. With `shouldRequireCapabilities: false`, capabilities nobody provides yet are allowed,
+   * which is how a partial selection is checked while later prompts are still unanswered.
+   */
+  public resolve(
+    selected: readonly ModuleId[],
+    { shouldRequireCapabilities = true }: { shouldRequireCapabilities?: boolean } = {},
+  ): iResolvedModules {
     const selectedSet = new Set(selected);
     const included = new Map<ModuleId, iModuleManifest>();
     const queue: ModuleId[] = [
@@ -49,7 +56,7 @@ export class ModuleResolver {
 
     const modules = [...included.values()];
     this.assertNoConflicts(modules);
-    this.assertCapabilities(modules);
+    this.assertCapabilities(modules, shouldRequireCapabilities);
 
     return {
       modules: this.order(modules),
@@ -75,7 +82,7 @@ export class ModuleResolver {
     }
   }
 
-  private assertCapabilities(modules: iModuleManifest[]) {
+  private assertCapabilities(modules: iModuleManifest[], shouldRequireCapabilities: boolean) {
     const providers = new Map<Capability, ModuleId[]>();
     for (const manifest of modules) {
       for (const capability of manifest.provides) {
@@ -90,6 +97,8 @@ export class ModuleResolver {
         `Only one module may provide "${capability}", but ${providerIds.map((id) => `"${id}"`).join(', ')} all do`,
       );
     }
+
+    if (!shouldRequireCapabilities) return;
 
     for (const manifest of modules) {
       for (const capability of manifest.requiresCapabilities) {

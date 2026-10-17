@@ -15,6 +15,8 @@ const generatorErrorCodesEnumwaii = em([
   'TARGET_NOT_EMPTY',
   'INVALID_PROJECT_NAME',
   'TEMPLATE_ERROR',
+  'INVALID_ARGUMENTS',
+  'CANCELLED',
 ]);
 
 export const GENERATOR_ERROR_CODES = generatorErrorCodesEnumwaii.enum;
