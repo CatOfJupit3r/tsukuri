@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { EventBus } from '@~/features/events/event-bus';
@@ -51,7 +50,7 @@ describe('EventBus', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const results: number[] = [];
 
-    eventBus.on(testListener, async ({ value }) => {
+    eventBus.on(testListener, async () => {
       throw new Error('Handler error');
     });
 

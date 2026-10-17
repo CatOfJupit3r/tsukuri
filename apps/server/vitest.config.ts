@@ -1,6 +1,8 @@
 import path from 'node:path';
-import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
+
+import { createSwcPlugin } from '@startername/swc-config/vitest';
+import { withWorkspaceSourceResolve } from '@startername/workspace-source/vite';
 
 const alias = {
   '@~': path.resolve(__dirname, './src'),
@@ -34,10 +36,8 @@ const commonTestConfig = {
 };
 
 const baseProjectConfig = {
-  plugins: [swc.vite({ tsconfigFile: './tsconfig.json' })],
-  resolve: {
-    alias,
-  },
+  plugins: [createSwcPlugin()],
+  ...withWorkspaceSourceResolve(alias),
   cacheDir: 'node_modules/.vitest',
 };
 

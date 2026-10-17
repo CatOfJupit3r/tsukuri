@@ -2,51 +2,66 @@
 /**
  * Canonical verification command for agents and humans. This is the ONLY
  * command agents should run to check types, lint, or test - never invoke
- * `tsc`, `tsgo`, `eslint`, or `vitest` directly, and never call
+ * `tsc`, `tsgo`, `oxlint`, `eslint`, or `vitest` directly, and never call
  * `pnpm run check-types` / `pnpm run lint` / `pnpm run test` directly either.
  *
- * Runs check-types + lint (and optionally tests) as Node child processes so the
- * exit code is honest. Spawning pnpm from Node avoids the Windows PowerShell 5.1
- * behaviour of wrapping native stderr as `NativeCommandError`, which makes
- * successful pnpm runs look like failures.
+ * Runs check-types, oxlint, ESLint (and optionally tests) as Node child
+ * processes so the exit code is honest. Spawning pnpm from Node avoids the
+ * Windows PowerShell 5.1 behaviour of wrapping native stderr as
+ * `NativeCommandError`, which makes successful pnpm runs look like failures.
  *
  * Usage:
- *   pnpm run verify                                    # check-types + lint across the workspace
+ *   pnpm run verify                                    # check-types + oxlint + eslint across the workspace
  *   pnpm run verify --tests                            # also run the test suite
- *   pnpm run verify --filter web                       # scope every step to a single package
+ *   pnpm run verify --filter web --filter server       # scope every step to these packages (repeatable)
+ *   pnpm run verify --changed-since origin/main        # scope to packages changed since a ref, plus their dependents
  *   pnpm run verify --files apps/server/src/foo.ts ...  # lint exactly these files; scope
- *                                                       # check-types to the packages that own them
+ *                                                       # check-types (and tests) to the packages that own them
+ *
+ * The full output of every step is written to `node_modules/.cache/verify/last-run.log`
+ * in this checkout, so parallel checkouts (worktrees) never overwrite each other's log.
  */
 
 import { spawn } from 'node:child_process';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 interface iStepResult {
   name: string;
   passed: boolean;
+  output: string;
   errorLines: string[];
 }
+
+const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const LOG_FILE = path.join(ROOT_DIR, 'node_modules', '.cache', 'verify', 'last-run.log');
+const WORKSPACE_ROOTS = ['apps', 'packages', 'configs'] as const;
+const MAX_ERROR_LINES = 30;
 
 const args = process.argv.slice(2);
 const shouldRunTests = args.includes('--tests');
 
-const WORKSPACE_ROOTS = ['apps', 'packages', 'configs'] as const;
-
-function readFilter(): string | null {
-  const flagIndex = args.findIndex((arg) => arg === '--filter');
-  if (flagIndex !== -1) return args[flagIndex + 1] ?? null;
-
-  const inline = args.find((arg) => arg.startsWith('--filter='));
-  return inline ? inline.slice('--filter='.length) : null;
+/** Every value of a repeatable `--name value` / `--name=value` flag. */
+function readRepeatable(name: string): string[] {
+  const values: string[] = [];
+  args.forEach((arg, index) => {
+    if (arg === name && args[index + 1] && !args[index + 1].startsWith('--')) values.push(args[index + 1]);
+    if (arg.startsWith(`${name}=`)) values.push(arg.slice(name.length + 1));
+  });
+  return values;
 }
 
 function readFiles(): string[] {
   const flagIndex = args.findIndex((arg) => arg === '--files');
   if (flagIndex === -1) return [];
-  return args.slice(flagIndex + 1).filter((arg) => !arg.startsWith('--'));
+  const rest = args.slice(flagIndex + 1);
+  const end = rest.findIndex((arg) => arg.startsWith('--'));
+  return end === -1 ? rest : rest.slice(0, end);
 }
 
-const filter = readFilter();
+const filters = readRepeatable('--filter');
+const changedSince = readRepeatable('--changed-since').at(-1) ?? null;
 const files = readFiles();
 
 /** First two path segments (e.g. `apps/server`) for a file under a workspace root, or null. */
@@ -70,21 +85,25 @@ for (const file of files) {
 
 const packageDirs = [...fileGroups.keys()];
 
-// When --files is given, scope check-types/test to just the owning packages.
-// Otherwise fall back to --filter (single package) or --recursive (whole workspace).
-const scopeArgs =
-  files.length > 0
-    ? packageDirs.map((dir) => `--filter=./${dir}`)
-    : filter
-      ? [`--filter=${filter}`]
-      : ['--recursive'];
+// --files scopes to the owning packages; otherwise --filter / --changed-since combine,
+// and with neither the whole workspace runs.
+function resolveScopeArgs(): string[] {
+  if (files.length > 0) return packageDirs.map((dir) => `--filter=./${dir}`);
 
-const MAX_ERROR_LINES = 30;
+  const scoped = [
+    ...filters.map((filter) => `--filter=${filter}`),
+    ...(changedSince ? [`--filter=...[${changedSince}]`] : []),
+  ];
+  return scoped.length > 0 ? scoped : ['--recursive'];
+}
 
-// Lines worth surfacing verbatim: TS diagnostics, ESLint rows, and vitest failures.
+const scopeArgs = resolveScopeArgs().join(' ');
+
+// Lines worth surfacing verbatim: TS diagnostics, oxlint/ESLint rows, and vitest failures.
 const ERROR_LINE_PATTERNS = [
   /error TS\d+/, // tsgo / tsc
   /\s(error|warning)\s{2,}/i, // ESLint stylish rows: "12:5  error  message  rule"
+  /:\d+:\d+: (error|warning) /, // oxlint rows: "src/a.ts:1:2: error eslint(rule): message"
   /^\s*(FAIL|✗|×|❯.*✗)/, // vitest failure markers
   /\d+\s+failed/i, // vitest / test summaries
   /Error:/, // generic runtime failures from a step
@@ -112,8 +131,8 @@ function runCommand(name: string, command: string): Promise<iStepResult> {
     // A single shelled command string resolves the `pnpm` shim on Windows and
     // runs through cmd.exe, which does not wrap stderr the way PowerShell 5.1
     // does. Every argument here is workspace-controlled (package.json scopes,
-    // repo-relative file paths).
-    const child = spawn(command, { shell: true });
+    // repo-relative file paths, the --changed-since ref).
+    const child = spawn(command, { shell: true, cwd: ROOT_DIR });
 
     let output = '';
     child.stdout.on('data', (chunk) => {
@@ -125,33 +144,44 @@ function runCommand(name: string, command: string): Promise<iStepResult> {
 
     child.on('error', (error) => {
       output += `\nError: failed to spawn step "${name}": ${error.message}`;
-      resolve({ name, passed: false, errorLines: extractErrorLines(output) });
+      resolve({ name, passed: false, output, errorLines: extractErrorLines(output) });
     });
 
     child.on('close', (code) => {
-      resolve({ name, passed: code === 0, errorLines: extractErrorLines(output) });
+      resolve({ name, passed: code === 0, output, errorLines: extractErrorLines(output) });
     });
   });
 }
 
-async function runLintStep(): Promise<iStepResult> {
-  if (files.length === 0) {
-    return runCommand('lint', `pnpm ${scopeArgs.join(' ')} --stream run lint`);
-  }
-
-  // File-scoped lint: run eslint directly inside each owning package instead
-  // of the package's `lint` script (which always targets the whole package).
-  const results = await Promise.all(
-    [...fileGroups.entries()].map(([dir, relativeFiles]) =>
-      runCommand('lint', `pnpm --filter=./${dir} exec eslint --fix ${relativeFiles.join(' ')}`),
-    ),
-  );
-
+function combine(name: string, results: iStepResult[]): iStepResult {
   return {
-    name: 'lint',
+    name,
     passed: results.every((result) => result.passed),
+    output: results.map((result) => result.output).join('\n'),
     errorLines: results.flatMap((result) => result.errorLines),
   };
+}
+
+/** Runs a package script, or a file-scoped command inside each owning package when --files is given. */
+async function runLintStep(name: string, script: string, fileCommand: string): Promise<iStepResult> {
+  if (files.length === 0) {
+    return runCommand(name, `pnpm ${scopeArgs} --stream run ${script}`);
+  }
+
+  const results = await Promise.all(
+    [...fileGroups.entries()].map(([dir, relativeFiles]) =>
+      runCommand(name, `pnpm --filter=./${dir} exec ${fileCommand} ${relativeFiles.join(' ')}`),
+    ),
+  );
+  return combine(name, results);
+}
+
+async function writeLog(results: iStepResult[]) {
+  const sections = results.map(
+    (result) => `===== ${result.name}: ${result.passed ? 'PASS' : 'FAIL'} =====\n${result.output}`,
+  );
+  await mkdir(path.dirname(LOG_FILE), { recursive: true });
+  await writeFile(LOG_FILE, `${sections.join('\n\n')}\n`);
 }
 
 async function main() {
@@ -160,18 +190,29 @@ async function main() {
     console.log('FAIL files');
     console.log('errors: 1');
     console.log('--- first errors ---');
-    console.log(`Error: none of the --files paths resolved to a workspace package (expected apps/*, packages/*, or configs/*)`);
+    console.log(
+      `Error: none of the --files paths resolved to a workspace package (expected apps/*, packages/*, or configs/*)`,
+    );
     process.exit(1);
   }
 
   const results: iStepResult[] = [];
 
-  results.push(await runCommand('check-types', `pnpm ${scopeArgs.join(' ')} --stream --no-bail run check-types`));
-  results.push(await runLintStep());
+  results.push(await runCommand('check-types', `pnpm ${scopeArgs} --stream --no-bail run check-types`));
+  results.push(await runLintStep('oxlint', 'lint:oxlint', 'oxlint'));
+  results.push(
+    await runLintStep(
+      'eslint',
+      'lint:eslint',
+      'eslint --fix --cache --cache-location node_modules/.cache/eslint/',
+    ),
+  );
 
   if (shouldRunTests) {
-    results.push(await runCommand('test', `pnpm ${scopeArgs.join(' ')} --stream run test`));
+    results.push(await runCommand('test', `pnpm ${scopeArgs} --stream run test`));
   }
+
+  await writeLog(results);
 
   const totalErrorLines = results.reduce((sum, result) => sum + result.errorLines.length, 0);
   const allPassed = results.every((result) => result.passed);
@@ -181,6 +222,7 @@ async function main() {
     console.log(`${result.passed ? 'PASS' : 'FAIL'} ${result.name}`);
   }
   console.log(`errors: ${totalErrorLines}`);
+  console.log(`log: ${path.relative(ROOT_DIR, LOG_FILE)}`);
 
   if (!allPassed) {
     const errorLines = results.flatMap((result) => result.errorLines).slice(0, MAX_ERROR_LINES);

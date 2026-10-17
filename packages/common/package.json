@@ -4,18 +4,22 @@
   "type": "module",
   "exports": {
     "./globals": {
+      "workspace-source": "./src/globals.d.ts",
       "types": "./dist/globals.d.mts",
       "default": "./dist/globals.d.mts"
     },
     "./constants/*": {
+      "workspace-source": "./src/constants/*.ts",
       "types": "./dist/constants/*.d.mts",
       "default": "./dist/constants/*.mjs"
     },
     "./enums/*": {
+      "workspace-source": "./src/enums/*.ts",
       "types": "./dist/enums/*.d.mts",
       "default": "./dist/enums/*.mjs"
     },
     "./helpers/*": {
+      "workspace-source": "./src/helpers/*.ts",
       "types": "./dist/helpers/*.d.mts",
       "default": "./dist/helpers/*.mjs"
     }
@@ -24,21 +28,22 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsdown --watch --no-clean",
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "lint": "eslint . --fix",
+    "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
+    "lint:oxlint": "oxlint",
+    "lint:eslint": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/",
     "prettify": "prettier --write ./src/",
-    "test": "echo 'No tests for common library yet'",
-    "prepare": "tsdown"
+    "test": "echo 'No tests for common library yet'"
   },
   "prettier": "@startername/prettier-config",
   "devDependencies": {
+    "@startername/lint-config": "workspace:*",
+    "@startername/prettier-config": "workspace:*",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:",
-    "@startername/eslint-config": "workspace:*",
-    "@startername/prettier-config": "workspace:*",
     "eslint": "catalog:",
+    "oxlint": "catalog:",
     "prettier": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"

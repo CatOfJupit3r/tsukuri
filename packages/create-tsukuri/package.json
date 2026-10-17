@@ -6,7 +6,9 @@
   "description": "Module-based project generator for tsukuri monorepos",
   "scripts": {
     "check-types": "tsgo --noEmit",
-    "lint": "eslint . --fix",
+    "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
+    "lint:oxlint": "oxlint",
+    "lint:eslint": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/",
     "prettify": "prettier --write ./src/ ./test/",
     "test": "vitest run",
     "test:install": "vitest run --config vitest.install.config.ts"
@@ -24,13 +26,15 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@startername/eslint-config": "workspace:*",
+    "@startername/lint-config": "workspace:*",
     "@startername/prettier-config": "workspace:*",
+    "@startername/swc-config": "workspace:*",
     "@swc-node/register": "catalog:",
     "@swc/core": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native-preview": "catalog:",
     "eslint": "catalog:",
+    "oxlint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",

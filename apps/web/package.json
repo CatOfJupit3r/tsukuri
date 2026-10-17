@@ -8,7 +8,9 @@
     "build": "vite build",
     "serve": "vite preview --host",
     "check-types": "tsgo --noEmit",
-    "lint": "eslint . --fix",
+    "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
+    "lint:oxlint": "oxlint",
+    "lint:eslint": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/",
     "prettify": "prettier --write ./src/",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -59,8 +61,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@startername/eslint-config": "workspace:*",
+    "@startername/lint-config": "workspace:*",
     "@startername/prettier-config": "workspace:*",
+    "@startername/workspace-source": "workspace:*",
     "@tanstack/router-plugin": "1.168.19",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
@@ -75,6 +78,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "catalog:",
     "jsdom": "^29.1.1",
+    "oxlint": "catalog:",
     "postcss": "8.5.16",
     "prettier": "catalog:",
     "tailwindcss": "4.3.2",

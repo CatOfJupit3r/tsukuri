@@ -1,6 +1,7 @@
-import { createWebConfig } from '@startername/eslint-config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { createWebConfig } from '@startername/lint-config/eslint';
 
 const currentFilename = fileURLToPath(import.meta.url);
 const currentDirname = path.dirname(currentFilename);

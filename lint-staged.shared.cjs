@@ -8,13 +8,14 @@
  */
 module.exports = (workspace) => ({
   '*.{ts,tsx}': [
-    'eslint --fix',
+    'oxlint',
+    'eslint --fix --cache --cache-location node_modules/.cache/eslint/',
     'prettier --write',
     // Type check the specific workspace through pnpm.
     () => `pnpm --filter=${workspace} run check-types`,
   ],
 
-  '*.{js,jsx}': ['eslint --fix', 'prettier --write'],
+  '*.{js,jsx,mjs}': ['oxlint', 'eslint --fix --cache --cache-location node_modules/.cache/eslint/', 'prettier --write'],
 
   '*.{json,yaml,yml,md}': ['prettier --write'],
 });

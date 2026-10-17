@@ -2,6 +2,8 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
+import { withWorkspaceSourceResolve } from '@startername/workspace-source/vite';
+
 export default defineConfig({
   plugins: [
     react({
@@ -22,9 +24,7 @@ export default defineConfig({
       exclude: ['node_modules', 'dist', 'test', '**/*.{test,spec}.{ts,tsx}', '**/*.config.ts'],
     },
   },
-  resolve: {
-    alias: {
-      '@~': path.resolve(__dirname, './src'),
-    },
-  },
+  ...withWorkspaceSourceResolve({
+    '@~': path.resolve(__dirname, './src'),
+  }),
 });

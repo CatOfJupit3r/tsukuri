@@ -1,13 +1,14 @@
 import path from 'node:path';
-import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
 import type { ViteUserConfig } from 'vitest/config';
+
+import { createSwcPlugin } from '@startername/swc-config/vitest';
 
 type iTestOptions = NonNullable<ViteUserConfig['test']>;
 
 export function createVitestConfig(test: Pick<iTestOptions, 'include' | 'exclude' | 'testTimeout'>) {
   return defineConfig({
-    plugins: [swc.vite({ tsconfigFile: './tsconfig.json' })],
+    plugins: [createSwcPlugin()],
     resolve: {
       alias: {
         '@~': path.resolve(__dirname, './src'),

@@ -1,9 +1,10 @@
 /**
  * Shared ESLint Configuration Factory for startername Monorepo
- * 
+ *
  * This module provides a factory function to create ESLint configurations
  * for different project types (backend, web) with consistent rules across
- * the monorepo.
+ * the monorepo. oxlint runs before ESLint, so every rule enabled in the
+ * shared oxlint config is switched off here.
  */
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
@@ -11,9 +12,12 @@ import enumwaiiPlugin from 'eslint-plugin-enumwaii';
 import { configs, plugins, rules } from 'eslint-config-airbnb-extended';
 import { rules as prettierConfigRules } from 'eslint-config-prettier';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
+import oxlintPlugin from 'eslint-plugin-oxlint';
 import prettierPlugin from 'eslint-plugin-prettier';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { createOxlintConfig } from './oxlint.mjs';
 
 /**
  * Helper function to create ignore patterns for workspace packages
@@ -268,6 +272,7 @@ export const createBackendConfig = (options = {}) => {
     base.sharedRules,
     base.modelFileOverrides,
     nodeSpecificRules,
+    ...oxlintPlugin.buildFromOxlintConfig(createOxlintConfig()),
   ];
 };
 
@@ -416,5 +421,6 @@ export const createWebConfig = async (options = {}) => {
     base.sharedRules,
     base.modelFileOverrides,
     webSpecificRules,
+    ...oxlintPlugin.buildFromOxlintConfig(createOxlintConfig({ isReact: true })),
   ];
 };

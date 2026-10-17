@@ -114,6 +114,8 @@ Examples:
 - The Better Auth server is mounted under `/auth/*` and expects HTTPS cookies (`sameSite: 'none'`, `secure: true`); keep this in mind when testing locally.
 - Aliases: `@~/` resolves to `apps/server/src` or `apps/web/src` depending on the package; `@startername/common` surfaces shared utilities and types, while `@startername/server-contract` surfaces API contracts.
 - PostgreSQL runs at `postgresql://postgres:postgres@localhost:5432/startername` by default; adjust via `POSTGRES_URL` and update docker-compose if ports change.
+- Workspace packages export a `workspace-source` condition pointing at their TypeScript source; TypeScript, Vite/Vitest and Node dev servers resolve it, so nothing has to be built before `dev`, `test` or `check-types`. Add the condition to every new export (see `configs/workspace-source`).
+- Workspaces that use tsyringe decorators extend `@startername/swc-config/tsconfig.decorators.json` (read by `@swc-node/register` in dev) and use `createSwcPlugin()` from `@startername/swc-config/vitest` in tests; tsdown builds emit the same decorator metadata.
 - Node.js v26 is required; use nvm or similar to manage Node versions.
 - pnpm ≥12.14.0 is the package manager; use `corepack enable` to activate it.
 
@@ -163,11 +165,11 @@ apps/<workspace>/test/
 
 ## Commands
 
-- `pnpm run verify` is THE verification command: it runs check-types + lint (add `--tests` to also run the suite, `--filter <pkg>` to scope) and reports honest PASS/FAIL with an exit code you can trust. Use it before handing work off.
+- `pnpm run verify` is THE verification command: it runs check-types, oxlint and ESLint (add `--tests` to also run the suite, `--filter <pkg>` (repeatable) or `--changed-since <ref>` to scope, `--files <paths>` to lint exact files) and reports honest PASS/FAIL with an exit code you can trust. The full output of the last run is in `node_modules/.cache/verify/last-run.log`. Use it before handing work off.
 - `pnpm run dev` boots the local stack.
 - `pnpm run build` builds the monorepo.
 - `pnpm run check-types` runs TypeScript checks across the workspace.
-- `pnpm run lint` runs ESLint across the workspace.
+- `pnpm run lint` runs oxlint, then ESLint (cached), across the workspace. Shared configs live in `configs/lint-config` (`@startername/lint-config/oxlint`, `@startername/lint-config/eslint`).
 - `pnpm run prettify` formats the workspace.
 - `pnpm run test` runs the test suite across the workspace.
 - `pnpm run db:generate` generates a Drizzle migration from the current schema (root alias for the `server` package script).

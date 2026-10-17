@@ -43,7 +43,7 @@ describe('ProjectGenerator', () => {
         'CLAUDE.md',
         'README.md',
         'scripts/verify.ts',
-        'configs/eslint-config/package.json',
+        'configs/lint-config/package.json',
         'packages/common/package.json',
         'packages/common/src/enums/errors.enums.ts',
         '.agents/skills/review-code/SKILL.md',
@@ -60,7 +60,7 @@ describe('ProjectGenerator', () => {
 
     const commonPackage = await readJson(path.join(targetDir, 'packages/common/package.json'));
     expect(commonPackage.name).toBe('@acme/common');
-    expect(commonPackage.devDependencies).toEqual(expect.objectContaining({ '@acme/eslint-config': 'workspace:*' }));
+    expect(commonPackage.devDependencies).toEqual(expect.objectContaining({ '@acme/lint-config': 'workspace:*' }));
 
     const workspace = parse(await readFile(path.join(targetDir, 'pnpm-workspace.yaml'), 'utf8')) as Record<
       string,

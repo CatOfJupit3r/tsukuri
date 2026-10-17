@@ -6,30 +6,6 @@ import { MODULE_IDS } from '@~/enums/module-ids.enums';
 import { SKILL_IDS } from '@~/enums/skill-ids.enums';
 import { defineModule } from '@~/manifest/define-module';
 
-const LINT_CONFIG_DEPENDENCIES = {
-  '@eslint/compat': '^2.1.0',
-  '@eslint/js': '^9.39.2',
-  '@stylistic/eslint-plugin': '^5.10.0',
-  '@tanstack/eslint-plugin-query': '^5.101.2',
-  '@tanstack/eslint-plugin-router': '^1.162.0',
-  '@typescript-eslint/eslint-plugin': '^8.63.0',
-  '@typescript-eslint/parser': '^8.63.0',
-  'eslint-config-airbnb-extended': '^3.1.0',
-  'eslint-config-prettier': '^10.1.8',
-  'eslint-import-resolver-typescript': '^4.4.5',
-  'eslint-plugin-better-tailwindcss': '^4.6.1',
-  'eslint-plugin-enumwaii': '1.2.0',
-  'eslint-plugin-import-x': '^4.17.1',
-  'eslint-plugin-jsx-a11y': '^6.10.2',
-  'eslint-plugin-n': '^18.2.2',
-  'eslint-plugin-prettier': '^5.5.6',
-  'eslint-plugin-react': '^7.37.5',
-  'eslint-plugin-react-hooks': '^7.1.1',
-  'eslint-plugin-react-refresh': '^0.5.3',
-  globals: '^17.7.0',
-  'typescript-eslint': '^8.63.0',
-};
-
 export const baseModule = defineModule({
   id: MODULE_IDS.BASE,
   version: '1.0.0',
@@ -52,8 +28,9 @@ export const baseModule = defineModule({
     { source: 'types' },
     { source: 'scripts/verify.ts' },
     { source: 'scripts/clean.ts' },
-    { source: 'configs/eslint-config' },
+    { source: 'configs/lint-config' },
     { source: 'configs/prettier-config' },
+    { source: 'configs/workspace-source' },
     { source: 'packages/common', exclude: ['src/constants/achievements.ts', 'src/constants/badges.ts'] },
   ],
   packageJson: [
@@ -99,19 +76,48 @@ export const baseModule = defineModule({
       },
     },
     {
-      workspace: 'configs/eslint-config',
+      workspace: 'configs/lint-config',
       fields: {
-        name: '@startername/eslint-config',
+        name: '@startername/lint-config',
         version: '1.0.0',
         type: 'module',
         private: true,
-        description: 'Shared ESLint configuration for startername monorepo',
-        exports: { '.': './src/index.mjs' },
-        engines: { node: '26.12.0' },
+        description: 'Shared ESLint and oxlint configuration for startername monorepo',
+        exports: {
+          './eslint': './src/eslint.mjs',
+          './oxlint': './src/oxlint.mjs',
+        },
+        engines: {
+          node: '26.12.0',
+        },
       },
-      dependencies: LINT_CONFIG_DEPENDENCIES,
+      dependencies: {
+        '@eslint/compat': '^2.1.0',
+        '@eslint/js': '^9.39.2',
+        '@stylistic/eslint-plugin': '^5.10.0',
+        '@tanstack/eslint-plugin-query': '^5.101.2',
+        '@tanstack/eslint-plugin-router': '^1.162.0',
+        '@typescript-eslint/eslint-plugin': '^8.63.0',
+        '@typescript-eslint/parser': '^8.63.0',
+        'eslint-config-airbnb-extended': '^3.1.0',
+        'eslint-config-prettier': '^10.1.8',
+        'eslint-import-resolver-typescript': '^4.4.5',
+        'eslint-plugin-better-tailwindcss': '^4.6.1',
+        'eslint-plugin-enumwaii': '1.2.0',
+        'eslint-plugin-import-x': '^4.17.1',
+        'eslint-plugin-jsx-a11y': '^6.10.2',
+        'eslint-plugin-n': '^18.2.2',
+        'eslint-plugin-oxlint': '1.86.0',
+        'eslint-plugin-prettier': '^5.5.6',
+        'eslint-plugin-react': '^7.37.5',
+        'eslint-plugin-react-hooks': '^7.1.1',
+        'eslint-plugin-react-refresh': '^0.5.3',
+        globals: '^17.7.0',
+        'typescript-eslint': '^8.63.0',
+      },
       peerDependencies: {
         eslint: 'catalog:',
+        oxlint: 'catalog:',
         prettier: 'catalog:',
         typescript: 'catalog:',
       },
@@ -125,13 +131,43 @@ export const baseModule = defineModule({
         private: true,
         description: 'Shared Prettier configuration for startername monorepo',
         main: './prettier.config.mjs',
-        exports: { '.': './prettier.config.mjs' },
+        exports: {
+          '.': './prettier.config.mjs',
+        },
       },
       dependencies: {
         '@trivago/prettier-plugin-sort-imports': '^6.0.2',
       },
       peerDependencies: {
         prettier: 'catalog:',
+      },
+    },
+    {
+      workspace: 'configs/workspace-source',
+      fields: {
+        name: '@startername/workspace-source',
+        version: '1.0.0',
+        type: 'module',
+        private: true,
+        description: 'Resolve workspace packages to their TypeScript source in dev, tests and type checks',
+        exports: {
+          './conditions': {
+            types: './src/conditions.d.mts',
+            default: './src/conditions.mjs',
+          },
+          './vite': {
+            types: './src/vite.d.mts',
+            default: './src/vite.mjs',
+          },
+        },
+        peerDependenciesMeta: {
+          vite: {
+            optional: true,
+          },
+        },
+      },
+      peerDependencies: {
+        vite: '>=8.0.0',
       },
     },
     {
@@ -142,18 +178,22 @@ export const baseModule = defineModule({
         type: 'module',
         exports: {
           './globals': {
+            'workspace-source': './src/globals.d.ts',
             types: './dist/globals.d.mts',
             default: './dist/globals.d.mts',
           },
           './constants/*': {
+            'workspace-source': './src/constants/*.ts',
             types: './dist/constants/*.d.mts',
             default: './dist/constants/*.mjs',
           },
           './enums/*': {
+            'workspace-source': './src/enums/*.ts',
             types: './dist/enums/*.d.mts',
             default: './dist/enums/*.mjs',
           },
           './helpers/*': {
+            'workspace-source': './src/helpers/*.ts',
             types: './dist/helpers/*.d.mts',
             default: './dist/helpers/*.mjs',
           },
@@ -162,24 +202,25 @@ export const baseModule = defineModule({
         prettier: '@startername/prettier-config',
       },
       scripts: {
-        dev: 'tsdown --watch --no-clean',
         build: 'tsdown',
         'check-types': 'tsc --noEmit',
-        lint: 'eslint . --fix',
+        lint: 'pnpm run lint:oxlint && pnpm run lint:eslint',
+        'lint:oxlint': 'oxlint',
+        'lint:eslint': 'eslint . --fix --cache --cache-location node_modules/.cache/eslint/',
         prettify: 'prettier --write ./src/',
         test: "echo 'No tests for common library yet'",
-        prepare: 'tsdown',
       },
       dependencies: {
         enumwaii: '1.2.0',
         zod: 'catalog:',
       },
       devDependencies: {
-        '@startername/eslint-config': 'workspace:*',
+        '@startername/lint-config': 'workspace:*',
         '@startername/prettier-config': 'workspace:*',
         '@types/node': 'catalog:',
         '@typescript/native-preview': 'catalog:',
         eslint: 'catalog:',
+        oxlint: 'catalog:',
         prettier: 'catalog:',
         tsdown: 'catalog:',
         typescript: 'catalog:',
@@ -196,6 +237,7 @@ export const baseModule = defineModule({
       prettier: '3.9.5',
       zod: '4.4.3',
       typescript: '6.0.3',
+      oxlint: '1.86.0',
       '@types/node': '26.1.1',
       tsdown: '0.22.4',
       tsx: '4.23.0',
