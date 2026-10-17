@@ -86,8 +86,8 @@ at the feature root and move entity-specific code into the submodule.
 
 Do not create `index.ts` barrels. Import directly from the owning file. Do not
 re-export a value, type, or class through another module. Use kebab-case file
-names and `i`-prefixed interfaces. Apply the `enumwaii` skill before introducing
-any closed-set value.
+names and `i`-prefixed interfaces. Declare every closed-set value with `em([...])`
+from `enumwaii`; `eslint-plugin-enumwaii` enforces it.
 
 ## Implementation workflow
 

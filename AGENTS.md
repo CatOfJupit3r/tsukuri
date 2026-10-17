@@ -36,7 +36,6 @@ Examples:
 
 - `AGENTS.md` for repo-wide conventions, workflow, and codebase standards
 - `.agents/skills/*/SKILL.md` for task-specific implementation guidance
-- `.agents/skills/enumwaii/SKILL.md` is mandatory before declaring, comparing, or reviewing any closed-set string value (status, role, mode, kind, event type)
 
 ## Repository Layout
 
@@ -81,7 +80,7 @@ Examples:
   ```
 - Do not generate a reference guide, comprehensive summary document, or new docs markdown files unless the user explicitly asks for them.
 - Follow standard TypeScript conventions with strict typing, `async/await`, and modular design.
-- Use the `enumwaii` skill for every reusable closed set of string values. Do not use TypeScript `enum`, `z.enum`, plain `as const` objects, duplicate unions, or raw literals for enum-backed values.
+- Use the `enumwaii` package (`em([...])`) for every reusable closed set of string values; `eslint-plugin-enumwaii` enforces it. Do not use TypeScript `enum`, `z.enum`, plain `as const` objects, duplicate unions, or raw literals for enum-backed values.
 - Always name files with kebab-case, interfaces with `i` prefix.
 - Never create a type alias that just re-exports an `i`-prefixed interface/type (e.g. `export type UserResponse = iUserResponse`). Use the `i`-prefixed name directly everywhere. Example:
   ```typescript
@@ -182,30 +181,15 @@ apps/<workspace>/test/
 - If a task spans backend and frontend, coordinate the contract first and then implement the UI against that contract.
 - Run `pnpm run verify` before handing work off. If you are changing code, ALWAYS run it to catch type and lint issues early; trust its exit code over raw pnpm stderr.
 - For any task of the form "replace/remove/rename X everywhere": first enumerate ALL matches with grep (including tests, fixtures, docs, and generated-adjacent files) into an explicit checklist; work the checklist down; finish by re-running the same grep and pasting its empty result as proof. Do not report completion without the zero-match re-run.
-- If you are implementing a roadmap, then always make sure to mark the relevant roadmap items as "completed".
 
 <!-- intent-skills:start -->
 # Skill mappings - when working in these areas, load the linked skill file into context.
 skills:
   # Local project skills
-  - task: "MANDATORY before declaring, comparing, or reviewing any closed-set string value (status, role, mode, kind, event type)"
-    load: ".agents/skills/enumwaii/SKILL.md"
   - task: "Organizing or implementing server features with service, repository, resolver, and nested module boundaries"
     load: ".agents/skills/server-module/SKILL.md"
-  - task: "Creating new roadmaps from ideas, research, stale plans, or architectural direction"
-    load: ".agents/skills/roadmap-creation-workflow/SKILL.md"
   - task: "Setting up dependency injection with tsyringe for server services"
     load: ".agents/skills/dependency-injection-setup/SKILL.md"
-  - task: "Implementing a full-stack feature from contracts to UI following contract-first development"
-    load: ".agents/skills/feature-implementation-workflow/SKILL.md"
-  - task: "Splitting a broad roadmap phase into small, budget-aware agent work packets before implementation"
-    load: ".agents/skills/roadmap-task-slicing/SKILL.md"
-  - task: "Delegating implementation to Claude Code or another coding agent while requiring evidence-backed completion reports"
-    load: ".agents/skills/agent-implementation-proof/SKILL.md"
-  - task: "Reviewing an agent-made branch, pull request, or diff against roadmap acceptance criteria to detect false completion"
-    load: ".agents/skills/codex-diff-verification/SKILL.md"
-  - task: "Auditing whether a roadmap phase is actually implemented, or archiving a completed roadmap"
-    load: ".agents/skills/roadmap-phase-audit/SKILL.md"
   - task: "Creating new oRPC contracts for API endpoints with Zod validation"
     load: ".agents/skills/orpc-contract-creation/SKILL.md"
   - task: "Building accessible React components with UI primitives, nuqs, and design tokens"
