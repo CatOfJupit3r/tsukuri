@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-- Node.js **exactly** v24 (use nvm or similar)
-- pnpm 11.5.0 (`corepack enable`)
+- Node.js **exactly** v26 (use nvm or similar)
+- pnpm 12.14.0 (`corepack enable`)
 
 ## Getting Started
 

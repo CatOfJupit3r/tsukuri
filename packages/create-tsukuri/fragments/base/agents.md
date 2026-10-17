@@ -101,8 +101,8 @@ Examples:
 ## Environment and Configuration
 
 - Aliases: `@~/` resolves to the `src` folder of the package it is used in; `@startername/common` surfaces shared utilities and types.
-- Node.js v24 is required; use nvm or similar to manage Node versions.
-- pnpm ≥11.5.0 is the package manager; use `corepack enable` to activate it.
+- Node.js v26 is required; use nvm or similar to manage Node versions.
+- pnpm ≥12.14.0 is the package manager; use `corepack enable` to activate it.
 
 ## Environment (Windows)
 

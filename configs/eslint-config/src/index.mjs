@@ -253,7 +253,7 @@ export const createBackendConfig = (options = {}) => {
 
   const nodeSpecificRules = {
     rules: {
-      'n/no-unsupported-features/node-builtins': ['error', { version: '>=24.0.0' }],
+      'n/no-unsupported-features/node-builtins': ['error', { version: '>=26.0.0' }],
     },
   };
 

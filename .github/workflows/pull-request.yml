@@ -22,11 +22,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.5.0
+          version: 12.14.0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24.11.1
+          node-version: 26.12.0
           cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
@@ -47,11 +47,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.5.0
+          version: 12.14.0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24.11.1
+          node-version: 26.12.0
           cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
@@ -71,11 +71,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 11.5.0
+          version: 12.14.0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24.11.1
+          node-version: 26.12.0
           cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile

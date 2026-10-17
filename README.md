@@ -20,11 +20,11 @@ Update `.agents/skills/` once and both flows pick up the change.
 - **Contract-first development.** API endpoints start as shared `zod` schemas in `packages/server-contract`, ensuring server and client stay type-safe.
 - **Real-time challenge lifecycle.** Hono-based routes expose public and authenticated procedures, backed by PostgreSQL via Drizzle ORM.
 - **Typed React client.** The web app consumes the generated oRPC client, TanStack Router, and Query utilities for fully typed data interactions.
-- **Developer-focused tooling.** Node.js 24, pnpm workspaces, and Husky hooks enable quick local feedback loops and consistent commits.
+- **Developer-focused tooling.** Node.js 26, pnpm workspaces, and Husky hooks enable quick local feedback loops and consistent commits.
 
 ## Tech Stack
 
-- **Runtime & Tooling:** Node.js 24, pnpm workspaces, Commitizen, Husky
+- **Runtime & Tooling:** Node.js 26, pnpm workspaces, Commitizen, Husky
 - **Backend:** TypeScript, Hono, oRPC, Drizzle ORM/PostgreSQL, Better Auth, Zod, Vitest
 - **Frontend:** React 19, Vite, TanStack Stack/Query/Form, Tailwind CSS, Vitest
 - **Server Contracts:** `@startername/server-contract` with oRPC + OpenAPI generation
@@ -43,15 +43,15 @@ Update `.agents/skills/` once and both flows pick up the change.
 
 - Git ≥ 2.40
 - Docker Desktop (required for the PostgreSQL container)
-- Node.js **exactly** v24 (use nvm or similar)
-- pnpm 11.5.0
+- Node.js **exactly** v26 (use nvm or similar)
+- pnpm 12.14.0
 
-### Install Node.js v24
+### Install Node.js v26
 
 Using nvm:
 ```bash
-nvm install 24
-nvm use 24
+nvm install 26
+nvm use 26
 ```
 
 Or using the `.nvmrc` file in the repo:
@@ -63,12 +63,12 @@ nvm use
 
 ```bash
 corepack enable
-corepack prepare pnpm@11.5.0 --activate
+corepack prepare pnpm@12.14.0 --activate
 ```
 
 Or via npm:
 ```bash
-npm install -g pnpm@11.5.0
+npm install -g pnpm@12.14.0
 ```
 
 ## Getting Started

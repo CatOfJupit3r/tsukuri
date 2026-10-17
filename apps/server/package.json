@@ -18,7 +18,7 @@
     "test:ui": "NODE_ENV=test vitest --ui"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=26.0.0"
   },
   "prettier": "@startername/prettier-config",
   "dependencies": {

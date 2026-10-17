@@ -45,7 +45,6 @@ Examples:
 - `packages/server-contract` contains the API contracts used by both apps.
 - `packages/common` contains shared utilities, types, constants, and helpers used by both apps.
 - `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the markdown fragments generated projects are built from.
-- `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the markdown fragments generated projects are built from.
 - `docs` contains product notes, roadmaps, and design documentation, if present.
 
 ## Core Conventions
@@ -115,8 +114,8 @@ Examples:
 - The Better Auth server is mounted under `/auth/*` and expects HTTPS cookies (`sameSite: 'none'`, `secure: true`); keep this in mind when testing locally.
 - Aliases: `@~/` resolves to `apps/server/src` or `apps/web/src` depending on the package; `@startername/common` surfaces shared utilities and types, while `@startername/server-contract` surfaces API contracts.
 - PostgreSQL runs at `postgresql://postgres:postgres@localhost:5432/startername` by default; adjust via `POSTGRES_URL` and update docker-compose if ports change.
-- Node.js v24 is required; use nvm or similar to manage Node versions.
-- pnpm ≥10.0.0 is the package manager; use `corepack enable` to activate it.
+- Node.js v26 is required; use nvm or similar to manage Node versions.
+- pnpm ≥12.14.0 is the package manager; use `corepack enable` to activate it.
 
 ## Environment (Windows)
 

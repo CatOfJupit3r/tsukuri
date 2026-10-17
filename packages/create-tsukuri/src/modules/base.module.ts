@@ -68,10 +68,10 @@ export const baseModule = defineModule({
             czConfig: './cz.config.cjs',
           },
         },
-        packageManager: 'pnpm@11.5.0',
+        packageManager: 'pnpm@12.14.0',
         engines: {
-          node: '24.13.0',
-          pnpm: '>=11.5.0',
+          node: '26.12.0',
+          pnpm: '>=12.14.0',
         },
       },
       scripts: {
@@ -107,7 +107,7 @@ export const baseModule = defineModule({
         private: true,
         description: 'Shared ESLint configuration for startername monorepo',
         exports: { '.': './src/index.mjs' },
-        engines: { node: '24.13.0' },
+        engines: { node: '26.12.0' },
       },
       dependencies: LINT_CONFIG_DEPENDENCIES,
       peerDependencies: {
