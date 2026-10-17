@@ -1,3 +1,4 @@
+import { CONNECTION_POINT_KINDS } from '@~/enums/connection-point-kinds.enums';
 import { MARKDOWN_DOCUMENTS } from '@~/enums/markdown-documents.enums';
 import { MODULE_CATEGORIES } from '@~/enums/module-categories.enums';
 import { MODULE_IDS } from '@~/enums/module-ids.enums';
@@ -32,6 +33,7 @@ const LINT_CONFIG_DEPENDENCIES = {
 
 export const baseModule = defineModule({
   id: MODULE_IDS.BASE,
+  version: '1.0.0',
   name: 'Base tooling',
   description: 'pnpm workspace, TypeScript, ESLint, Prettier, verify script and the shared common package',
   category: MODULE_CATEGORIES.BASE,
@@ -75,7 +77,6 @@ export const baseModule = defineModule({
         },
       },
       scripts: {
-        build: 'pnpm --recursive run build',
         test: 'pnpm --recursive --stream run test',
         'check-types': 'pnpm --recursive --stream --no-bail run check-types',
         prettify: 'pnpm --recursive --stream run prettify',
@@ -211,5 +212,12 @@ export const baseModule = defineModule({
   markdown: [
     { document: MARKDOWN_DOCUMENTS.AGENTS, source: fragmentPath('base/agents.md') },
     { document: MARKDOWN_DOCUMENTS.README, source: fragmentPath('base/readme.md') },
+  ],
+  contributions: [
+    {
+      kind: CONNECTION_POINT_KINDS.CI_STEP,
+      name: 'Verify (types, lint, tests)',
+      run: 'pnpm run verify --tests',
+    },
   ],
 });

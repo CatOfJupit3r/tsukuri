@@ -71,6 +71,7 @@ Examples:
   // GOOD — define it here or import it directly at the call site
   export const someValue = ...;
   ```
+- Never edit generated connection points: `starter.json`, every `src/generated/` folder, generated `.env.example` files, `docker-compose.dev.yml` and `.github/workflows/ci.yml` are rebuilt from `starter.json` when modules are added. Import from them instead.
 - Do not generate a reference guide, comprehensive summary document, or new docs markdown files unless the user explicitly asks for them.
 - Follow standard TypeScript conventions with strict typing, `async/await`, and modular design.
 - Use the `enumwaii` package (`em([...])`) for every reusable closed set of string values; `eslint-plugin-enumwaii` enforces it. Do not use TypeScript `enum`, `z.enum`, plain `as const` objects, duplicate unions, or raw literals for enum-backed values.

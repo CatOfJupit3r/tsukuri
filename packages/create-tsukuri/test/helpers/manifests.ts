@@ -11,6 +11,7 @@ export function testModuleId(value: string) {
 export function createManifest(id: ModuleId, overrides: Partial<iModuleManifestInput> = {}): iModuleManifestInput {
   return {
     id,
+    version: '1.0.0',
     name: id,
     description: `${id} module`,
     category: MODULE_CATEGORIES.FEATURE,

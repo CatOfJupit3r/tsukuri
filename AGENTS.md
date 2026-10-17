@@ -44,7 +44,7 @@ Examples:
 - `apps/web` contains the React 19 client, TanStack Router tree, UI components, and client-side state.
 - `packages/server-contract` contains the API contracts used by both apps.
 - `packages/common` contains shared utilities, types, constants, and helpers used by both apps.
-- `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the markdown fragments generated projects are built from.
+- `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, connection-point generation, and the markdown fragments (with `<module id="...">` / `<module not="...">` blocks) generated projects are built from.
 - `docs` contains product notes, roadmaps, and design documentation, if present.
 
 ## Core Conventions

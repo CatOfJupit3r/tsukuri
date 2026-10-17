@@ -6,6 +6,9 @@ import { moduleCategorySchema } from '@~/enums/module-categories.enums';
 import { moduleIdSchema } from '@~/enums/module-ids.enums';
 import { skillIdSchema } from '@~/enums/skill-ids.enums';
 
+import { connectionPointContributionSchema } from './connection-point.schema';
+import type { iConnectionPointContributionInput } from './connection-point.schema';
+
 const relativePathSchema = z
   .string()
   .min(1)
@@ -50,6 +53,8 @@ export const markdownFragmentSchema = z.object({
 
 export const moduleManifestSchema = z.object({
   id: moduleIdSchema,
+  /** Semver of the module itself; recorded in the project module record. */
+  version: z.string().regex(/^\d+\.\d+\.\d+(?:-[\w.]+)?$/, 'Must be a semver version'),
   name: z.string().min(1),
   description: z.string().min(1),
   category: moduleCategorySchema,
@@ -70,11 +75,30 @@ export const moduleManifestSchema = z.object({
   }),
   skills: z.array(skillIdSchema).default([]),
   markdown: z.array(markdownFragmentSchema).default([]),
+  contributions: z.array(connectionPointContributionSchema).default([]),
 });
 
-export type iModuleManifestInput = z.input<typeof moduleManifestSchema>;
 export type iModuleManifest = z.output<typeof moduleManifestSchema>;
 export type iModuleFileEntry = z.output<typeof moduleFileEntrySchema>;
 export type iPackageJsonContribution = z.output<typeof packageJsonContributionSchema>;
 export type iPnpmWorkspaceContribution = z.output<typeof pnpmWorkspaceContributionSchema>;
 export type iMarkdownFragment = z.output<typeof markdownFragmentSchema>;
+
+type iWithDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/**
+ * What a manifest author writes: the validated shape with every defaulted field optional.
+ * Written out instead of `z.input` so enum-backed fields keep their enumwaii types.
+ */
+export type iModuleManifestInput = iWithDefaults<
+  Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions'>,
+  'isAlwaysIncluded' | 'requires' | 'requiresCapabilities' | 'conflicts' | 'provides' | 'skills' | 'markdown'
+> & {
+  files?: iWithDefaults<iModuleFileEntry, 'exclude'>[];
+  packageJson?: iWithDefaults<
+    iPackageJsonContribution,
+    'fields' | 'scripts' | 'dependencies' | 'devDependencies' | 'peerDependencies'
+  >[];
+  pnpmWorkspace?: Partial<iPnpmWorkspaceContribution>;
+  contributions?: iConnectionPointContributionInput[];
+};

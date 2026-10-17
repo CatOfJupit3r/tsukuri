@@ -4,6 +4,7 @@ import type { MarkdownDocument } from '@~/enums/markdown-documents.enums';
 import { MARKDOWN_DOCUMENT_OUTPUTS } from '@~/enums/markdown-documents.enums';
 import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
 
+import { renderModuleBlocks } from './module-blocks';
 import { ModuleSourceReader } from './module-source-reader';
 
 export interface iRenderedDocument {
@@ -15,13 +16,15 @@ export interface iRenderedDocument {
 export class MarkdownRenderer {
   constructor(private readonly reader: ModuleSourceReader) {}
 
-  /** Joins every module's fragments per document, in module order. */
+  /** Joins every module's fragments per document, in module order, resolving `<module>` blocks. */
   public async render(modules: iModuleManifest[]) {
     const bodies = new Map<MarkdownDocument, string[]>();
+    const installed = new Set(modules.map((manifest) => manifest.id));
 
     for (const manifest of modules) {
       for (const fragment of manifest.markdown) {
-        const text = (await this.reader.readText(fragment.source)).trim();
+        const raw = await this.reader.readText(fragment.source);
+        const text = renderModuleBlocks(raw, installed, fragment.source).trim();
         bodies.set(fragment.document, [...(bodies.get(fragment.document) ?? []), text]);
       }
     }

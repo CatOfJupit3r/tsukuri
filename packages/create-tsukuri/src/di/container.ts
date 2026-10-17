@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { container } from 'tsyringe';
 import type { constructor } from 'tsyringe/dist/typings/types';
 
+import { ConnectionPointGenerator } from '@~/engine/connection-points/connection-point-generator';
 import { MarkdownRenderer } from '@~/engine/markdown-renderer';
 import { ModuleRegistry } from '@~/engine/module-registry';
 import { ModuleResolver } from '@~/engine/module-resolver';
@@ -29,6 +30,7 @@ const SERVICES: constructor<object>[] = [
   PackageJsonMerger,
   PnpmWorkspaceMerger,
   MarkdownRenderer,
+  ConnectionPointGenerator,
   ProjectComposer,
   ProjectWriter,
   ProjectGenerator,

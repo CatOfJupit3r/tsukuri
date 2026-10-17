@@ -11,6 +11,9 @@
     "test": "vitest run",
     "test:install": "vitest run --config vitest.install.config.ts"
   },
+  "engines": {
+    "node": ">=26.0.0"
+  },
   "prettier": "@startername/prettier-config",
   "dependencies": {
     "enumwaii": "1.2.0",
