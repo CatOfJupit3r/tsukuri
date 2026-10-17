@@ -43,7 +43,6 @@ export const baseModule = defineModule({
     { source: '.nvmrc' },
     { source: '.vscode' },
     { source: '.husky' },
-    { source: '.claude/settings.json' },
     { source: '.github/ISSUE_TEMPLATE' },
     { source: 'cz.config.cjs' },
     { source: 'lint-staged.shared.cjs' },

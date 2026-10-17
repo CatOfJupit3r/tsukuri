@@ -14,7 +14,7 @@ pnpm run verify
 
 ## Agentic Tooling
 
-`AGENTS.md` (mirrored to `CLAUDE.md`) is the always-on guide for coding agents. Task-specific skills live in `.agents/skills/*/SKILL.md`, and `.claude/settings.json` configures default tool permissions for Claude Code.
+`AGENTS.md` (mirrored to `CLAUDE.md`) is the always-on guide for coding agents. Task-specific skills live in `.agents/skills/*/SKILL.md`.
 
 ## Workspace Commands
 

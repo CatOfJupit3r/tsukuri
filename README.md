@@ -12,7 +12,6 @@ Both GitHub Copilot and Claude Code (or any AGENTS.md-aware agent) read from the
 
 - `.github/copilot-instructions.md` and `.github/agents/*.md` (Copilot custom agents) point into `.agents/skills/`.
 - `AGENTS.md` (with `CLAUDE.md` symlinked to it) is the always-on guide for Claude Code and other AGENTS.md-aware tools, and points into the same `.agents/skills/` directory.
-- `.claude/settings.json` configures default tool permissions for Claude Code.
 
 Update `.agents/skills/` once and both flows pick up the change.
 
