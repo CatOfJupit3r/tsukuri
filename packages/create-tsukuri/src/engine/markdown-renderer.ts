@@ -4,8 +4,8 @@ import type { MarkdownDocument } from '@~/enums/markdown-documents.enums';
 import { MARKDOWN_DOCUMENT_OUTPUTS } from '@~/enums/markdown-documents.enums';
 import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
 
-import { renderModuleBlocks } from './module-blocks';
-import { ModuleSourceReader } from './module-source-reader';
+import type { iTemplateContext } from './template-renderer';
+import { TemplateRenderer } from './template-renderer';
 
 export interface iRenderedDocument {
   path: string;
@@ -14,17 +14,15 @@ export interface iRenderedDocument {
 
 @injectable()
 export class MarkdownRenderer {
-  constructor(private readonly reader: ModuleSourceReader) {}
+  constructor(private readonly templates: TemplateRenderer) {}
 
-  /** Joins every module's fragments per document, in module order, resolving `<module>` blocks. */
-  public async render(modules: iModuleManifest[]) {
+  /** Renders every module's Handlebars fragments and joins them per document, in module order. */
+  public async render(modules: iModuleManifest[], context: iTemplateContext) {
     const bodies = new Map<MarkdownDocument, string[]>();
-    const installed = new Set(modules.map((manifest) => manifest.id));
 
     for (const manifest of modules) {
       for (const fragment of manifest.markdown) {
-        const raw = await this.reader.readText(fragment.source);
-        const text = renderModuleBlocks(raw, installed, fragment.source).trim();
+        const text = (await this.templates.render(fragment.source, context)).trim();
         bodies.set(fragment.document, [...(bodies.get(fragment.document) ?? []), text]);
       }
     }

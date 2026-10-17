@@ -12,6 +12,7 @@ import { PnpmWorkspaceMerger } from '@~/engine/pnpm-workspace-merger';
 import { ProjectComposer } from '@~/engine/project-composer';
 import { ProjectGenerator } from '@~/engine/project-generator';
 import { ProjectWriter } from '@~/engine/project-writer';
+import { TemplateRenderer } from '@~/engine/template-renderer';
 import type { iModuleManifestInput } from '@~/manifest/module-manifest.schema';
 import { MODULE_MANIFESTS } from '@~/modules/module-manifests';
 
@@ -29,6 +30,7 @@ const SERVICES: constructor<object>[] = [
   ModuleSourceReader,
   PackageJsonMerger,
   PnpmWorkspaceMerger,
+  TemplateRenderer,
   MarkdownRenderer,
   ConnectionPointGenerator,
   ProjectComposer,

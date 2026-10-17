@@ -1,5 +1,6 @@
 import { parse } from 'yaml';
 
+import { createGeneratorContainer } from '@~/di/container';
 import { ConnectionPointGenerator } from '@~/engine/connection-points/connection-point-generator';
 import { CONNECTION_POINT_KINDS } from '@~/enums/connection-point-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
@@ -7,25 +8,31 @@ import { moduleManifestSchema } from '@~/manifest/module-manifest.schema';
 import type { iModuleManifestInput } from '@~/manifest/module-manifest.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';
+import { REPOSITORY_ROOT } from '../helpers/temp-dir';
 
 vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const ALPHA = testModuleId('alpha');
 const BETA = testModuleId('beta');
 
-function generate(...inputs: iModuleManifestInput[]) {
-  return new ConnectionPointGenerator().generate(inputs.map((input) => moduleManifestSchema.parse(input)));
+const generator = createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT, manifests: [] }).resolve(
+  ConnectionPointGenerator,
+);
+
+async function generate(...inputs: iModuleManifestInput[]) {
+  const modules = inputs.map((input) => moduleManifestSchema.parse(input));
+  return generator.generate(modules, { installedModules: modules.map((manifest) => manifest.id) });
 }
 
-function fileContent(result: ReturnType<typeof generate>, filePath: string) {
+function fileContent(result: Awaited<ReturnType<typeof generate>>, filePath: string) {
   const file = result.files.find((candidate) => candidate.path === filePath);
   if (!file) throw new Error(`${filePath} was not generated`);
   return file.content;
 }
 
 describe('ConnectionPointGenerator', () => {
-  it('builds one router map per workspace from every module, in module order', () => {
-    const result = generate(
+  it('builds one router map per workspace from every module, in module order', async () => {
+    const result = await generate(
       createManifest(ALPHA, {
         contributions: [
           {
@@ -63,7 +70,7 @@ describe('ConnectionPointGenerator', () => {
     );
   });
 
-  it('rejects two routers under the same key', () => {
+  it('rejects two routers under the same key', async () => {
     const router = {
       kind: CONNECTION_POINT_KINDS.ROUTER,
       workspace: 'apps/server',
@@ -71,14 +78,14 @@ describe('ConnectionPointGenerator', () => {
       router: { name: 'userRouter', from: '@~/a' },
     } as const;
 
-    expect(() =>
+    await expect(
       generate(createManifest(ALPHA, { contributions: [router] }), createManifest(BETA, { contributions: [router] })),
-    ).toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
+    ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
   });
 
-  it('generates DI registrations with side-effect imports and token bindings', () => {
+  it('generates DI registrations with side-effect imports and token bindings', async () => {
     const content = fileContent(
-      generate(
+      await generate(
         createManifest(ALPHA, {
           contributions: [
             {
@@ -103,8 +110,8 @@ describe('ConnectionPointGenerator', () => {
     expect(content).toContain("  await import('@~/db/postgres.service');");
   });
 
-  it('generates an env schema and a matching .env.example per workspace', () => {
-    const result = generate(
+  it('generates an env schema and a matching .env.example per workspace', async () => {
+    const result = await generate(
       createManifest(ALPHA, {
         contributions: [
           {
@@ -131,8 +138,8 @@ describe('ConnectionPointGenerator', () => {
     expect(fileContent(result, 'apps/web/.env.example')).toContain('VITE_SERVER_URL=\n');
   });
 
-  it('builds the compose file, CI workflow and root scripts', () => {
-    const result = generate(
+  it('builds the compose file, CI workflow and root scripts', async () => {
+    const result = await generate(
       createManifest(ALPHA, {
         contributions: [
           { kind: CONNECTION_POINT_KINDS.CI_STEP, name: 'Verify', run: 'pnpm run verify --tests' },
@@ -172,8 +179,8 @@ describe('ConnectionPointGenerator', () => {
     });
   });
 
-  it('generates nothing but a recursive build script when no module contributes', () => {
-    const result = generate(createManifest(ALPHA));
+  it('generates nothing but a recursive build script when no module contributes', async () => {
+    const result = await generate(createManifest(ALPHA));
 
     expect(result.files).toEqual([]);
     expect(result.rootPackageJson.scripts).toEqual({ build: 'pnpm --recursive run build' });

@@ -18,7 +18,9 @@ const alphaModule: iModuleManifestInput = createManifest(ALPHA, {
   files: [{ source: 'scripts/clean.ts', target: 'apps/api/src/clean.ts' }],
   packageJson: [{ workspace: 'apps/api', fields: { name: '@startername/api' }, scripts: { dev: 'node src/clean.ts' } }],
   pnpmWorkspace: { packages: ['apps/*'] },
-  markdown: [{ document: MARKDOWN_DOCUMENTS.README, source: 'packages/create-tsukuri/fragments/base/readme.md' }],
+  markdown: [
+    { document: MARKDOWN_DOCUMENTS.README, source: 'packages/create-tsukuri/templates/fragments/base/readme.md.hbs' },
+  ],
   contributions: [
     {
       kind: CONNECTION_POINT_KINDS.ROUTER,

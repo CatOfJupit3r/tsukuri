@@ -1,11 +1,10 @@
+import { templatePath } from '@~/constants/template-path';
 import { CONNECTION_POINT_KINDS } from '@~/enums/connection-point-kinds.enums';
 import { MARKDOWN_DOCUMENTS } from '@~/enums/markdown-documents.enums';
 import { MODULE_CATEGORIES } from '@~/enums/module-categories.enums';
 import { MODULE_IDS } from '@~/enums/module-ids.enums';
 import { SKILL_IDS } from '@~/enums/skill-ids.enums';
 import { defineModule } from '@~/manifest/define-module';
-
-import { fragmentPath } from './fragment-path';
 
 const LINT_CONFIG_DEPENDENCIES = {
   '@eslint/compat': '^2.1.0',
@@ -210,8 +209,8 @@ export const baseModule = defineModule({
   },
   skills: [SKILL_IDS.REVIEW_CODE],
   markdown: [
-    { document: MARKDOWN_DOCUMENTS.AGENTS, source: fragmentPath('base/agents.md') },
-    { document: MARKDOWN_DOCUMENTS.README, source: fragmentPath('base/readme.md') },
+    { document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/base/agents.md.hbs') },
+    { document: MARKDOWN_DOCUMENTS.README, source: templatePath('fragments/base/readme.md.hbs') },
   ],
   contributions: [
     {

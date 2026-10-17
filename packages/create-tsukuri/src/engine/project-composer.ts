@@ -13,6 +13,7 @@ import { COMPOSED_FILE_NAME, ModuleSourceReader } from './module-source-reader';
 import { PackageJsonMerger } from './package-json-merger';
 import { PnpmWorkspaceMerger } from './pnpm-workspace-merger';
 import { applyProjectName } from './project-identity';
+import type { iTemplateContext } from './template-renderer';
 import { VirtualProject } from './virtual-project';
 
 export interface iComposeOptions {
@@ -53,7 +54,12 @@ export class ProjectComposer {
     const project = new VirtualProject();
     const rename = (content: string) => applyProjectName(content, record.projectName);
     const excludedSkills = new Set(record.skills.excluded);
-    const connectionPoints = this.connectionPointGenerator.generate(modules);
+    const context: iTemplateContext = {
+      installedModules: modules.map((manifest) => manifest.id),
+      projectName: record.projectName,
+      skills: [...new Set(modules.flatMap((manifest) => manifest.skills))].filter((id) => !excludedSkills.has(id)),
+    };
+    const connectionPoints = await this.connectionPointGenerator.generate(modules, context);
 
     const packageJsons = this.packageJsonMerger.merge([
       ...modules.flatMap((manifest) =>
@@ -101,7 +107,7 @@ export class ProjectComposer {
     this.pnpmWorkspaceMerger.assertCatalogCoverage(pnpmWorkspace, packageJsons);
     project.write(PNPM_WORKSPACE_FILE, rename(this.pnpmWorkspaceMerger.serialize(pnpmWorkspace)), 'pnpm workspace');
 
-    for (const document of await this.markdownRenderer.render(modules)) {
+    for (const document of await this.markdownRenderer.render(modules, context)) {
       project.write(document.path, rename(document.content), 'markdown rendering');
     }
 

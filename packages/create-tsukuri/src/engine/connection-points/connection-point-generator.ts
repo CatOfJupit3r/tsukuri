@@ -2,6 +2,7 @@ import path from 'node:path';
 import { injectable } from 'tsyringe';
 import { stringify } from 'yaml';
 
+import { templatePath } from '@~/constants/template-path';
 import { CONNECTION_POINT_KINDS } from '@~/enums/connection-point-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
 import type { ModuleId } from '@~/enums/module-ids.enums';
@@ -17,7 +18,9 @@ import type { iModuleManifest, iPackageJsonContribution } from '@~/manifest/modu
 import { packageJsonContributionSchema } from '@~/manifest/module-manifest.schema';
 
 import { GeneratorError } from '../generator-error';
-import { GENERATED_SOURCE_DIR, withCodeHeader, withHashHeader } from './generated-header';
+import type { iTemplateContext } from '../template-renderer';
+import { TemplateRenderer } from '../template-renderer';
+import { GENERATED_HEADER, GENERATED_SOURCE_DIR, withHashHeader } from './generated-header';
 
 export interface iGeneratedFile {
   path: string;
@@ -58,16 +61,23 @@ function generatedSourceFile(workspace: string, fileName: string) {
   return path.posix.join(workspace, GENERATED_SOURCE_DIR, fileName);
 }
 
-/** Groups `import { a, b } from 'x'` per specifier, in first-seen order. */
-function renderNamedImports(imports: { name: string; from: string }[]) {
+/** Groups named imports per specifier, in first-seen order: `{ names: 'a, b', from: 'x' }`. */
+function groupNamedImports(imports: { name: string; from: string }[]) {
   const bySpecifier = new Map<string, string[]>();
   for (const { name, from } of imports) {
     const names = bySpecifier.get(from) ?? [];
     if (!names.includes(name)) names.push(name);
     bySpecifier.set(from, names);
   }
-  return [...bySpecifier].map(([from, names]) => `import { ${names.join(', ')} } from '${from}';`).join('\n');
+  return [...bySpecifier].map(([from, names]) => ({ names: names.join(', '), from }));
 }
+
+const TEMPLATES = {
+  routers: templatePath('connection-points/routers.ts.hbs'),
+  diRegistrations: templatePath('connection-points/di-registrations.ts.hbs'),
+  envSchema: templatePath('connection-points/env.schema.ts.hbs'),
+  envExample: templatePath('connection-points/env.example.hbs'),
+} satisfies Record<string, string>;
 
 function assertUnique(values: string[], describe: (value: string) => string) {
   const seen = new Set<string>();
@@ -84,7 +94,10 @@ function assertUnique(values: string[], describe: (value: string) => string) {
  */
 @injectable()
 export class ConnectionPointGenerator {
-  public generate(modules: iModuleManifest[]): iGeneratedConnectionPoints {
+  constructor(private readonly templates: TemplateRenderer) {}
+
+  public async generate(modules: iModuleManifest[], context: iTemplateContext): Promise<iGeneratedConnectionPoints> {
+    const templateContext = { ...context, header: GENERATED_HEADER };
     const contributions = modules.flatMap((manifest) =>
       manifest.contributions.map((contribution) => ({ moduleId: manifest.id, contribution })),
     );
@@ -92,9 +105,12 @@ export class ConnectionPointGenerator {
       contributions.filter((item): item is iOwned<T> => item.contribution.kind === kind);
 
     const files = [
-      ...this.renderRouters(ofKind<iRouterContribution>(CONNECTION_POINT_KINDS.ROUTER)),
-      ...this.renderDiRegistrations(ofKind<iDiRegistrationContribution>(CONNECTION_POINT_KINDS.DI_REGISTRATION)),
-      ...this.renderEnv(ofKind<iEnvVariableContribution>(CONNECTION_POINT_KINDS.ENV_VARIABLE)),
+      ...(await this.renderRouters(ofKind<iRouterContribution>(CONNECTION_POINT_KINDS.ROUTER), templateContext)),
+      ...(await this.renderDiRegistrations(
+        ofKind<iDiRegistrationContribution>(CONNECTION_POINT_KINDS.DI_REGISTRATION),
+        templateContext,
+      )),
+      ...(await this.renderEnv(ofKind<iEnvVariableContribution>(CONNECTION_POINT_KINDS.ENV_VARIABLE), templateContext)),
       ...this.renderCompose(ofKind<iComposeServiceContribution>(CONNECTION_POINT_KINDS.COMPOSE_SERVICE)),
       ...this.renderCi(ofKind<iCiStepContribution>(CONNECTION_POINT_KINDS.CI_STEP)),
     ];
@@ -102,72 +118,65 @@ export class ConnectionPointGenerator {
     return { files, rootPackageJson: this.renderRootScripts(contributions, files) };
   }
 
-  private renderRouters(items: iOwned<iRouterContribution>[]) {
-    return [...groupByWorkspace(items)].map(([workspace, routers]) => {
+  private async renderRouters(items: iOwned<iRouterContribution>[], context: iTemplateContext) {
+    const files: iGeneratedFile[] = [];
+    for (const [workspace, routers] of groupByWorkspace(items)) {
       assertUnique(
         routers.map(({ contribution }) => contribution.key),
         (key) => `${workspace}: more than one module adds a router under "${key}"`,
       );
 
-      const imports = renderNamedImports(routers.map(({ contribution }) => contribution.router));
-      const entries = routers.map(({ contribution }) => `  ${contribution.key}: ${contribution.router.name},`);
-      return {
+      const contributions = routers.map(({ contribution }) => contribution);
+      files.push({
         path: generatedSourceFile(workspace, 'routers.ts'),
-        content: withCodeHeader(`${imports}\n\nexport const generatedRouters = {\n${entries.join('\n')}\n};\n`),
-      };
-    });
+        content: await this.templates.render(TEMPLATES.routers, {
+          ...context,
+          imports: groupNamedImports(contributions.map((contribution) => contribution.router)),
+          routers: contributions,
+        }),
+      });
+    }
+    return files;
   }
 
-  private renderDiRegistrations(items: iOwned<iDiRegistrationContribution>[]) {
-    return [...groupByWorkspace(items)].map(([workspace, registrations]) => {
-      const sideEffects = [...new Set(registrations.flatMap(({ contribution }) => contribution.imports))];
+  private async renderDiRegistrations(items: iOwned<iDiRegistrationContribution>[], context: iTemplateContext) {
+    const files: iGeneratedFile[] = [];
+    for (const [workspace, registrations] of groupByWorkspace(items)) {
       const bindings = registrations.flatMap(({ contribution }) => contribution.bindings);
-      const imports = renderNamedImports(bindings.flatMap((binding) => [binding.token, binding.implementation]));
-
-      const body = [
-        "import type { DependencyContainer, InjectionToken } from 'tsyringe';",
-        ...(imports ? ['', imports] : []),
-        '',
-        'const GENERATED_BINDINGS: [InjectionToken<unknown>, InjectionToken<unknown>][] = [',
-        ...bindings.map((binding) => `  [${binding.token.name}, ${binding.implementation.name}],`),
-        '];',
-        '',
-        '/** Loads every module-provided service and binds module-provided implementations to their tokens. */',
-        'export async function registerGeneratedServices(container: DependencyContainer) {',
-        ...sideEffects.map((specifier) => `  await import('${specifier}');`),
-        '  for (const [token, implementation] of GENERATED_BINDINGS) {',
-        '    container.registerSingleton(token, implementation);',
-        '  }',
-        '}',
-        '',
-      ];
-
-      return { path: generatedSourceFile(workspace, 'di-registrations.ts'), content: withCodeHeader(body.join('\n')) };
-    });
+      files.push({
+        path: generatedSourceFile(workspace, 'di-registrations.ts'),
+        content: await this.templates.render(TEMPLATES.diRegistrations, {
+          ...context,
+          imports: groupNamedImports(bindings.flatMap((binding) => [binding.token, binding.implementation])),
+          bindings,
+          sideEffects: [...new Set(registrations.flatMap(({ contribution }) => contribution.imports))],
+        }),
+      });
+    }
+    return files;
   }
 
-  private renderEnv(items: iOwned<iEnvVariableContribution>[]) {
-    return [...groupByWorkspace(items)].flatMap(([workspace, variables]) => {
+  private async renderEnv(items: iOwned<iEnvVariableContribution>[], context: iTemplateContext) {
+    const files: iGeneratedFile[] = [];
+    for (const [workspace, owned] of groupByWorkspace(items)) {
       assertUnique(
-        variables.map(({ contribution }) => contribution.name),
+        owned.map(({ contribution }) => contribution.name),
         (name) => `${workspace}: more than one module declares env variable "${name}"`,
       );
 
-      const shape = variables.map(({ contribution }) => `  ${contribution.name}: ${contribution.schema},`);
-      const example = variables.map(({ contribution }) => `${contribution.name}=${contribution.example}`);
-      return [
+      const variables = owned.map(({ contribution }) => contribution);
+      files.push(
         {
           path: generatedSourceFile(workspace, 'env.schema.ts'),
-          content: withCodeHeader(
-            `import z from 'zod';\n\nexport const generatedEnvShape = {\n${shape.join('\n')}\n};\n`,
-          ),
+          content: await this.templates.render(TEMPLATES.envSchema, { ...context, variables }),
         },
         {
           path: path.posix.join(workspace, ENV_EXAMPLE_FILE),
-          content: withHashHeader(`${example.join('\n')}\n`),
+          content: await this.templates.render(TEMPLATES.envExample, { ...context, variables }),
         },
-      ];
-    });
+      );
+    }
+    return files;
   }
 
   private renderCompose(items: iOwned<iComposeServiceContribution>[]) {

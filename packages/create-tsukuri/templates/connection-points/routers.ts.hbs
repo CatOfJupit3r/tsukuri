@@ -1,0 +1,11 @@
+// {{header}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+
+export const generatedRouters = {
+{{#each routers}}
+  {{key}}: {{router.name}},
+{{/each}}
+};
