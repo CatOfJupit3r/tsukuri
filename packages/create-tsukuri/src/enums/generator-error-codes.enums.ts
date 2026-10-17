@@ -18,6 +18,8 @@ const generatorErrorCodesEnumwaii = em([
   'TEMPLATE_ERROR',
   'INVALID_ARGUMENTS',
   'CANCELLED',
+  'PROJECT_RECORD_NOT_FOUND',
+  'INVALID_PROJECT_RECORD',
 ]);
 
 export const GENERATOR_ERROR_CODES = generatorErrorCodesEnumwaii.enum;

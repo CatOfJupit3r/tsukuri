@@ -5,6 +5,7 @@ import { COMMAND_RUNNER_TOKEN } from './command-runner';
 import type { iCommandRunner } from './command-runner';
 import { CreateCommand } from './create-command';
 import { CWD_TOKEN } from './cwd';
+import { ModifyCommand } from './modify-command';
 import { PROMPTER_TOKEN } from './prompter';
 import type { iPrompter } from './prompter';
 import { SelectionPlanner } from './selection-planner';
@@ -23,5 +24,6 @@ export function createCliContainer({ cwd, prompter, runner, ...generatorOptions 
   child.register(COMMAND_RUNNER_TOKEN, { useValue: runner });
   child.registerSingleton(SelectionPlanner);
   child.registerSingleton(CreateCommand);
+  child.registerSingleton(ModifyCommand);
   return child;
 }

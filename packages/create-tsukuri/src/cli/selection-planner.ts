@@ -4,7 +4,6 @@ import { GeneratorError } from '@~/engine/generator-error';
 import { ModuleRegistry } from '@~/engine/module-registry';
 import { ModuleResolver } from '@~/engine/module-resolver';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { GeneratorErrorCode } from '@~/enums/generator-error-codes.enums';
 import type { ModuleId } from '@~/enums/module-ids.enums';
 import type { PromptId } from '@~/enums/prompt-ids.enums';
 import { PROMPT_META } from '@~/enums/prompt-ids.enums';
@@ -17,11 +16,6 @@ export interface iPromptChoices {
   /** Modules of the prompt's category that earlier answers already pulled in. */
   locked: iModuleManifest[];
 }
-
-const INCOMPATIBLE_CODES = new Set<GeneratorErrorCode>([
-  GENERATOR_ERROR_CODES.MODULE_CONFLICT,
-  GENERATOR_ERROR_CODES.CAPABILITY_CONFLICT,
-]);
 
 @injectable()
 export class SelectionPlanner {
@@ -40,7 +34,9 @@ export class SelectionPlanner {
 
     return {
       locked: inCategory.filter((manifest) => included.has(manifest.id)),
-      options: inCategory.filter((manifest) => !included.has(manifest.id) && this.isCompatible(selected, manifest.id)),
+      options: inCategory.filter(
+        (manifest) => !included.has(manifest.id) && this.resolver.isCompatible(selected, manifest.id),
+      ),
     };
   }
 
@@ -62,15 +58,5 @@ export class SelectionPlanner {
   /** Skills shipped by the resolved modules, in module order. */
   public applicableSkills(modules: readonly iModuleManifest[]): SkillId[] {
     return [...new Set(modules.flatMap((manifest) => manifest.skills))];
-  }
-
-  private isCompatible(selected: readonly ModuleId[], candidate: ModuleId) {
-    try {
-      this.resolver.resolve([...selected, candidate], { shouldRequireCapabilities: false });
-      return true;
-    } catch (error) {
-      if (error instanceof GeneratorError && INCOMPATIBLE_CODES.has(error.code)) return false;
-      throw error;
-    }
   }
 }

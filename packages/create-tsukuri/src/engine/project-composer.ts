@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { injectable } from 'tsyringe';
 
+import { FILE_KINDS } from '@~/enums/file-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
 import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
 import type { iProjectRecord } from '@~/record/project-record.schema';
@@ -77,27 +78,33 @@ export class ProjectComposer {
           }
 
           const content = await this.reader.read(file.sourcePath);
-          project.write(file.targetPath, isBinary(content) ? content : rename(content.toString('utf8')), manifest.id);
+          project.write(file.targetPath, isBinary(content) ? content : rename(content.toString('utf8')), {
+            kind: FILE_KINDS.MODULE_FILE,
+            moduleId: manifest.id,
+          });
         }
       }
 
       for (const skill of new Set(manifest.skills.filter((id) => !excludedSkills.has(id)))) {
         for (const file of await this.reader.listEntry({ source: `${SKILLS_DIR}/${skill}`, exclude: [] })) {
           if (project.has(file.targetPath)) continue;
-          project.write(file.targetPath, rename(await this.reader.readText(file.sourcePath)), manifest.id);
+          project.write(file.targetPath, rename(await this.reader.readText(file.sourcePath)), {
+            kind: FILE_KINDS.SKILL,
+            moduleId: manifest.id,
+          });
         }
       }
     }
 
     for (const file of connectionPoints.files) {
-      project.write(file.path, rename(file.content), 'connection points');
+      project.write(file.path, rename(file.content), { kind: FILE_KINDS.CONNECTION_POINT });
     }
 
     for (const [workspace, packageJson] of packageJsons) {
       project.write(
         workspaceFile(workspace, COMPOSED_FILE_NAME),
         rename(this.packageJsonMerger.serialize(packageJson)),
-        'package.json composition',
+        { kind: FILE_KINDS.PACKAGE_JSON },
       );
     }
 
@@ -105,13 +112,15 @@ export class ProjectComposer {
       modules.map((manifest) => ({ moduleId: manifest.id, contribution: manifest.pnpmWorkspace })),
     );
     this.pnpmWorkspaceMerger.assertCatalogCoverage(pnpmWorkspace, packageJsons);
-    project.write(PNPM_WORKSPACE_FILE, rename(this.pnpmWorkspaceMerger.serialize(pnpmWorkspace)), 'pnpm workspace');
+    project.write(PNPM_WORKSPACE_FILE, rename(this.pnpmWorkspaceMerger.serialize(pnpmWorkspace)), {
+      kind: FILE_KINDS.PNPM_WORKSPACE,
+    });
 
     for (const document of await this.markdownRenderer.render(modules, context, record.markdown)) {
-      project.write(document.path, rename(document.content), 'markdown rendering');
+      project.write(document.path, rename(document.content), { kind: FILE_KINDS.MARKDOWN });
     }
 
-    project.write(PROJECT_RECORD_FILE, `${JSON.stringify(record, null, 2)}\n`, 'module record');
+    project.write(PROJECT_RECORD_FILE, `${JSON.stringify(record, null, 2)}\n`, { kind: FILE_KINDS.MODULE_RECORD });
 
     return project;
   }

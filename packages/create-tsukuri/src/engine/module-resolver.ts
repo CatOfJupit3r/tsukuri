@@ -3,6 +3,7 @@ import { injectable } from 'tsyringe';
 import type { Capability } from '@~/enums/capabilities.enums';
 import { CAPABILITY_META } from '@~/enums/capabilities.enums';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import type { GeneratorErrorCode } from '@~/enums/generator-error-codes.enums';
 import { MODULE_CATEGORY_ORDER } from '@~/enums/module-categories.enums';
 import type { ModuleId } from '@~/enums/module-ids.enums';
 import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
@@ -16,6 +17,11 @@ export interface iResolvedModules {
   /** Modules that were not selected but are installed because something requires them. */
   addedIds: ModuleId[];
 }
+
+const INCOMPATIBLE_CODES = new Set<GeneratorErrorCode>([
+  GENERATOR_ERROR_CODES.MODULE_CONFLICT,
+  GENERATOR_ERROR_CODES.CAPABILITY_CONFLICT,
+]);
 
 function compareModules(left: iModuleManifest, right: iModuleManifest) {
   const byCategory = MODULE_CATEGORY_ORDER.get(left.category) - MODULE_CATEGORY_ORDER.get(right.category);
@@ -64,6 +70,17 @@ export class ModuleResolver {
         .filter((manifest) => !selectedSet.has(manifest.id) && !manifest.isAlwaysIncluded)
         .map((manifest) => manifest.id),
     };
+  }
+
+  /** Whether `candidate` can join `selected` without a conflict (unmet capabilities are fine). */
+  public isCompatible(selected: readonly ModuleId[], candidate: ModuleId) {
+    try {
+      this.resolve([...selected, candidate], { shouldRequireCapabilities: false });
+      return true;
+    } catch (error) {
+      if (error instanceof GeneratorError && INCOMPATIBLE_CODES.has(error.code)) return false;
+      throw error;
+    }
   }
 
   private assertNoConflicts(modules: iModuleManifest[]) {

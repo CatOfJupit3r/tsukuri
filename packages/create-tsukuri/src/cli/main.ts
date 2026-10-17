@@ -3,11 +3,13 @@ import 'reflect-metadata';
 
 import { GeneratorError } from '@~/engine/generator-error';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import { modifyActionsEnumwaii } from '@~/enums/modify-actions.enums';
 
 import { ClackPrompter } from './clack-prompter';
 import { createCliContainer } from './cli-container';
 import { NodeCommandRunner } from './command-runner';
 import { CreateCommand } from './create-command';
+import { ModifyCommand } from './modify-command';
 
 /** Module sources of a local checkout: the repository root. */
 const LOCAL_SOURCE_ROOT = path.resolve(import.meta.dirname, '../../../..');
@@ -28,7 +30,10 @@ async function main() {
   });
 
   try {
-    await container.resolve(CreateCommand).run(argv[0] === CREATE_SUBCOMMAND ? argv.slice(1) : argv);
+    const [subcommand, ...rest] = argv;
+    const modifyAction = modifyActionsEnumwaii.safeParse(subcommand);
+    if (modifyAction.success) await container.resolve(ModifyCommand).run(modifyAction.value, rest);
+    else await container.resolve(CreateCommand).run(subcommand === CREATE_SUBCOMMAND ? rest : argv);
   } catch (error) {
     if (error instanceof GeneratorError) {
       prompter.error(error.message);

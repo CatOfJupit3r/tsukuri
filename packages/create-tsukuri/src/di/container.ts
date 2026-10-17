@@ -13,10 +13,13 @@ import { PnpmWorkspaceMerger } from '@~/engine/pnpm-workspace-merger';
 import { ProjectComposer } from '@~/engine/project-composer';
 import { ProjectGenerator } from '@~/engine/project-generator';
 import { ProjectTargetGuard } from '@~/engine/project-target-guard';
+import { ProjectUpdater } from '@~/engine/project-updater';
 import { ProjectWriter } from '@~/engine/project-writer';
 import { TemplateRenderer } from '@~/engine/template-renderer';
 import type { iModuleManifestInput } from '@~/manifest/module-manifest.schema';
 import { MODULE_MANIFESTS } from '@~/modules/module-manifests';
+import { ProjectRecordEditor } from '@~/record/project-record-editor';
+import { ProjectRecordStore } from '@~/record/project-record-store';
 
 import { MODULE_MANIFESTS_TOKEN, SOURCE_ROOT_TOKEN } from './tokens';
 
@@ -40,6 +43,9 @@ const SERVICES: constructor<object>[] = [
   ProjectWriter,
   ProjectTargetGuard,
   ProjectGenerator,
+  ProjectUpdater,
+  ProjectRecordStore,
+  ProjectRecordEditor,
 ];
 
 /** One container per run: services are singletons inside it, never shared across runs or tests. */

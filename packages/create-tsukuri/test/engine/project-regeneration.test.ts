@@ -88,7 +88,7 @@ describe('regenerating from the module record', () => {
     );
 
     // Files that belong to an already installed module are never touched.
-    const touchedBaseFiles = changed.filter(([, file]) => file.owner === baseModule.id);
+    const touchedBaseFiles = changed.filter(([, file]) => file.moduleId === baseModule.id);
     expect(touchedBaseFiles.map(([filePath]) => filePath)).toEqual([]);
   });
 
