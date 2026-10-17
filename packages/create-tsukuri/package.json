@@ -1,0 +1,35 @@
+{
+  "name": "create-tsukuri",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Module-based project generator for tsukuri monorepos",
+  "scripts": {
+    "check-types": "tsgo --noEmit",
+    "lint": "eslint . --fix",
+    "prettify": "prettier --write ./src/ ./test/",
+    "test": "vitest run",
+    "test:install": "vitest run --config vitest.install.config.ts"
+  },
+  "prettier": "@startername/prettier-config",
+  "dependencies": {
+    "enumwaii": "1.2.0",
+    "reflect-metadata": "0.2.2",
+    "tsyringe": "4.10.0",
+    "yaml": "2.9.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@startername/eslint-config": "workspace:*",
+    "@startername/prettier-config": "workspace:*",
+    "@swc-node/register": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  }
+}

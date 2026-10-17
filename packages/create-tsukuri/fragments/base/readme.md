@@ -1,0 +1,32 @@
+# startername
+
+## Prerequisites
+
+- Node.js **exactly** v24 (use nvm or similar)
+- pnpm 11.5.0 (`corepack enable`)
+
+## Getting Started
+
+```bash
+pnpm install
+pnpm run verify
+```
+
+## Agentic Tooling
+
+`AGENTS.md` (mirrored to `CLAUDE.md`) is the always-on guide for coding agents. Task-specific skills live in `.agents/skills/*/SKILL.md`, and `.claude/settings.json` configures default tool permissions for Claude Code.
+
+## Workspace Commands
+
+- `pnpm run verify` – type check and lint everything (add `--tests` to run tests)
+- `pnpm run check-types` – TypeScript checks across the workspace
+- `pnpm run lint` – ESLint across the monorepo
+- `pnpm run prettify` – format workspace source files
+- `pnpm run test` – run all tests with Vitest
+- `pnpm run prepare` – reinstall Husky hooks if they go missing
+
+## Pre-commit Hooks & Troubleshooting
+
+- Husky runs `pnpm exec lint-staged` on commit to format, lint, and type-check staged files.
+- Stage changes and run `pnpm commit` for conventional commits.
+- Re-run failed checks locally with `pnpm exec lint-staged --no-stash`.
