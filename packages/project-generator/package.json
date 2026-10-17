@@ -1,0 +1,30 @@
+{
+  "name": "@startername/project-generator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/cli.ts",
+    "check-types": "tsgo --noEmit",
+    "lint": "eslint . --fix",
+    "prettify": "prettier --write ./src/ ./test/",
+    "test": "vitest run"
+  },
+  "prettier": "@startername/prettier-config",
+  "dependencies": {
+    "@clack/prompts": "^1.4.0",
+    "@startername/enumwaii": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@startername/eslint-config": "workspace:*",
+    "@startername/prettier-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

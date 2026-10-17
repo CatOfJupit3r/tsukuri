@@ -1,0 +1,34 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview --host",
+    "check-types": "tsgo --noEmit",
+    "lint": "eslint . --fix",
+    "prettify": "prettier --write ./src/"
+  },
+  "prettier": "@startername/prettier-config",
+  "dependencies": {
+    "@tanstack/react-router": "1.170.17",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@startername/eslint-config": "workspace:*",
+    "@startername/prettier-config": "workspace:*",
+    "@tanstack/router-plugin": "1.168.19",
+    "@types/node": "catalog:",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@typescript/native-preview": "catalog:",
+    "@vitejs/plugin-react": "6.0.3",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}
