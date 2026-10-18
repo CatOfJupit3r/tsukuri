@@ -1,6 +1,10 @@
 name: Release
 
+# Every push to main runs changesets: while changesets are pending it opens or updates the
+# "Version Packages" PR; merging that PR (no changesets left) publishes the new versions.
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -12,7 +16,6 @@ permissions:
 
 jobs:
   release:
-    if: github.ref == 'refs/heads/main'
     environment: npm-release
     permissions:
       contents: write
@@ -38,7 +41,6 @@ jobs:
       - name: Verify (check-types, oxlint, eslint, tests)
         run: pnpm run verify --tests --filter create-tsukuri
 
-      # Opens or updates the "Version Packages" PR while changesets are pending; publishes once it is merged.
       # `pnpm publish` runs the package's prepack, which builds the CLI and bundles the module sources.
       - uses: changesets/action@v1
         with:
