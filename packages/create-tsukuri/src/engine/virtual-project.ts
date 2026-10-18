@@ -35,10 +35,10 @@ export class VirtualProject {
   }
 
   public paths() {
-    return [...this.files.keys()].sort();
+    return [...this.files.keys()].toSorted();
   }
 
   public entries() {
-    return [...this.files.entries()].sort(([left], [right]) => left.localeCompare(right));
+    return [...this.files.entries()].toSorted(([left], [right]) => left.localeCompare(right));
   }
 }

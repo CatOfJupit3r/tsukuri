@@ -31,8 +31,8 @@
     "build": "tsdown",
     "check-types": "tsc --noEmit",
     "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
-    "lint:oxlint": "oxlint",
-    "lint:eslint": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/",
+    "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
+    "lint:eslint": "eslint . --fix",
     "prettify": "prettier --write ./src/",
     "test": "echo 'No tests for common library yet'"
   },
@@ -44,6 +44,7 @@
     "@typescript/native-preview": "catalog:",
     "eslint": "catalog:",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "prettier": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"

@@ -3,12 +3,20 @@ import { defineConfig } from 'vitest/config';
 import type { ViteUserConfig } from 'vitest/config';
 
 import { createSwcPlugin } from '@startername/swc-config/vitest';
+import { MODULE_CACHE_TEST_OPTIONS, moduleCacheKeyPlugin } from '@startername/vitest-config/module-cache';
 
 type iTestOptions = NonNullable<ViteUserConfig['test']>;
 
 export function createVitestConfig(test: Pick<iTestOptions, 'include' | 'exclude' | 'testTimeout'>) {
   return defineConfig({
-    plugins: [createSwcPlugin()],
+    plugins: [
+      createSwcPlugin(),
+      moduleCacheKeyPlugin({
+        rootDirectory: __dirname,
+        configFilePaths: [path.resolve(__dirname, 'tsconfig.json')],
+        transformerPackageNames: ['@swc/core', 'unplugin-swc'],
+      }),
+    ],
     resolve: {
       alias: {
         '@~': path.resolve(__dirname, './src'),
@@ -16,6 +24,7 @@ export function createVitestConfig(test: Pick<iTestOptions, 'include' | 'exclude
     },
     cacheDir: 'node_modules/.vitest',
     test: {
+      experimental: MODULE_CACHE_TEST_OPTIONS,
       globals: true,
       environment: 'node',
       setupFiles: ['reflect-metadata'],

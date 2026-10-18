@@ -48,7 +48,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 function sortKeys<T>(record: Record<string, T>) {
-  return Object.fromEntries(Object.entries(record).sort(([left], [right]) => left.localeCompare(right)));
+  return Object.fromEntries(Object.entries(record).toSorted(([left], [right]) => left.localeCompare(right)));
 }
 
 @injectable()
@@ -70,7 +70,7 @@ export class PackageJsonMerger {
 
   public serialize(packageJson: iPackageJson) {
     const ordered: iPackageJson = {};
-    const keys = Object.keys(packageJson).sort((left, right) => {
+    const keys = Object.keys(packageJson).toSorted((left, right) => {
       const leftIndex = KEY_ORDER.indexOf(left);
       const rightIndex = KEY_ORDER.indexOf(right);
       if (leftIndex !== -1 && rightIndex !== -1) return leftIndex - rightIndex;

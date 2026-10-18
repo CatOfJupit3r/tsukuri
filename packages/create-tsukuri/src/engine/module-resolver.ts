@@ -133,7 +133,7 @@ export class ModuleResolver {
         .filter((manifest) =>
           [...(dependencies.get(manifest.id) ?? [])].every((dependency) => !remaining.has(dependency)),
         )
-        .sort(compareModules);
+        .toSorted(compareModules);
 
       const next = ready[0];
       if (!next) {

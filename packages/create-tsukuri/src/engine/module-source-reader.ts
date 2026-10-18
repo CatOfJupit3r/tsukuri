@@ -61,7 +61,7 @@ export class ModuleSourceReader {
       .filter((dirent) => dirent.isFile())
       .map((dirent) => toPosix(path.relative(absolute, path.join(dirent.parentPath, dirent.name))))
       .filter((relative) => !isIgnored(relative) && !isExcluded(relative, entry.exclude))
-      .sort()
+      .toSorted()
       .map((relative) => ({
         sourcePath: `${entry.source}/${relative}`,
         targetPath: `${target}/${relative}`,

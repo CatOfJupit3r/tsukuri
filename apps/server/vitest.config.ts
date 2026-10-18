@@ -2,6 +2,7 @@ import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 import { createSwcPlugin } from '@startername/swc-config/vitest';
+import { MODULE_CACHE_TEST_OPTIONS, moduleCacheKeyPlugin } from '@startername/vitest-config/module-cache';
 import { withWorkspaceSourceResolve } from '@startername/workspace-source/vite';
 
 const alias = {
@@ -9,6 +10,7 @@ const alias = {
 };
 
 const commonTestConfig = {
+  experimental: MODULE_CACHE_TEST_OPTIONS,
   globals: true,
   environment: 'node',
   clearMocks: true,
@@ -36,7 +38,14 @@ const commonTestConfig = {
 };
 
 const baseProjectConfig = {
-  plugins: [createSwcPlugin()],
+  plugins: [
+    createSwcPlugin(),
+    moduleCacheKeyPlugin({
+      rootDirectory: __dirname,
+      configFilePaths: [path.resolve(__dirname, 'tsconfig.json')],
+      transformerPackageNames: ['@swc/core', 'unplugin-swc'],
+    }),
+  ],
   ...withWorkspaceSourceResolve(alias),
   cacheDir: 'node_modules/.vitest',
 };

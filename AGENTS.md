@@ -169,7 +169,7 @@ apps/<workspace>/test/
 - `pnpm run dev` boots the local stack.
 - `pnpm run build` builds the monorepo.
 - `pnpm run check-types` runs TypeScript checks across the workspace.
-- `pnpm run lint` runs oxlint, then ESLint (cached), across the workspace. Shared configs live in `configs/lint-config` (`@startername/lint-config/oxlint`, `@startername/lint-config/eslint`).
+- `pnpm run lint` runs one oxlint pass over every workspace, then ESLint for the rules oxlint cannot run. Each workspace's `oxlint.config.mjs` is translated from its ESLint config, so `eslint.config.mjs` stays the single rule set. Shared configs live in `configs/lint-config` (`@startername/lint-config/eslint`, `@startername/lint-config/oxlint-workspaces`).
 - `pnpm run prettify` formats the workspace.
 - `pnpm run test` runs the test suite across the workspace.
 - `pnpm run db:generate` generates a Drizzle migration from the current schema (root alias for the `server` package script).

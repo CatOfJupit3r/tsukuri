@@ -1,0 +1,16 @@
+{
+  "name": "@startername/vitest-config",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Shared Vitest module cache settings",
+  "exports": {
+    "./module-cache": {
+      "types": "./src/module-cache.d.mts",
+      "default": "./src/module-cache.mjs"
+    }
+  },
+  "peerDependencies": {
+    "vitest": "catalog:"
+  }
+}

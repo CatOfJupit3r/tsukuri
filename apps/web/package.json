@@ -9,8 +9,8 @@
     "serve": "vite preview --host",
     "check-types": "tsgo --noEmit",
     "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
-    "lint:oxlint": "oxlint",
-    "lint:eslint": "eslint . --fix --cache --cache-location node_modules/.cache/eslint/",
+    "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
+    "lint:eslint": "eslint . --fix",
     "prettify": "prettier --write ./src/",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -63,6 +63,7 @@
   "devDependencies": {
     "@startername/lint-config": "workspace:*",
     "@startername/prettier-config": "workspace:*",
+    "@startername/vitest-config": "workspace:*",
     "@startername/workspace-source": "workspace:*",
     "@tanstack/router-plugin": "1.168.19",
     "@testing-library/jest-dom": "^6.6.3",
@@ -79,6 +80,7 @@
     "eslint": "catalog:",
     "jsdom": "^29.1.1",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "postcss": "8.5.16",
     "prettier": "catalog:",
     "tailwindcss": "4.3.2",

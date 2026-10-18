@@ -3,7 +3,7 @@ import { createFormHook, createFormHookContexts } from '@tanstack/react-form';
 import { cva } from 'class-variance-authority';
 import type { VariantProps } from 'class-variance-authority';
 import { useCallback, useMemo } from 'react';
-import type { FormEvent } from 'react';
+import type { SubmitEvent } from 'react';
 
 import { Label } from '@~/components/ui/label';
 import { Separator } from '@~/components/ui/separator';
@@ -133,6 +133,8 @@ function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
 
 function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
   return (
+    // Pass-through wrapper: callers supply `htmlFor` or the wrapped control.
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control
     <Label
       data-slot="field-label"
       className={cn(
@@ -248,7 +250,7 @@ function Form({
 }) {
   const form = useFormContext();
   const handleSubmit = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
+    (e: SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       e.stopPropagation();
       void form.handleSubmit();

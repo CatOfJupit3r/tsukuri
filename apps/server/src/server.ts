@@ -22,7 +22,7 @@ const server = serve(
   },
 );
 
-const shutdown: NodeJS.SignalsListener = (signal) => {
+const shutdown = (signal: NodeJS.Signals) => {
   console.log(`Received ${signal}, performing shutdown tasks...`);
   server.close();
   console.log('Server closed.');

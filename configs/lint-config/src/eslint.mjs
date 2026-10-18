@@ -3,8 +3,8 @@
  *
  * This module provides a factory function to create ESLint configurations
  * for different project types (backend, web) with consistent rules across
- * the monorepo. oxlint runs before ESLint, so every rule enabled in the
- * shared oxlint config is switched off here.
+ * the monorepo. Each workspace gets two configs from one rule set: oxlint
+ * runs every rule it implements, and ESLint keeps only the rest.
  */
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
@@ -12,12 +12,11 @@ import enumwaiiPlugin from 'eslint-plugin-enumwaii';
 import { configs, plugins, rules } from 'eslint-config-airbnb-extended';
 import { rules as prettierConfigRules } from 'eslint-config-prettier';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
-import oxlintPlugin from 'eslint-plugin-oxlint';
 import prettierPlugin from 'eslint-plugin-prettier';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createOxlintConfig } from './oxlint.mjs';
+import { createOxlintConfigFromEslintConfig, withoutOxlintRules } from './oxlint.mjs';
 
 /**
  * Helper function to create ignore patterns for workspace packages
@@ -129,6 +128,8 @@ const getBaseConfig = (options) => {
       ],
       // prettier plugin is responsible for formatting issues
       'import-x/order': 'off',
+      // Unlimited depth is the default in both import-x and oxlint; airbnb's "∞" string is not valid oxlint config
+      'import-x/no-cycle': 'error',
       'no-restricted-syntax': [
         'error',
         {
@@ -231,14 +232,14 @@ const getBaseConfig = (options) => {
 };
 
 /**
- * Create ESLint configuration for backend/Node.js projects
- * 
+ * Complete backend/Node.js rule set, before oxlint takes over the rules it runs
+ *
  * @param {Object} options - Configuration options
  * @param {string} options.rootDir - Root directory of the project (typically import.meta.url)
  * @param {string[]} [options.additionalIgnores] - Additional patterns to ignore
  * @returns {Array} ESLint flat config array
  */
-export const createBackendConfig = (options = {}) => {
+const buildBackendConfig = (options = {}) => {
   const { rootDir, additionalIgnores = [] } = options;
   
   const currentFilename = fileURLToPath(rootDir);
@@ -272,9 +273,24 @@ export const createBackendConfig = (options = {}) => {
     base.sharedRules,
     base.modelFileOverrides,
     nodeSpecificRules,
-    ...oxlintPlugin.buildFromOxlintConfig(createOxlintConfig()),
   ];
 };
+
+/**
+ * ESLint configuration for backend/Node.js projects, without the rules oxlint runs
+ *
+ * @param {Parameters<typeof buildBackendConfig>[0]} options
+ * @returns {Promise<Array>} ESLint flat config array
+ */
+export const createBackendConfig = (options) => withoutOxlintRules(buildBackendConfig(options));
+
+/**
+ * Oxlint configuration for backend/Node.js projects
+ *
+ * @param {Parameters<typeof buildBackendConfig>[0]} options
+ * @returns {Promise<Object>} Oxlint config
+ */
+export const createBackendOxlintConfig = (options) => createOxlintConfigFromEslintConfig(buildBackendConfig(options));
 
 const importPlugin = async (pluginName) => {
   try {
@@ -288,15 +304,15 @@ const importPlugin = async (pluginName) => {
 };
 
 /**
- * Create ESLint configuration for web/React projects
- * 
+ * Complete web/React rule set, before oxlint takes over the rules it runs
+ *
  * @param {Object} options - Configuration options
  * @param {string} options.rootDir - Root directory of the project (typically import.meta.url)
  * @param {string} [options.tailwindConfigPath] - Path to Tailwind CSS config
  * @param {string[]} [options.additionalIgnores] - Additional patterns to ignore
  * @returns {Promise<Array>} ESLint flat config array
  */
-export const createWebConfig = async (options = {}) => {
+const buildWebConfig = async (options = {}) => {
   const { rootDir, tailwindConfigPath, additionalIgnores = [] } = options;
   
   const currentFilename = fileURLToPath(rootDir);
@@ -421,6 +437,22 @@ export const createWebConfig = async (options = {}) => {
     base.sharedRules,
     base.modelFileOverrides,
     webSpecificRules,
-    ...oxlintPlugin.buildFromOxlintConfig(createOxlintConfig({ isReact: true })),
   ];
 };
+
+/**
+ * ESLint configuration for web/React projects, without the rules oxlint runs
+ *
+ * @param {Parameters<typeof buildWebConfig>[0]} options
+ * @returns {Promise<Array>} ESLint flat config array
+ */
+export const createWebConfig = async (options) => withoutOxlintRules(await buildWebConfig(options));
+
+/**
+ * Oxlint configuration for web/React projects
+ *
+ * @param {Parameters<typeof buildWebConfig>[0]} options
+ * @returns {Promise<Object>} Oxlint config
+ */
+export const createWebOxlintConfig = async (options) =>
+  createOxlintConfigFromEslintConfig(await buildWebConfig(options));
