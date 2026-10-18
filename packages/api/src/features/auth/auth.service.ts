@@ -57,7 +57,7 @@ export class AuthService implements iWithLogger {
         usePlural: true,
       }),
       secret: env.BETTER_AUTH_SECRET,
-      trustedOrigins: [process.env.CORS_ORIGIN ?? ''],
+      trustedOrigins: env.AUTH_TRUSTED_ORIGINS,
       plugins: [username(), devImpersonatePlugin()],
       secondaryStorage: this.keyValueStore.isConnected ? this.createSecondaryStorage() : undefined,
       emailAndPassword: {

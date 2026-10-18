@@ -10,6 +10,7 @@ export const generatedEnvShape = {
   POSTGRES_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/startername'),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.url(),
+  AUTH_TRUSTED_ORIGINS: z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean)),
   AUTH_COOKIE_SECURE: z.stringbool().default(false),
   AUTH_COOKIE_SAME_SITE: authCookieSameSiteSchema.default(AUTH_COOKIE_SAME_SITES.LAX),
   VALKEY_HOST: z.string().default('localhost'),

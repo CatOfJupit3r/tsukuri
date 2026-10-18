@@ -30,8 +30,8 @@ const PROJECT_CASES: iProjectCase[] = [
     commands: ['pnpm --filter=web run build'],
   },
   {
-    name: 'TanStack Start app serving the API itself',
-    modules: [MODULE_IDS.TANSTACK_START, MODULE_IDS.POSTGRES, ...SERVER_FEATURES],
+    name: 'TanStack Start app serving the API itself on SQLite',
+    modules: [MODULE_IDS.TANSTACK_START, MODULE_IDS.SQLITE, ...SERVER_FEATURES],
     commands: ['pnpm --filter=web run build'],
   },
   {

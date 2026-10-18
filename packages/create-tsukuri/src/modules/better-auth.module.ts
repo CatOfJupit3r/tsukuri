@@ -1,6 +1,8 @@
+import { templatePath } from '#~/constants/template-path';
 import { CAPABILITIES } from '#~/enums/capabilities.enums';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { HTTP_METHODS } from '#~/enums/http-methods.enums';
+import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
@@ -24,7 +26,8 @@ export const betterAuthModule = defineModule({
   description: 'Email and password auth with Better Auth on the installed database, sessions in the API context',
   category: MODULE_CATEGORIES.AUTH,
   requires: [MODULE_IDS.API],
-  requiresCapabilities: [CAPABILITIES.DATABASE],
+  // Auth needs an HTTP API, so a local-only app without a backend target cannot install it.
+  requiresCapabilities: [CAPABILITIES.DATABASE, CAPABILITIES.BACKEND_TARGET],
   files: [
     // The tables come from the glue module of the installed database.
     { source: `${API_WORKSPACE}/src/features/auth`, exclude: ['auth.schema.ts'] },
@@ -50,6 +53,7 @@ export const betterAuthModule = defineModule({
       'better-auth': '1.6.23',
     },
   },
+  markdown: [{ document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/better-auth/agents.md.hbs') }],
   contributions: [
     {
       kind: CONNECTION_POINT_KINDS.CONTRACT,
@@ -111,6 +115,15 @@ export const betterAuthModule = defineModule({
       name: 'BETTER_AUTH_URL',
       schema: 'z.url()',
       example: 'http://localhost:5050',
+    },
+    {
+      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
+      workspace: API_WORKSPACE,
+      name: 'AUTH_TRUSTED_ORIGINS',
+      // Comma-separated origins of the web apps that sign in through this API; empty for same-origin apps.
+      schema:
+        "z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean))",
+      example: 'http://localhost:3030',
     },
     {
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
