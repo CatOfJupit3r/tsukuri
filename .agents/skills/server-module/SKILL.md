@@ -175,7 +175,7 @@ belong in a module manifest.
    `pnpm run db:generate`.
 5. Add or update the resolver for the exact response shape.
 6. Implement the Drizzle repository behind the interface, using injected
-   `PostgresService` and resolver dependencies.
+   `DatabaseService` and resolver dependencies.
 7. Implement the service with injected interfaces and other services. Keep
    authorization decisions explicit and use the server error-handling skill for
    access failures.

@@ -782,6 +782,9 @@ importers:
       '@startername/workspace-source':
         specifier: workspace:*
         version: link:../../configs/workspace-source
+      '@swc-node/register':
+        specifier: 'catalog:'
+        version: 1.11.1(@swc/core@1.15.43)(@swc/types@0.1.27)(supports-color@7.2.0)(typescript@6.0.3)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.15.43

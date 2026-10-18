@@ -2,7 +2,7 @@ import { and, count as countFn, eq, gt } from 'drizzle-orm';
 import { singleton } from 'tsyringe';
 
 import { accounts, sessions, users } from '#~/features/auth/auth.schema';
-import { PostgresService } from '#~/features/postgres/postgres.service';
+import { DatabaseService } from '#~/features/database/database.service';
 
 import type { iAuthUserRepository } from './auth-user.repository';
 import type {
@@ -16,31 +16,31 @@ import { AuthUserResolver } from './auth-user.resolver';
 @singleton()
 export class DrizzleAuthUserRepository implements iAuthUserRepository {
   constructor(
-    private readonly postgresService: PostgresService,
+    private readonly databaseService: DatabaseService,
     private readonly authUserResolver: AuthUserResolver,
   ) {}
 
   public async findUserById(userId: string): Promise<iAuthUserRecordResponse | null> {
-    const [user] = await this.postgresService.getDb().select().from(users).where(eq(users.id, userId)).limit(1);
+    const [user] = await this.databaseService.getDb().select().from(users).where(eq(users.id, userId)).limit(1);
     return user ? this.authUserResolver.toUserResponse(user) : null;
   }
 
   public async findUserByEmail(email: string): Promise<iAuthUserRecordResponse | null> {
-    const [user] = await this.postgresService.getDb().select().from(users).where(eq(users.email, email)).limit(1);
+    const [user] = await this.databaseService.getDb().select().from(users).where(eq(users.email, email)).limit(1);
     return user ? this.authUserResolver.toUserResponse(user) : null;
   }
 
   public async listUsers(): Promise<iAuthUserListItemResponse[]> {
-    return this.postgresService.getDb().select({ id: users.id, name: users.name }).from(users);
+    return this.databaseService.getDb().select({ id: users.id, name: users.name }).from(users);
   }
 
   public async countUsers(): Promise<number> {
-    const [result] = await this.postgresService.getDb().select({ count: countFn() }).from(users);
+    const [result] = await this.databaseService.getDb().select({ count: countFn() }).from(users);
     return Number(result?.count ?? 0);
   }
 
   public async countActiveSessions(now: Date): Promise<number> {
-    const [result] = await this.postgresService
+    const [result] = await this.databaseService
       .getDb()
       .select({ count: countFn() })
       .from(sessions)
@@ -52,7 +52,7 @@ export class DrizzleAuthUserRepository implements iAuthUserRepository {
     userId: string,
     providerId: AuthAccountProviderId,
   ): Promise<iAuthAccountRecordResponse | null> {
-    const [account] = await this.postgresService
+    const [account] = await this.databaseService
       .getDb()
       .select()
       .from(accounts)
@@ -65,7 +65,7 @@ export class DrizzleAuthUserRepository implements iAuthUserRepository {
     accountId: string,
     providerId: AuthAccountProviderId,
   ): Promise<iAuthAccountRecordResponse | null> {
-    const [account] = await this.postgresService
+    const [account] = await this.databaseService
       .getDb()
       .select()
       .from(accounts)
@@ -78,7 +78,7 @@ export class DrizzleAuthUserRepository implements iAuthUserRepository {
     accountRecordId: string,
     accountId: string,
   ): Promise<iAuthAccountRecordResponse | null> {
-    const [account] = await this.postgresService
+    const [account] = await this.databaseService
       .getDb()
       .update(accounts)
       .set({ accountId, updatedAt: new Date() })
@@ -88,7 +88,7 @@ export class DrizzleAuthUserRepository implements iAuthUserRepository {
   }
 
   public async deleteUsersByEmail(email: string): Promise<number> {
-    const rows = await this.postgresService
+    const rows = await this.databaseService
       .getDb()
       .delete(users)
       .where(eq(users.email, email))
@@ -97,7 +97,7 @@ export class DrizzleAuthUserRepository implements iAuthUserRepository {
   }
 
   public async deleteAccountsByAccountId(accountId: string): Promise<number> {
-    const rows = await this.postgresService
+    const rows = await this.databaseService
       .getDb()
       .delete(accounts)
       .where(eq(accounts.accountId, accountId))

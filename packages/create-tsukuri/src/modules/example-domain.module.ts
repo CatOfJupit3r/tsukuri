@@ -1,3 +1,4 @@
+import { CAPABILITIES } from '#~/enums/capabilities.enums';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
@@ -30,12 +31,14 @@ export const exampleDomainModule = defineModule({
   name: 'Example domain',
   description: 'User profiles, achievements and badges: a worked example of features on the shared API',
   category: MODULE_CATEGORIES.FEATURE,
-  requires: [MODULE_IDS.BETTER_AUTH, MODULE_IDS.POSTGRES],
+  requires: [MODULE_IDS.BETTER_AUTH],
+  requiresCapabilities: [CAPABILITIES.DATABASE],
   files: [
     { source: 'packages/common/src/constants/achievements.ts' },
     { source: 'packages/common/src/constants/badges.ts' },
-    { source: `${API_WORKSPACE}/src/features/user` },
-    { source: `${API_WORKSPACE}/src/features/achievements` },
+    // The tables come from the glue module of the installed database.
+    { source: `${API_WORKSPACE}/src/features/user`, exclude: ['user-profile.schema.ts'] },
+    { source: `${API_WORKSPACE}/src/features/achievements`, exclude: ['user-achievement.schema.ts'] },
     { source: `${API_WORKSPACE}/src/features/badges` },
     { source: `${API_WORKSPACE}/test/integration/achievements.test.ts` },
     { source: `${API_WORKSPACE}/test/integration/badges.test.ts` },

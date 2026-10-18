@@ -111,6 +111,8 @@ const getBaseConfig = (options) => {
         {
           ignore: [
             '^#~/',
+            // Builtins newer than the resolver's list.
+            '^node:sqlite$',
             // Workspace packages (prevent false positives)
             createWorkspaceIgnorePattern('startername'),
             createWorkspaceIgnorePattern('shared'),
@@ -260,7 +262,8 @@ const buildBackendConfig = (options = {}) => {
 
   const nodeSpecificRules = {
     rules: {
-      'n/no-unsupported-features/node-builtins': ['error', { version: '>=26.0.0' }],
+      // node:sqlite is a release candidate in Node 26 and ships without a flag.
+      'n/no-unsupported-features/node-builtins': ['error', { version: '>=26.0.0', ignores: ['sqlite'] }],
     },
   };
 

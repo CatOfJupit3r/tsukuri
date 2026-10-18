@@ -16,23 +16,28 @@ interface iProjectCase {
   commands: string[];
 }
 
-const SERVER_FEATURES = [MODULE_IDS.POSTGRES, MODULE_IDS.BETTER_AUTH, MODULE_IDS.EXAMPLE_DOMAIN];
+const SERVER_FEATURES = [MODULE_IDS.BETTER_AUTH, MODULE_IDS.EXAMPLE_DOMAIN];
 
 const PROJECT_CASES: iProjectCase[] = [
   {
     name: 'SSR web app with a Node server and every server module',
-    modules: [MODULE_IDS.WEB_SSR, MODULE_IDS.NODE_HONO, MODULE_IDS.VALKEY, ...SERVER_FEATURES],
+    modules: [MODULE_IDS.WEB_SSR, MODULE_IDS.NODE_HONO, MODULE_IDS.POSTGRES, MODULE_IDS.VALKEY, ...SERVER_FEATURES],
     commands: ['pnpm run build'],
   },
   {
     name: 'SPA with a Node server',
-    modules: [MODULE_IDS.WEB_SPA, MODULE_IDS.NODE_HONO, ...SERVER_FEATURES],
+    modules: [MODULE_IDS.WEB_SPA, MODULE_IDS.NODE_HONO, MODULE_IDS.POSTGRES, ...SERVER_FEATURES],
     commands: ['pnpm --filter=web run build'],
   },
   {
     name: 'TanStack Start app serving the API itself',
-    modules: [MODULE_IDS.TANSTACK_START, ...SERVER_FEATURES],
+    modules: [MODULE_IDS.TANSTACK_START, MODULE_IDS.POSTGRES, ...SERVER_FEATURES],
     commands: ['pnpm --filter=web run build'],
+  },
+  {
+    name: 'Node server on SQLite',
+    modules: [MODULE_IDS.NODE_HONO, MODULE_IDS.SQLITE, ...SERVER_FEATURES],
+    commands: ['pnpm run db:generate', 'pnpm run db:migrate', 'pnpm run build'],
   },
 ];
 

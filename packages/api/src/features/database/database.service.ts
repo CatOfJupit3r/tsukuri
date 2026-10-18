@@ -16,12 +16,17 @@ type TestPostgresGlobals = typeof globalThis & {
 const testGlobals = globalThis as TestPostgresGlobals;
 
 @singleton()
-export class PostgresService {
+export class DatabaseService {
   private pool: Pool | null = null;
 
   private db: TestPostgresDatabase | null = null;
 
-  public connect() {
+  /** Creates the pool; it opens connections on the first query. */
+  public async connect() {
+    this.getDb();
+  }
+
+  public getDb() {
     if (this.db) return this.db;
 
     const testDb = testGlobals[testPostgresDbKey];
@@ -34,10 +39,6 @@ export class PostgresService {
     this.db = drizzle(this.pool, { schema: generatedDatabaseSchema });
 
     return this.db;
-  }
-
-  public getDb() {
-    return this.connect();
   }
 
   public async disconnect() {

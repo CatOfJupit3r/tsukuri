@@ -6,7 +6,7 @@ import { errorCodes, errorMessages } from '@startername/common/generated/error-c
 import { USER_ACHIEVEMENT_REPOSITORY_TOKEN } from '#~/features/achievements/achievements.tokens';
 import type { iUserAchievementRepository } from '#~/features/achievements/user-achievement.repository';
 import { BADGES_META } from '#~/features/badges/badges.constants';
-import { DatabaseErrorGuard } from '#~/features/postgres/database-error.guard';
+import { DatabaseErrorGuard } from '#~/features/database/database-error.guard';
 import {
   ORPCBadRequestError,
   ORPCForbiddenError,

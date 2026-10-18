@@ -3,7 +3,7 @@ import { singleton } from 'tsyringe';
 
 import { errorCodes, errorMessages } from '@startername/common/generated/error-codes';
 
-import { PostgresService } from '#~/features/postgres/postgres.service';
+import { DatabaseService } from '#~/features/database/database.service';
 import { generatePublicCode } from '#~/features/user/public-code';
 import { userProfiles } from '#~/features/user/user-profile.schema';
 import { expectDefined } from '#~/lib/orpc-error-wrapper';
@@ -26,12 +26,12 @@ function getDefaultValues(userId: string) {
 @singleton()
 export class DrizzleUserProfileRepository implements iUserProfileRepository {
   constructor(
-    private readonly postgresService: PostgresService,
+    private readonly databaseService: DatabaseService,
     private readonly userProfileResolver: UserProfileResolver,
   ) {}
 
   public async findByUserId(userId: string) {
-    const [profile] = await this.postgresService
+    const [profile] = await this.databaseService
       .getDb()
       .select()
       .from(userProfiles)
@@ -41,7 +41,7 @@ export class DrizzleUserProfileRepository implements iUserProfileRepository {
   }
 
   public async deleteByUserId(userId: string) {
-    const rows = await this.postgresService
+    const rows = await this.databaseService
       .getDb()
       .delete(userProfiles)
       .where(eq(userProfiles.userId, userId))
@@ -50,7 +50,7 @@ export class DrizzleUserProfileRepository implements iUserProfileRepository {
   }
 
   public async ensureExists(userId: string) {
-    const [inserted] = await this.postgresService
+    const [inserted] = await this.databaseService
       .getDb()
       .insert(userProfiles)
       .values(getDefaultValues(userId))
@@ -66,7 +66,7 @@ export class DrizzleUserProfileRepository implements iUserProfileRepository {
   public async upsert(userId: string, input: iUpsertUserProfileInput) {
     const update = this.userProfileResolver.toUserProfileUpdate(input);
 
-    const [profile] = await this.postgresService
+    const [profile] = await this.databaseService
       .getDb()
       .insert(userProfiles)
       .values({ ...getDefaultValues(userId), ...update })

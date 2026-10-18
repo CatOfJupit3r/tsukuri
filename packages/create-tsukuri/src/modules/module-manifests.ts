@@ -4,10 +4,17 @@ import { apiModule } from './api.module';
 import { baseModule } from './base.module';
 import { betterAuthWebModule } from './better-auth-web.module';
 import { betterAuthModule } from './better-auth.module';
+import {
+  betterAuthPostgresModule,
+  betterAuthSqliteModule,
+  exampleDomainPostgresModule,
+  exampleDomainSqliteModule,
+} from './database-tables.module';
 import { exampleDomainWebModule } from './example-domain-web.module';
 import { exampleDomainModule } from './example-domain.module';
 import { nodeHonoModule } from './node-hono.module';
 import { postgresModule } from './postgres.module';
+import { sqliteModule } from './sqlite.module';
 import { tanstackStartModule } from './tanstack-start.module';
 import { valkeyModule } from './valkey.module';
 import { webApiModule } from './web-api.module';
@@ -26,9 +33,14 @@ export const MODULE_MANIFESTS: iModuleManifestInput[] = [
   webSsrModule,
   webSpaModule,
   postgresModule,
+  sqliteModule,
   valkeyModule,
   betterAuthModule,
   exampleDomainModule,
+  betterAuthPostgresModule,
+  betterAuthSqliteModule,
+  exampleDomainPostgresModule,
+  exampleDomainSqliteModule,
   webApiModule,
   webRemoteBackendModule,
   webSsrRemoteBackendModule,

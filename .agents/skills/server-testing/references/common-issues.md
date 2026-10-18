@@ -340,7 +340,7 @@ The in-memory PGlite database is built from `generatedDatabaseSchema` with drizz
 
 1. **Verify the schema file is registered**: the module that owns the table must declare a `DATABASE_SCHEMA` contribution, and `src/generated/database-schema.ts` must list the file (`pnpm run sync` regenerates it). Never edit the generated file.
 
-2. **Verify the setup file is picked up**: `test/helpers/setup/postgres.setup.ts` has to match `test/helpers/setup/*.setup.ts`, which `vitest.config.ts` loads for the integration project.
+2. **Verify the setup file is picked up**: `test/helpers/setup/database.setup.ts` has to match `test/helpers/setup/*.setup.ts`, which `vitest.config.ts` loads for the integration project.
 
 3. **Re-run the suite**:
    ```bash

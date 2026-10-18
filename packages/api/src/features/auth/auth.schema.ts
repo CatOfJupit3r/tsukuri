@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { boolean, index, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
-import { idColumn, idPrimaryKey } from '#~/features/postgres/schema.helpers';
+import { idColumn, idPrimaryKey } from '#~/features/database/schema.helpers';
 
 export const users = pgTable(
   'users',

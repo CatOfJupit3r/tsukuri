@@ -16,7 +16,7 @@ type TestPostgresGlobals = typeof globalThis & {
 
 const testGlobals = globalThis as TestPostgresGlobals;
 
-/** An in-memory Postgres with the installed modules' tables, which `PostgresService` picks up in tests. */
+/** An in-memory Postgres with the installed modules' tables, which `DatabaseService` picks up in tests. */
 async function createTestPostgresDb() {
   const client = await PGlite.create('memory://');
   const { apply } = await pushSchema(generatedDatabaseSchema, drizzle({ client }));

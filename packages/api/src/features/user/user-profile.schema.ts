@@ -3,7 +3,7 @@ import { pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { BadgeId } from '@startername/common/constants/badges';
 
 import { users } from '#~/features/auth/auth.schema';
-import { idColumn } from '#~/features/postgres/schema.helpers';
+import { idColumn } from '#~/features/database/schema.helpers';
 
 export const userProfiles = pgTable(
   'profile',

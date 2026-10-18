@@ -6,7 +6,7 @@ import type { UserAchievementId } from '@startername/common/constants/achievemen
 import { errorCodes, errorMessages } from '@startername/common/generated/error-codes';
 
 import { userAchievements } from '#~/features/achievements/user-achievement.schema';
-import { PostgresService } from '#~/features/postgres/postgres.service';
+import { DatabaseService } from '#~/features/database/database.service';
 import { expectDefined } from '#~/lib/orpc-error-wrapper';
 
 import type { iUserAchievementRepository } from './user-achievement.repository';
@@ -15,12 +15,12 @@ import { UserAchievementResolver } from './user-achievement.resolver';
 @singleton()
 export class DrizzleUserAchievementRepository implements iUserAchievementRepository {
   constructor(
-    private readonly postgresService: PostgresService,
+    private readonly databaseService: DatabaseService,
     private readonly userAchievementResolver: UserAchievementResolver,
   ) {}
 
   public async listByUserId(userId: string) {
-    const rows = await this.postgresService
+    const rows = await this.databaseService
       .getDb()
       .select()
       .from(userAchievements)
@@ -29,7 +29,7 @@ export class DrizzleUserAchievementRepository implements iUserAchievementReposit
   }
 
   public async findByAchievement(userId: string, achievementId: UserAchievementId) {
-    const [row] = await this.postgresService
+    const [row] = await this.databaseService
       .getDb()
       .select()
       .from(userAchievements)
@@ -39,7 +39,7 @@ export class DrizzleUserAchievementRepository implements iUserAchievementReposit
   }
 
   public async ensureUnlocked(userId: string, achievementId: UserAchievementId, data?: Record<string, unknown>) {
-    const [inserted] = await this.postgresService
+    const [inserted] = await this.databaseService
       .getDb()
       .insert(userAchievements)
       .values({

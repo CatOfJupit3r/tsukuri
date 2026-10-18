@@ -299,7 +299,7 @@ await getUserProfileRepository().deleteByUserId(userId);
 await getUserAchievementRepository().ensureUnlocked(userId, USER_ACHIEVEMENTS.BETA_TESTER);
 ```
 
-Every table is truncated after each test (`test/helpers/setup/postgres.setup.ts`), so fixtures do not clean up after themselves.
+Every table is truncated after each test (`test/helpers/setup/database.setup.ts`), so fixtures do not clean up after themselves.
 
 ## Setup Hooks Utilities
 

@@ -6,10 +6,11 @@ import { inject, singleton } from 'tsyringe';
 import { env } from '#~/constants/env';
 import type { iKeyValueStore } from '#~/features/cache/key-value-store';
 import { KEY_VALUE_STORE_TOKEN } from '#~/features/cache/key-value-store';
+import { DATABASE_DIALECT } from '#~/features/database/database.constants';
+import { DatabaseService } from '#~/features/database/database.service';
 import { EventBus } from '#~/features/events/event-bus';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
 import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
-import { PostgresService } from '#~/features/postgres/postgres.service';
 
 import { AuthPasswordHasher } from './auth-password-hasher';
 import { UserAfterRegisteredListener } from './auth.listeners';
@@ -34,7 +35,7 @@ export class AuthService implements iWithLogger {
 
   constructor(
     loggerFactory: LoggerFactory,
-    private readonly postgresService: PostgresService,
+    private readonly databaseService: DatabaseService,
     private readonly eventBus: EventBus,
     private readonly passwordHasher: AuthPasswordHasher,
     @inject(KEY_VALUE_STORE_TOKEN) private readonly keyValueStore: iKeyValueStore,
@@ -50,8 +51,8 @@ export class AuthService implements iWithLogger {
 
   private createInstance() {
     return betterAuth({
-      database: drizzleAdapter(this.postgresService.getDb(), {
-        provider: 'pg',
+      database: drizzleAdapter(this.databaseService.getDb(), {
+        provider: DATABASE_DIALECT,
         schema: { users, usersRelations, sessions, sessionsRelations, accounts, accountsRelations, verifications },
         usePlural: true,
       }),

@@ -1,3 +1,4 @@
+import { CAPABILITIES } from '#~/enums/capabilities.enums';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { HTTP_METHODS } from '#~/enums/http-methods.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
@@ -20,11 +21,13 @@ export const betterAuthModule = defineModule({
   id: MODULE_IDS.BETTER_AUTH,
   version: '1.0.0',
   name: 'Better Auth',
-  description: 'Email and password auth with Better Auth on Postgres, sessions in the API context',
+  description: 'Email and password auth with Better Auth on the installed database, sessions in the API context',
   category: MODULE_CATEGORIES.AUTH,
-  requires: [MODULE_IDS.API, MODULE_IDS.POSTGRES],
+  requires: [MODULE_IDS.API],
+  requiresCapabilities: [CAPABILITIES.DATABASE],
   files: [
-    { source: `${API_WORKSPACE}/src/features/auth` },
+    // The tables come from the glue module of the installed database.
+    { source: `${API_WORKSPACE}/src/features/auth`, exclude: ['auth.schema.ts'] },
     { source: `${API_WORKSPACE}/test/helpers/auth-users.ts` },
     { source: `${API_WORKSPACE}/test/helpers/plaintext-auth-password-hasher.ts` },
     { source: `${API_WORKSPACE}/test/helpers/setup/auth.setup.ts` },

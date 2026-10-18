@@ -11,7 +11,7 @@
   },
   "scripts": {
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
+    "db:migrate": "node --env-file-if-exists=../../.env --conditions=workspace-source --import @swc-node/register/esm-register ./src/features/database/migrate-database.ts",
     "db:push": "drizzle-kit push --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
     "check-types": "tsgo --noEmit",
@@ -51,6 +51,7 @@
     "@startername/swc-config": "workspace:*",
     "@startername/vitest-config": "workspace:*",
     "@startername/workspace-source": "workspace:*",
+    "@swc-node/register": "catalog:",
     "@swc/core": "catalog:",
     "@types/node": "catalog:",
     "@types/pg": "^8.15.5",

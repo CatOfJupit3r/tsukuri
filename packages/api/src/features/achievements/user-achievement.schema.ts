@@ -3,7 +3,7 @@ import { index, jsonb, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm
 import type { UserAchievementId } from '@startername/common/constants/achievements';
 
 import { users } from '#~/features/auth/auth.schema';
-import { idColumn, idPrimaryKey } from '#~/features/postgres/schema.helpers';
+import { idColumn, idPrimaryKey } from '#~/features/database/schema.helpers';
 
 export const userAchievements = pgTable(
   'user_achievements',

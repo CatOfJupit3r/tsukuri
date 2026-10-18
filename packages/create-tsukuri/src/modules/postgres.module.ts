@@ -7,6 +7,9 @@ import { defineModule } from '#~/manifest/define-module';
 
 const API_WORKSPACE = 'packages/api';
 const API_FILTER = '--filter=@startername/api';
+/** Both dialects ship a `DatabaseMigrator` at the same path, so `db:migrate` is the same script. */
+export const DATABASE_MIGRATE_SCRIPT =
+  'node --env-file-if-exists=../../.env --conditions=workspace-source --import @swc-node/register/esm-register ./src/features/database/migrate-database.ts';
 const POSTGRES_VOLUME = 'postgres-data';
 
 export const postgresModule = defineModule({
@@ -19,9 +22,9 @@ export const postgresModule = defineModule({
   provides: [CAPABILITIES.DATABASE],
   files: [
     { source: `${API_WORKSPACE}/drizzle.config.ts` },
-    { source: `${API_WORKSPACE}/src/features/postgres` },
+    { source: `${API_WORKSPACE}/src/features/database` },
     { source: `${API_WORKSPACE}/test/helpers/postgres-memory.ts` },
-    { source: `${API_WORKSPACE}/test/helpers/setup/postgres.setup.ts` },
+    { source: `${API_WORKSPACE}/test/helpers/setup/database.setup.ts` },
   ],
   packageJson: [
     {
@@ -37,7 +40,7 @@ export const postgresModule = defineModule({
       workspace: API_WORKSPACE,
       scripts: {
         'db:generate': 'drizzle-kit generate --config drizzle.config.ts',
-        'db:migrate': 'drizzle-kit migrate --config drizzle.config.ts',
+        'db:migrate': DATABASE_MIGRATE_SCRIPT,
         'db:push': 'drizzle-kit push --config drizzle.config.ts',
         'db:studio': 'drizzle-kit studio --config drizzle.config.ts',
       },
@@ -47,6 +50,7 @@ export const postgresModule = defineModule({
       },
       devDependencies: {
         '@electric-sql/pglite': '0.5.4',
+        '@swc-node/register': 'catalog:',
         '@types/pg': '^8.15.5',
         dotenv: 'catalog:',
         'drizzle-kit': '^0.31.10',
@@ -55,6 +59,7 @@ export const postgresModule = defineModule({
   ],
   pnpmWorkspace: {
     catalog: {
+      '@swc-node/register': '1.11.1',
       dotenv: '17.4.2',
     },
   },
@@ -70,7 +75,7 @@ export const postgresModule = defineModule({
     {
       kind: CONNECTION_POINT_KINDS.STARTUP_TASK,
       workspace: API_WORKSPACE,
-      task: { name: 'ConnectPostgresTask', from: '#~/features/postgres/connect-postgres.task' },
+      task: { name: 'ConnectDatabaseTask', from: '#~/features/database/connect-database.task' },
     },
     {
       kind: CONNECTION_POINT_KINDS.COMPOSE_SERVICE,

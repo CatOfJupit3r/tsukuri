@@ -6,7 +6,7 @@ import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { SKILL_IDS } from '#~/enums/skill-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
-const API_WORKSPACE = 'packages/api';
+export const API_WORKSPACE = 'packages/api';
 const CONTRACT_WORKSPACE = 'packages/server-contract';
 const COMMON_WORKSPACE = 'packages/common';
 

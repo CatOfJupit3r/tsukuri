@@ -5,6 +5,8 @@ import { ModuleSourceBundler } from '#~/bundle/module-source-bundler';
 import { createGeneratorContainer } from '#~/di/container';
 import { ProjectGenerator } from '#~/engine/project-generator';
 import type { VirtualProject } from '#~/engine/virtual-project';
+import type { Capability } from '#~/enums/capabilities.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
 import { SOURCE_LAYOUTS } from '#~/enums/source-layouts.enums';
 import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
 import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
@@ -15,11 +17,34 @@ import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
 /** Composes every module twice from disk, which is slow while other workspaces test in parallel. */
 const COMPOSE_EVERY_MODULE_TIMEOUT_MS = 90_000;
 
+const MANIFESTS_BY_ID = new Map(MODULE_MANIFESTS.map((manifest) => [manifest.id, manifest]));
+
+function isCapabilityProvided(selected: Set<ModuleId>, capability: Capability) {
+  return [...selected].some((id) => MANIFESTS_BY_ID.get(id)?.provides?.includes(capability));
+}
+
+/**
+ * The module (or the modules a glue module installs with) and what they require; a required
+ * capability nothing selected provides takes the first module that provides it.
+ */
+function selectionFor(manifest: iModuleManifestInput) {
+  const selected = new Set<ModuleId>(manifest.autoInclude?.modules ?? [manifest.id]);
+  for (const id of selected) {
+    const selectedManifest = MANIFESTS_BY_ID.get(id);
+    for (const required of selectedManifest?.requires ?? []) selected.add(required);
+    for (const capability of selectedManifest?.requiresCapabilities ?? []) {
+      const provider = MODULE_MANIFESTS.find((candidate) => candidate.provides?.includes(capability));
+      if (provider && !isCapabilityProvided(selected, capability)) selected.add(provider.id);
+    }
+  }
+  return MODULE_MANIFESTS.filter((candidate) => selected.has(candidate.id));
+}
+
 function recordFor(manifest: iModuleManifestInput): iProjectRecord {
   return {
     projectName: 'acme',
     generator: { name: 'create-tsukuri', version: '0.0.0' },
-    modules: [{ id: manifest.id, version: manifest.version, options: {} }],
+    modules: selectionFor(manifest).map(({ id, version }) => ({ id, version, options: {} })),
     skills: { excluded: [] },
     markdown: { includePrivate: false },
   };

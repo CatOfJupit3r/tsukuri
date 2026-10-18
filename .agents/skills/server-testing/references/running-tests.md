@@ -184,10 +184,10 @@ fileParallelism: false,
 The test setup truncates every table after each test instead of recreating the database:
 
 ```typescript
-// test/helpers/setup/postgres.setup.ts
+// test/helpers/setup/database.setup.ts
 afterEach(async () => {
   await container
-    .resolve(PostgresService)
+    .resolve(DatabaseService)
     .getDb()
     .execute(sql.raw(`TRUNCATE TABLE ${tableNames} RESTART IDENTITY CASCADE`));
 });
@@ -241,7 +241,7 @@ pnpm run verify --tests
 2. The test setup did not initialize PGlite
 
 **Solution**:
-- Check `test/helpers/setup/postgres.setup.ts` is picked up (it must match `test/helpers/setup/*.setup.ts`)
+- Check `test/helpers/setup/database.setup.ts` is picked up (it must match `test/helpers/setup/*.setup.ts`)
 - Verify `test/helpers/postgres-memory.ts` can push the generated schema
 - Restart test runner
 

@@ -3,7 +3,7 @@ import { PgTable } from 'drizzle-orm/pg-core';
 import { container } from 'tsyringe';
 import { afterEach } from 'vitest';
 
-import { PostgresService } from '#~/features/postgres/postgres.service';
+import { DatabaseService } from '#~/features/database/database.service';
 import { generatedDatabaseSchema } from '#~/generated/database-schema';
 
 import { initializeTestPostgres } from '../postgres-memory';
@@ -18,7 +18,7 @@ const tableNames = Object.values(generatedDatabaseSchema)
 afterEach(async () => {
   if (!tableNames) return;
   await container
-    .resolve(PostgresService)
+    .resolve(DatabaseService)
     .getDb()
     .execute(sql.raw(`TRUNCATE TABLE ${tableNames} RESTART IDENTITY CASCADE`));
 });

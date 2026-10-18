@@ -557,7 +557,7 @@ Use `@injectable` by default. Only use `@singleton` when truly needed (database 
 
 **@singleton** - Use when:
 
-- Service maintains global state (EventBus, PostgresService, ValkeyService)
+- Service maintains global state (EventBus, DatabaseService, ValkeyService)
 - Service is expensive to initialize
 - Service manages system resources (LoggerFactory)
 - Event listeners need to be registered once (EventServices)

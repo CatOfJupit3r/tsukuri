@@ -54,7 +54,7 @@ packages/api/test/
 │   └── event-bus.test.ts
 └── helpers/                  # Test setup and configuration
     ├── setup.ts              # Starts the API once, after every module setup file
-    ├── setup/                # One *.setup.ts per module (postgres.setup.ts, auth.setup.ts)
+    ├── setup/                # One *.setup.ts per module (database.setup.ts, auth.setup.ts)
     ├── postgres-memory.ts    # In-memory PGlite with the generated schema
     ├── auth-users.ts         # createUser() and its ctx()
     ├── orpc-errors.ts        # expectORPCError
@@ -192,9 +192,9 @@ await expectORPCError(
 
 ## Test Database
 
-Tests use PGlite (an in-memory PostgreSQL implementation) for isolation:
-- The in-memory database is created once per integration run from the generated schema (`generatedDatabaseSchema`) with drizzle-kit `pushSchema` (`test/helpers/postgres-memory.ts`); committed migrations are not applied, and `PostgresService` picks the test database up
-- Every table is truncated after each test (`test/helpers/setup/postgres.setup.ts`, `TRUNCATE ... RESTART IDENTITY CASCADE`)
+Tests use an in-memory database for isolation: PGlite on Postgres projects, a `:memory:` `node:sqlite` database (`test/helpers/sqlite-memory.ts`, tables built with drizzle-kit `generateSQLiteMigration`, rows deleted after each test) on SQLite projects. On Postgres:
+- The in-memory database is created once per integration run from the generated schema (`generatedDatabaseSchema`) with drizzle-kit `pushSchema` (`test/helpers/postgres-memory.ts`); committed migrations are not applied, and `DatabaseService` picks the test database up
+- Every table is truncated after each test (`test/helpers/setup/database.setup.ts`, `TRUNCATE ... RESTART IDENTITY CASCADE`)
 - No need to manually clean up—handled by `afterEach` in setup
 
 ## Module Test Setup
