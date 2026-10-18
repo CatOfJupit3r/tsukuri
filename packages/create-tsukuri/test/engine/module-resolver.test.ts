@@ -34,6 +34,32 @@ describe('ModuleResolver', () => {
     expect(idsOf(resolver.resolve([ALPHA]))).toEqual([BASE, ALPHA]);
   });
 
+  it('installs a glue module exactly while its trigger modules and capabilities are installed', () => {
+    const resolver = createResolver([
+      base,
+      createManifest(ALPHA),
+      createManifest(BETA, { provides: [CAPABILITIES.BACKEND_TARGET] }),
+      createManifest(GAMMA, { autoInclude: { modules: [ALPHA], capabilities: [CAPABILITIES.BACKEND_TARGET] } }),
+    ]);
+
+    expect(idsOf(resolver.resolve([ALPHA]))).not.toContain(GAMMA);
+    expect(idsOf(resolver.resolve([ALPHA, BETA]))).toContain(GAMMA);
+    // A recorded glue module whose trigger is gone is dropped instead of kept.
+    expect(idsOf(resolver.resolve([ALPHA, GAMMA]))).not.toContain(GAMMA);
+  });
+
+  it('lets glue modules trigger further glue modules and pull in their requirements', () => {
+    const resolver = createResolver([
+      base,
+      createManifest(ALPHA),
+      createManifest(BETA, { autoInclude: { modules: [ALPHA] }, requires: [DELTA] }),
+      createManifest(GAMMA, { autoInclude: { modules: [BETA] } }),
+      createManifest(DELTA),
+    ]);
+
+    expect(idsOf(resolver.resolve([ALPHA]))).toEqual(expect.arrayContaining([BETA, GAMMA, DELTA]));
+  });
+
   it('adds required modules transitively and reports them as added', () => {
     const resolver = createResolver([
       base,

@@ -1,56 +1,30 @@
 import { createORPCClient, onError } from '@orpc/client';
 import { RPCLink } from '@orpc/client/fetch';
 import type { ContractRouterClient, InferContractRouterOutputs } from '@orpc/contract';
-import { createIsomorphicFn } from '@tanstack/react-start';
-import { getRequestHeaders } from '@tanstack/react-start/server';
-import { isError } from 'lodash-es';
 
 import type { CONTRACT } from '@startername/server-contract/app.contract';
 
-import { getBackendURL, isOnClient } from './ssr-helpers';
+import { createLogger } from '#~/lib/logging/logger';
+import { getBackendURL, getForwardedRequestHeaders } from '#~/utils/backend-url';
+import { isOnClient } from '#~/utils/is-on-client';
 
-const INTERCEPTORS = [
-  onError((error) => {
-    if (!isOnClient) return;
-    if (isError(error) && error.message.includes('The operation was aborted')) return;
-    console.error(error);
-  }),
-] as ConstructorParameters<typeof RPCLink>[0]['interceptors'];
+const ABORTED_MESSAGE = 'The operation was aborted';
 
-const getORPCClient = createIsomorphicFn()
-  .client((): ContractRouterClient<typeof CONTRACT> => {
-    const URL = getBackendURL('/rpc');
-    const link = new RPCLink({
-      url: URL,
-      async fetch(url, options) {
-        return fetch(url, {
-          ...options,
-          credentials: 'include',
-        });
-      },
-      interceptors: INTERCEPTORS,
-    });
+const logger = createLogger('orpc');
 
-    return createORPCClient(link);
-  })
-  .server((): ContractRouterClient<typeof CONTRACT> => {
-    const URL = getBackendURL('/rpc');
-    const link = new RPCLink({
-      url: URL,
-      headers: getRequestHeaders,
-      interceptors: INTERCEPTORS,
-    });
-    return createORPCClient(link);
-  });
-// I don't really want to add oRPC server to here too, so better keep it separate
-// .server(() =>
-//   createRouterClient(appRouter, {
-//     context: async ({ req }) => {
-//       return createContext({ context: req });
-//     },
-//   }),
-// )
+const link = new RPCLink({
+  url: () => getBackendURL('/rpc'),
+  headers: () => getForwardedRequestHeaders(),
+  fetch: async (url, options) => fetch(url, { ...options, credentials: 'include' }),
+  interceptors: [
+    onError((error) => {
+      if (!isOnClient) return;
+      if (error instanceof Error && error.message.includes(ABORTED_MESSAGE)) return;
+      logger.error('Request to the API failed', error);
+    }),
+  ],
+});
 
-const client: ContractRouterClient<typeof CONTRACT> = getORPCClient();
+export const orpcClient: ContractRouterClient<typeof CONTRACT> = createORPCClient(link);
+
 export type ORPCOutputs = InferContractRouterOutputs<typeof CONTRACT>;
-export default client;

@@ -29,13 +29,13 @@ The project uses a custom hook created via `createFormHook` that provides:
 - Pre-configured field components (TextField, SelectField, etc.)
 - Form layout components (FormActions, FieldLegend, etc.)
 
-**Location**: `apps/web/src/components/ui/field.tsx`
+**Location**: `apps/web/src/components/ui/form/field.tsx`
 
 ## Create Form Pattern
 
 ```typescript
 // features/characters/components/character-create-dialog.tsx
-import { useAppForm } from '#~/components/ui/field';
+import { useAppForm } from '#~/components/ui/form/field';
 import { useCreateCharacter } from '../hooks/use-create-character';
 import { characterFormSchema } from '../schemas/character.schema';
 
@@ -132,8 +132,8 @@ export function CharacterCreateDialog({ open, onOpenChange }) {
 
 ```typescript
 // features/characters/components/character-edit-panel.tsx
-import { useAppForm } from '#~/components/ui/field';
-import { useFormAutosave } from '#~/hooks/use-form-autosave';
+import { useAppForm } from '#~/components/ui/form/field';
+import { useFormAutosave } from '#~/hooks/form-autosave/use-form-autosave';
 import { useCharacter } from '../hooks/use-character';
 import { useUpdateCharacter } from '../hooks/use-update-character';
 
@@ -225,7 +225,7 @@ export function CharacterEditPanel({ characterId }) {
 
 ```typescript
 // features/presets/forms/preset-info-field-group.tsx
-import { withFieldGroup } from '#~/components/ui/field';
+import { withFieldGroup } from '#~/components/ui/form/field';
 
 interface iPresetInfoFieldGroupProps {
   onBlur?: () => void;
@@ -361,10 +361,10 @@ For an enum-backed form field, import the named enumwaii accessor (for example `
 
 ## Available Field Components
 
-Pre-built field components from custom form hook are defined in `#~/components/ui/form-fields.tsx`
+Pre-built field components from custom form hook are defined in `#~/components/ui/form/form-fields/` (one file per field)
 and can be referenced when using `form.AppField`.
 
-To get the full list of available fields and their props, check the `form-fields.tsx` file
+To get the full list of available fields and their props, check the files in `form/form-fields/`
 
 ## Array Fields
 
@@ -464,7 +464,7 @@ const form = useForm({ ... });
 
 ✅ **Do use useAppForm:**
 ```typescript
-import { useAppForm } from '#~/components/ui/field'; // CORRECT
+import { useAppForm } from '#~/components/ui/form/field'; // CORRECT
 const form = useAppForm({ ... });
 ```
 

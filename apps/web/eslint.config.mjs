@@ -10,7 +10,14 @@ const tailwindConfigPath = path.join(currentDirname, 'src', 'index.css');
 export const LINT_OPTIONS = {
   rootDir: import.meta.url,
   tailwindConfigPath,
-  additionalIgnores: ['./src/routeTree.gen.ts', 'vite.config.ts', 'vitest.config.ts', '**/*.css'],
+  // The Start backend variant is checked inside a generated project, where its route exists.
+  additionalIgnores: [
+    './src/routeTree.gen.ts',
+    'vite.config.ts',
+    'vitest.config.ts',
+    '**/*.css',
+    'variants/tanstack-start/**',
+  ],
 };
 
 export default createWebConfig(LINT_OPTIONS);

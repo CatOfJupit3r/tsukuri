@@ -977,9 +977,9 @@ If a required component doesn't exist, create it in `#~/components/ui` instead o
 **Good:**
 
 ```typescript
-import { Button } from '#~/components/ui/button';
-import { Input } from '#~/components/ui/input';
-import { Textarea } from '#~/components/ui/textarea';
+import { Button } from '#~/components/ui/button/button';
+import { Input } from '#~/components/ui/controls/input';
+import { Textarea } from '#~/components/ui/controls/textarea';
 
 <Button onClick={handleClick}>Submit</Button>
 <Input value={name} onChange={handleChange} />

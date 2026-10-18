@@ -18,6 +18,7 @@
     "lint": "oxlint -c oxlint.config.mjs --fix apps packages && pnpm --recursive --no-sort --stream --no-bail run lint:eslint",
     "lint:fix": "pnpm run lint",
     "verify": "tsx scripts/verify.ts",
+    "verify:styles": "tsx scripts/verify-styles.ts",
     "build:server": "pnpm --filter=server... run build",
     "create": "pnpm --filter=create-tsukuri run cli create",
     "add": "pnpm --filter=create-tsukuri run cli add",

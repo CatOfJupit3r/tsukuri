@@ -80,7 +80,7 @@ cd startername
 pnpm install
 ```
 
-1. Copy environment templates: duplicate the root `.env.example` to `.env` (server variables) and `apps/web/.env.example` to `apps/web/.env`.
+1. Copy the root `.env.example` to `.env`; the server and the web app both read it.
 2. Start Docker Desktop so PostgreSQL can launch.
 3. Boot everything with `pnpm run dev`:
     - Web client: `http://localhost:3030`

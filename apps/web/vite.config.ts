@@ -2,36 +2,25 @@ import tailwindcss from '@tailwindcss/vite';
 import { devtools } from '@tanstack/devtools-vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import react from '@vitejs/plugin-react';
+import path from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import z from 'zod';
 
 import { withWorkspaceSourceResolve } from '@startername/workspace-source/vite';
 
-// Uncomment to enable logging for proxy. Use for debugging purposes only.
-// const configureProxy = (proxy: HttpProxy.Server) => {
-//     proxy.on('error', (err, _req, _res) => {
-//         console.log('proxy error', err);
-//     });
-//     proxy.on('proxyReq', (proxyReq, req, _res) => {
-//         console.log('Sending Request to the Target:', req.method, req.url);
-//     });
-//     proxy.on('proxyRes', (proxyRes, req, _res) => {
-//         console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
-//     });
-// };
+import { generatedEnvShape } from './src/generated/env.schema';
+
+/** Every app of the project reads the root `.env`. */
+const ENV_DIR = path.resolve(__dirname, '../..');
 
 export default defineConfig(({ mode }) => {
-  const processEnv = loadEnv(mode, process.cwd());
-
-  const VITE_CONFIG_SCHEMA = z.object({
-    VITE_SERVER_URL: z.string(),
-    VITE_HOST: z.string().default('localhost'),
-    VITE_PORT: z.coerce.number().default(3030),
-  });
-
-  const env = VITE_CONFIG_SCHEMA.parse(processEnv);
+  const processEnv = loadEnv(mode, ENV_DIR);
+  const env = z.object(generatedEnvShape).parse(processEnv);
+  // Set when the API runs as a separate server; the dev server then forwards `/api` to it.
+  const { VITE_SERVER_URL: serverUrl } = processEnv;
 
   return {
+    envDir: ENV_DIR,
     plugins: [
       devtools(),
       tailwindcss(),
@@ -51,15 +40,15 @@ export default defineConfig(({ mode }) => {
     server: {
       host: env.VITE_HOST,
       port: env.VITE_PORT,
-      proxy: {
-        '/api': {
-          // keep this in-sync with SSR helpers as during SSR vite proxy is not recognized
-          target: env.VITE_SERVER_URL,
-          changeOrigin: true,
-          rewrite: (p) => p.replace(/^\/api/, ''),
-          // configure: configureProxy,
-        },
-      },
+      proxy: serverUrl
+        ? {
+            '/api': {
+              target: serverUrl,
+              changeOrigin: true,
+              rewrite: (requestPath) => requestPath.replace(/^\/api/, ''),
+            },
+          }
+        : undefined,
     },
   };
 });

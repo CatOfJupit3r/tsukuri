@@ -5,14 +5,56 @@
     "version": "0.0.0"
   },
   "modules": [
-    { "id": "base", "version": "1.0.0", "options": {} },
-    { "id": "api", "version": "1.0.0", "options": {} },
-    { "id": "node-hono", "version": "1.0.0", "options": {} },
-    { "id": "postgres", "version": "1.0.0", "options": {} },
-    { "id": "valkey", "version": "1.0.0", "options": {} },
-    { "id": "better-auth", "version": "1.0.0", "options": {} },
-    { "id": "example-domain", "version": "1.0.0", "options": {} }
+    {
+      "id": "base",
+      "version": "1.0.0",
+      "options": {}
+    },
+    {
+      "id": "api",
+      "version": "1.0.0",
+      "options": {}
+    },
+    {
+      "id": "node-hono",
+      "version": "1.0.0",
+      "options": {}
+    },
+    {
+      "id": "postgres",
+      "version": "1.0.0",
+      "options": {}
+    },
+    {
+      "id": "valkey",
+      "version": "1.0.0",
+      "options": {}
+    },
+    {
+      "id": "better-auth",
+      "version": "1.0.0",
+      "options": {}
+    },
+    {
+      "id": "example-domain",
+      "version": "1.0.0",
+      "options": {}
+    },
+    {
+      "id": "web",
+      "version": "1.0.0",
+      "options": {}
+    },
+    {
+      "id": "web-ssr",
+      "version": "1.0.0",
+      "options": {}
+    }
   ],
-  "skills": { "excluded": [] },
-  "markdown": { "includePrivate": false }
+  "skills": {
+    "excluded": []
+  },
+  "markdown": {
+    "includePrivate": false
+  }
 }

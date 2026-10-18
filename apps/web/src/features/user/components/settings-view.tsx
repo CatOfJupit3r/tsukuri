@@ -4,15 +4,15 @@ import { LuArrowLeft, LuTriangleAlert } from 'react-icons/lu';
 import z from 'zod';
 
 import Loader from '#~/components/loader';
-import { Alert, AlertDescription } from '#~/components/ui/alert';
 import { Button } from '#~/components/ui/button/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/card';
-import { useAppForm } from '#~/components/ui/field';
-import { Input } from '#~/components/ui/input';
-import { Label } from '#~/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '#~/components/ui/tabs';
+import { Input } from '#~/components/ui/controls/input';
+import { Label } from '#~/components/ui/controls/label';
+import { Alert, AlertDescription } from '#~/components/ui/feedback/alert';
+import { useAppForm } from '#~/components/ui/form/field';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/layout/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#~/components/ui/layout/tabs';
+import { useMe } from '#~/features/auth/hooks/use-me';
 
-import { useMe } from '../hooks/use-me';
 import { useUpdateUserProfile } from '../hooks/use-update-user-profile';
 import { useUserProfile } from '../hooks/use-user-profile';
 import { AvatarWithBadge } from './avatar-with-badge';
@@ -173,13 +173,13 @@ export function SettingsView() {
 
           {/* Danger Zone Tab */}
           <TabsContent value="danger" className="mt-6">
-            <Card className="border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20">
+            <Card className="border-destructive/30 bg-danger-surface">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg text-red-900 dark:text-red-400">
+                <CardTitle className="flex items-center gap-2 text-lg text-destructive">
                   <LuTriangleAlert className="size-5" />
                   Delete Account
                 </CardTitle>
-                <CardDescription className="text-xs text-red-800 dark:text-red-300">
+                <CardDescription className="text-xs text-destructive">
                   This action cannot be undone. Please be certain before proceeding.
                 </CardDescription>
               </CardHeader>

@@ -27,7 +27,7 @@ export class ProjectRecordEditor {
     const installed = this.installedIds(record);
     return this.registry
       .list()
-      .filter((manifest) => !manifest.isAlwaysIncluded && !installed.includes(manifest.id))
+      .filter((manifest) => !manifest.isAlwaysIncluded && !manifest.autoInclude && !installed.includes(manifest.id))
       .filter((manifest) => this.resolver.isCompatible(installed, manifest.id));
   }
 
@@ -52,11 +52,20 @@ export class ProjectRecordEditor {
       if (this.registry.get(id).isAlwaysIncluded) {
         throw new GeneratorError(GENERATOR_ERROR_CODES.INVALID_ARGUMENTS, `"${id}" is part of every project`);
       }
+      if (this.registry.get(id).autoInclude) {
+        throw new GeneratorError(
+          GENERATOR_ERROR_CODES.INVALID_ARGUMENTS,
+          `"${id}" is installed with the modules it connects; remove one of those instead`,
+        );
+      }
     }
 
     const remaining = installed.filter((id) => !ids.includes(id));
     for (const id of ids) {
-      const dependents = remaining.filter((other) => this.registry.get(other).requires.includes(id));
+      const dependents = remaining.filter((other) => {
+        const manifest = this.registry.get(other);
+        return !manifest.autoInclude && manifest.requires.includes(id);
+      });
       if (dependents.length > 0) {
         throw new GeneratorError(
           GENERATOR_ERROR_CODES.MODULE_CONFLICT,

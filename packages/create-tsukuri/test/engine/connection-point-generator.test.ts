@@ -5,6 +5,7 @@ import { ConnectionPointGenerator } from '#~/engine/connection-points/connection
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import { HTTP_METHODS } from '#~/enums/http-methods.enums';
+import { WEB_SLOTS } from '#~/enums/web-slots.enums';
 import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
 
@@ -286,6 +287,26 @@ describe('ConnectionPointGenerator', () => {
     expect(fileContent(result, 'packages/api/src/generated/startup-tasks.ts')).toContain(
       'export const generatedStartupTasks = [\n];',
     );
+  });
+
+  it('lists every web slot, with each module component in its slot', async () => {
+    const result = await generate(
+      createManifest(ALPHA, {
+        contributions: [
+          {
+            kind: CONNECTION_POINT_KINDS.WEB_COMPONENT,
+            workspace: 'apps/web',
+            slot: WEB_SLOTS.HEADER_ACTIONS,
+            component: { name: 'UserMenu', from: '#~/features/auth/components/user-menu' },
+          },
+        ],
+      }),
+    );
+
+    const slots = fileContent(result, 'apps/web/src/generated/web-slots.ts');
+    expect(slots).toContain("import { UserMenu } from '#~/features/auth/components/user-menu';");
+    expect(slots).toContain('  HEADER_ACTIONS: [UserMenu],');
+    expect(slots).toContain('  HEADER_NAVIGATION: [],');
   });
 
   it('generates nothing but a recursive build script when no module contributes', async () => {

@@ -6,7 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '#~/components/ui/dropdown-menu';
+} from '#~/components/ui/overlay/dropdown-menu';
 
 import { USER_THEME } from './themes/constants';
 import { useTheme } from './themes/use-theme';

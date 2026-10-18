@@ -61,6 +61,17 @@ export const moduleManifestSchema = z.object({
   /** Installed in every project. */
   isAlwaysIncluded: z.boolean().default(false),
   requires: z.array(moduleIdSchema).default([]),
+  /**
+   * Makes this a glue module: never chosen directly, it is installed exactly while every listed module is
+   * installed and every listed capability is provided (for example a backend's web client).
+   */
+  autoInclude: z
+    .object({
+      modules: z.array(moduleIdSchema).default([]),
+      capabilities: z.array(capabilitySchema).default([]),
+    })
+    .nullable()
+    .default(null),
   requiresCapabilities: z.array(capabilitySchema).default([]),
   conflicts: z.array(moduleIdSchema).default([]),
   provides: z.array(capabilitySchema).default([]),
@@ -92,7 +103,7 @@ type iWithDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  * Written out instead of `z.input` so enum-backed fields keep their enumwaii types.
  */
 export type iModuleManifestInput = iWithDefaults<
-  Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions'>,
+  Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions' | 'autoInclude'>,
   'isAlwaysIncluded' | 'requires' | 'requiresCapabilities' | 'conflicts' | 'provides' | 'skills' | 'markdown' | 'hosts'
 > & {
   files?: iWithDefaults<iModuleFileEntry, 'exclude'>[];
@@ -102,4 +113,5 @@ export type iModuleManifestInput = iWithDefaults<
   >[];
   pnpmWorkspace?: Partial<iPnpmWorkspaceContribution>;
   contributions?: iConnectionPointContributionInput[];
+  autoInclude?: Partial<NonNullable<iModuleManifest['autoInclude']>>;
 };

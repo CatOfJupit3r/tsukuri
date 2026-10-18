@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '#~/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#~/components/ui/layout/tabs';
 
 export const Route = createFileRoute('/_auth_only/dashboard')({
   component: RouteComponent,

@@ -20,6 +20,9 @@ import { HttpHandlerRenderer } from './renderers/http-handler.renderer';
 import { RootScriptsRenderer } from './renderers/root-scripts.renderer';
 import { RouterRenderer } from './renderers/router.renderer';
 import { StartupTaskRenderer } from './renderers/startup-task.renderer';
+import { WebDevtoolsPluginRenderer } from './renderers/web-devtools-plugin.renderer';
+import { WebRootPreloadRenderer } from './renderers/web-root-preload.renderer';
+import { WebSlotRenderer } from './renderers/web-slot.renderer';
 
 /**
  * Builds the files where modules meet (router and contract maps, DI registrations, startup tasks,
@@ -38,6 +41,9 @@ export class ConnectionPointGenerator {
     private readonly contextProviderRenderer: ContextProviderRenderer,
     private readonly databaseSchemaRenderer: DatabaseSchemaRenderer,
     private readonly errorCodeRenderer: ErrorCodeRenderer,
+    private readonly webSlotRenderer: WebSlotRenderer,
+    private readonly webRootPreloadRenderer: WebRootPreloadRenderer,
+    private readonly webDevtoolsPluginRenderer: WebDevtoolsPluginRenderer,
     private readonly envRenderer: EnvRenderer,
     private readonly composeRenderer: ComposeRenderer,
     private readonly ciRenderer: CiRenderer,
@@ -90,6 +96,21 @@ export class ConnectionPointGenerator {
         this.ofKind(contributions, CONNECTION_POINT_KINDS.ERROR_CODE),
         templateContext,
         this.hostsOf(modules, CONNECTION_POINT_KINDS.ERROR_CODE),
+      )),
+      ...(await this.webSlotRenderer.render(
+        this.ofKind(contributions, CONNECTION_POINT_KINDS.WEB_COMPONENT),
+        templateContext,
+        this.hostsOf(modules, CONNECTION_POINT_KINDS.WEB_COMPONENT),
+      )),
+      ...(await this.webRootPreloadRenderer.render(
+        this.ofKind(contributions, CONNECTION_POINT_KINDS.WEB_ROOT_PRELOAD),
+        templateContext,
+        this.hostsOf(modules, CONNECTION_POINT_KINDS.WEB_ROOT_PRELOAD),
+      )),
+      ...(await this.webDevtoolsPluginRenderer.render(
+        this.ofKind(contributions, CONNECTION_POINT_KINDS.WEB_DEVTOOLS_PLUGIN),
+        templateContext,
+        this.hostsOf(modules, CONNECTION_POINT_KINDS.WEB_DEVTOOLS_PLUGIN),
       )),
       ...(await this.envRenderer.render(
         this.ofKind(contributions, CONNECTION_POINT_KINDS.ENV_VARIABLE),

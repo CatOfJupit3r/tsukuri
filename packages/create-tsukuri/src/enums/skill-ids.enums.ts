@@ -11,6 +11,9 @@ const skillIdsEnumwaii = em({
   SERVER_TESTING: 'server-testing',
   ORPC_CONTRACT_CREATION: 'orpc-contract-creation',
   DRIZZLE_ORM: 'drizzle-orm',
+  REACT_COMPONENT_PATTERNS: 'react-component-patterns',
+  TANSTACK_FORMS: 'tanstack-forms',
+  TANSTACK_QUERY_INTEGRATION: 'tanstack-query-integration',
 });
 
 export const SKILL_IDS = skillIdsEnumwaii.enum;

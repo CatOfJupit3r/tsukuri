@@ -371,7 +371,7 @@ const buildWebConfig = async (options = {}) => {
     ...(reactRefreshPlugin ? [
       {
         // disable for route files since they often export non-component values (like route metadata)
-        files: ['src/routes/**/*.{jsx,tsx}'],
+        files: ['src/routes/**/*.{jsx,tsx}', 'variants/*/src/routes/**/*.{jsx,tsx}'],
         rules: {
           'react-refresh/only-export-components': 'off',
         },

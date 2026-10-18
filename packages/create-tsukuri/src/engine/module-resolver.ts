@@ -42,23 +42,18 @@ export class ModuleResolver {
     selected: readonly ModuleId[],
     { shouldRequireCapabilities = true }: { shouldRequireCapabilities?: boolean } = {},
   ): iResolvedModules {
-    const selectedSet = new Set(selected);
+    // Glue modules follow their triggers, so a recorded one is recomputed rather than kept.
+    const chosen = selected.filter((id) => !this.registry.get(id).autoInclude);
+    const selectedSet = new Set(chosen);
     const included = new Map<ModuleId, iModuleManifest>();
-    const queue: ModuleId[] = [
+    this.include(included, [
       ...this.registry
         .list()
         .filter((manifest) => manifest.isAlwaysIncluded)
         .map((manifest) => manifest.id),
-      ...selected,
-    ];
-
-    for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
-      if (included.has(id)) continue;
-
-      const manifest = this.registry.get(id);
-      included.set(id, manifest);
-      queue.push(...manifest.requires);
-    }
+      ...chosen,
+    ]);
+    this.includeGlueModules(included);
 
     const modules = [...included.values()];
     this.assertNoConflicts(modules);
@@ -70,6 +65,35 @@ export class ModuleResolver {
         .filter((manifest) => !selectedSet.has(manifest.id) && !manifest.isAlwaysIncluded)
         .map((manifest) => manifest.id),
     };
+  }
+
+  /** Adds `ids` and everything they require. */
+  private include(included: Map<ModuleId, iModuleManifest>, ids: readonly ModuleId[]) {
+    const queue = [...ids];
+    for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
+      if (included.has(id)) continue;
+
+      const manifest = this.registry.get(id);
+      included.set(id, manifest);
+      queue.push(...manifest.requires);
+    }
+  }
+
+  /** Adds every glue module whose triggers are installed, until no more apply (glue can trigger glue). */
+  private includeGlueModules(included: Map<ModuleId, iModuleManifest>) {
+    for (let hasAdded = true; hasAdded;) {
+      hasAdded = false;
+      const provided = new Set([...included.values()].flatMap((manifest) => manifest.provides));
+      for (const manifest of this.registry.list()) {
+        const trigger = manifest.autoInclude;
+        if (!trigger || included.has(manifest.id)) continue;
+        if (!trigger.modules.every((id) => included.has(id))) continue;
+        if (!trigger.capabilities.every((capability) => provided.has(capability))) continue;
+
+        this.include(included, [manifest.id]);
+        hasAdded = true;
+      }
+    }
   }
 
   /** Whether `candidate` can join `selected` without a conflict (unmet capabilities are fine). */

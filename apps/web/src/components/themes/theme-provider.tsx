@@ -4,13 +4,8 @@ import type { ReactNode } from 'react';
 import { USER_THEME } from './constants';
 import type { UserTheme } from './constants';
 import { ThemeContext } from './context';
-import {
-  getInitialThemeClass,
-  getSystemTheme,
-  handleThemeChange,
-  setStoredTheme,
-  setupPreferredListener,
-} from './helpers';
+import { getInitialThemeClass, getSystemTheme, handleThemeChange, setupPreferredListener } from './helpers';
+import { setStoredTheme } from './theme-storage';
 
 interface iThemeProviderProps {
   children: ReactNode;

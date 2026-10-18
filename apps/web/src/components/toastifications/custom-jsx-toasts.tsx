@@ -20,7 +20,7 @@ export interface iErrorToastData {
 
 export const ErrorToast: CustomReferenceToastFC<iErrorToastData> = ({ data }) => (
   <ToastBody className="flex flex-col gap-2">
-    <ToastTitle className="text-sm font-medium text-red-500">{data?.title}</ToastTitle>
+    <ToastTitle className="text-sm font-medium text-destructive">{data?.title}</ToastTitle>
     {data?.message ? <ToastDescription>{data?.message}</ToastDescription> : null}
   </ToastBody>
 );
@@ -32,7 +32,7 @@ export interface iSuccessToastData {
 
 export const SuccessToast: CustomReferenceToastFC<iSuccessToastData> = ({ data }) => (
   <ToastBody className="flex flex-col gap-2">
-    <ToastTitle className="text-sm font-medium text-green-500">{data?.title}</ToastTitle>
+    <ToastTitle className="text-sm font-medium text-success">{data?.title}</ToastTitle>
     {data?.message ? <ToastDescription>{data?.message}</ToastDescription> : null}
   </ToastBody>
 );

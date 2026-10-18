@@ -16,7 +16,7 @@ export const nodeHonoModule = defineModule({
   description: 'Hono on Node.js serving the shared API',
   category: MODULE_CATEGORIES.BACKEND,
   requires: [MODULE_IDS.API],
-  provides: [CAPABILITIES.BACKEND_TARGET],
+  provides: [CAPABILITIES.BACKEND_TARGET, CAPABILITIES.REMOTE_BACKEND],
   files: [
     { source: `${SERVER_WORKSPACE}/.gitignore` },
     { source: `${SERVER_WORKSPACE}/.lintstagedrc.cjs` },

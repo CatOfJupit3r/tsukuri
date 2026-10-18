@@ -2,6 +2,7 @@ import z from 'zod';
 
 import { CONNECTION_POINT_KINDS, connectionPointKindSchema } from '#~/enums/connection-point-kinds.enums';
 import { httpMethodSchema } from '#~/enums/http-methods.enums';
+import { webSlotSchema } from '#~/enums/web-slots.enums';
 
 const workspaceSchema = z.string().min(1);
 const identifierSchema = z.string().regex(/^[A-Za-z_$][\w$]*$/, 'Must be a valid TypeScript identifier');
@@ -65,6 +66,28 @@ export const errorCodeContributionSchema = z.object({
   workspace: workspaceSchema,
   code: z.string().regex(/^[A-Z][A-Z0-9_]*$/, 'Error codes are CONSTANT_CASE'),
   message: z.string().min(1),
+});
+
+/** A component the web shell renders, without props, in one of its slots. */
+export const webComponentContributionSchema = z.object({
+  kind: z.literal(CONNECTION_POINT_KINDS.WEB_COMPONENT),
+  workspace: workspaceSchema,
+  slot: webSlotSchema,
+  component: namedImportSchema,
+});
+
+/** A `(context: { queryClient }) => Promise<unknown>` the root route's loader awaits, e.g. to prefetch the session. */
+export const webRootPreloadContributionSchema = z.object({
+  kind: z.literal(CONNECTION_POINT_KINDS.WEB_ROOT_PRELOAD),
+  workspace: workspaceSchema,
+  preload: namedImportSchema,
+});
+
+/** A TanStack devtools plugin entry shown in development. */
+export const webDevtoolsPluginContributionSchema = z.object({
+  kind: z.literal(CONNECTION_POINT_KINDS.WEB_DEVTOOLS_PLUGIN),
+  workspace: workspaceSchema,
+  plugin: namedImportSchema,
 });
 
 /**
@@ -141,6 +164,9 @@ export const connectionPointContributionSchema = z.discriminatedUnion('kind', [
   contextProviderContributionSchema,
   databaseSchemaContributionSchema,
   errorCodeContributionSchema,
+  webComponentContributionSchema,
+  webRootPreloadContributionSchema,
+  webDevtoolsPluginContributionSchema,
   envVariableContributionSchema,
   composeServiceContributionSchema,
   ciStepContributionSchema,
@@ -163,6 +189,9 @@ export type iConnectionPointContributionInput =
   | iContextProviderContribution
   | iDatabaseSchemaContribution
   | iErrorCodeContribution
+  | iWebComponentContribution
+  | iWebRootPreloadContribution
+  | iWebDevtoolsPluginContribution
   | iWithDefaults<iEnvVariableContribution, 'imports' | 'example'>
   | iWithDefaults<iComposeServiceContribution, 'volumes'>
   | iWithDefaults<iCiStepContribution, 'env'>
@@ -175,6 +204,9 @@ export type iHttpHandlerContribution = z.output<typeof httpHandlerContributionSc
 export type iContextProviderContribution = z.output<typeof contextProviderContributionSchema>;
 export type iDatabaseSchemaContribution = z.output<typeof databaseSchemaContributionSchema>;
 export type iErrorCodeContribution = z.output<typeof errorCodeContributionSchema>;
+export type iWebComponentContribution = z.output<typeof webComponentContributionSchema>;
+export type iWebRootPreloadContribution = z.output<typeof webRootPreloadContributionSchema>;
+export type iWebDevtoolsPluginContribution = z.output<typeof webDevtoolsPluginContributionSchema>;
 export type iDiRegistrationContribution = z.output<typeof diRegistrationContributionSchema>;
 export type iEnvVariableContribution = z.output<typeof envVariableContributionSchema>;
 export type iComposeServiceContribution = z.output<typeof composeServiceContributionSchema>;

@@ -21,12 +21,19 @@ export const PRESETS = presetIdsEnumwaii.derive<iPreset>()(
       description: 'Web app with a Node backend, database and auth',
       answers: new Map<PromptId, ModuleId[]>([
         [PROMPT_IDS.BACKEND, [MODULE_IDS.NODE_HONO]],
+        [PROMPT_IDS.RENDERING, [MODULE_IDS.WEB_SSR]],
         [PROMPT_IDS.DATABASE, [MODULE_IDS.POSTGRES]],
         [PROMPT_IDS.AUTH, [MODULE_IDS.BETTER_AUTH]],
         [PROMPT_IDS.INFRASTRUCTURE, [MODULE_IDS.VALKEY]],
       ]),
     },
   ],
-  [PRESET_IDS.WEB_LOCAL_FIRST, { description: 'Client-only web app with local-first storage', answers: new Map() }],
+  [
+    PRESET_IDS.WEB_LOCAL_FIRST,
+    {
+      description: 'Client-only web app with local-first storage',
+      answers: new Map<PromptId, ModuleId[]>([[PROMPT_IDS.RENDERING, [MODULE_IDS.WEB_SPA]]]),
+    },
+  ],
   [PRESET_IDS.DESKTOP, { description: 'Electron desktop app with an in-process backend', answers: new Map() }],
 );

@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { toastBetterAuthError } from '#~/components/toastifications/create-jsx-toasts';
-import { USE_ME_QUERY_KEYS } from '#~/features/user/hooks/use-me';
-import AuthService from '#~/services/auth.service';
+import AuthService from '#~/features/auth/auth-client.service';
+import { toastBetterAuthError } from '#~/features/auth/auth-toasts';
+import { USE_ME_QUERY_KEYS } from '#~/features/auth/hooks/use-me';
 
 const useLogin = () => {
   const queryClient = useQueryClient();

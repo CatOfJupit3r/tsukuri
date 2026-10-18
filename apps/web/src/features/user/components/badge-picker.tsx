@@ -1,9 +1,9 @@
 import { LuAward, LuCheck, LuLock } from 'react-icons/lu';
 
-import { Alert, AlertDescription, AlertTitle } from '#~/components/ui/alert';
 import { Button } from '#~/components/ui/button/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/card';
-import { Skeleton } from '#~/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '#~/components/ui/feedback/alert';
+import { Skeleton } from '#~/components/ui/feedback/skeleton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/layout/card';
 import { useMyAchievements } from '#~/features/achievements/hooks/use-my-achievements';
 import { useBadges } from '#~/features/badges/hooks/use-badges';
 

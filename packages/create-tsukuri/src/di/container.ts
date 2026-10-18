@@ -18,6 +18,9 @@ import { HttpHandlerRenderer } from '#~/engine/connection-points/renderers/http-
 import { RootScriptsRenderer } from '#~/engine/connection-points/renderers/root-scripts.renderer';
 import { RouterRenderer } from '#~/engine/connection-points/renderers/router.renderer';
 import { StartupTaskRenderer } from '#~/engine/connection-points/renderers/startup-task.renderer';
+import { WebDevtoolsPluginRenderer } from '#~/engine/connection-points/renderers/web-devtools-plugin.renderer';
+import { WebRootPreloadRenderer } from '#~/engine/connection-points/renderers/web-root-preload.renderer';
+import { WebSlotRenderer } from '#~/engine/connection-points/renderers/web-slot.renderer';
 import { ControlBlockRenderer } from '#~/engine/control-block-renderer';
 import { MarkdownRenderer } from '#~/engine/markdown-renderer';
 import { ModuleRegistry } from '#~/engine/module-registry';
@@ -68,6 +71,9 @@ const SERVICES: constructor<object>[] = [
   ContextProviderRenderer,
   DatabaseSchemaRenderer,
   ErrorCodeRenderer,
+  WebSlotRenderer,
+  WebRootPreloadRenderer,
+  WebDevtoolsPluginRenderer,
   EnvRenderer,
   ComposeRenderer,
   CiRenderer,

@@ -7,7 +7,7 @@ import { MODULE_CACHE_TEST_OPTIONS, moduleCacheKeyPlugin } from '@startername/vi
 
 type iTestOptions = NonNullable<ViteUserConfig['test']>;
 
-export function createVitestConfig(test: Pick<iTestOptions, 'include' | 'exclude' | 'testTimeout'>) {
+export function createVitestConfig(test: Pick<iTestOptions, 'include' | 'exclude' | 'testTimeout' | 'hookTimeout'>) {
   return defineConfig({
     plugins: [
       createSwcPlugin(),

@@ -27,6 +27,7 @@ const KEY_ORDER = [
   'private',
   'description',
   'type',
+  'imports',
   'main',
   'module',
   'types',

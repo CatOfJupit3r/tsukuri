@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx", "../../src/**/*.ts", "../../src/**/*.tsx"],
+  "exclude": [
+    "../../src/router.tsx",
+    "../../src/routes/__root.tsx",
+    "../../src/components/themes/theme-storage.ts",
+    "../../src/utils/backend-url.ts"
+  ]
+}
