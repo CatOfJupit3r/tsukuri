@@ -11,7 +11,7 @@ so that agentic tools work efficiently.
 Both GitHub Copilot and Claude Code (or any AGENTS.md-aware agent) read from the same skill library under `.agents/skills/*/SKILL.md`:
 
 - `.github/copilot-instructions.md` and `.github/agents/*.md` (Copilot custom agents) point into `.agents/skills/`.
-- `AGENTS.md` (with `CLAUDE.md` symlinked to it) is the always-on guide for Claude Code and other AGENTS.md-aware tools, and points into the same `.agents/skills/` directory.
+- `AGENTS.md` is the always-on guide for Claude Code and other AGENTS.md-aware tools, and points into the same `.agents/skills/` directory.
 
 Update `.agents/skills/` once and both flows pick up the change.
 
