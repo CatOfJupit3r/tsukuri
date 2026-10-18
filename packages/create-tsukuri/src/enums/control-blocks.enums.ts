@@ -2,7 +2,6 @@ import { em } from 'enumwaii';
 
 /** Line-based blocks of markdown fragments; values are the tag names. */
 export const controlBlocksEnumwaii = em({
-  HARNESS_SPECIFIC: 'harness-specific',
   PRIVATE: 'private',
 });
 

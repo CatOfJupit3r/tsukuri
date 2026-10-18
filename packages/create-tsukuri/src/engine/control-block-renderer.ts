@@ -3,14 +3,10 @@ import { injectable } from 'tsyringe';
 import type { ControlBlock } from '#~/enums/control-blocks.enums';
 import { CONTROL_BLOCKS, controlBlocksEnumwaii } from '#~/enums/control-blocks.enums';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
-import type { Harness } from '#~/enums/harnesses.enums';
-import { harnessesEnumwaii } from '#~/enums/harnesses.enums';
 
 import { GeneratorError } from './generator-error';
 
 export interface iControlBlockOptions {
-  /** Harness the output is written for; `null` drops every harness-specific block. */
-  harness: Harness | null;
   includePrivate: boolean;
   /** Template path, named in errors. */
   source: string;
@@ -22,11 +18,9 @@ interface iOpenControlBlock {
   lineNumber: number;
 }
 
-const HARNESS_OPEN_TAG_PATTERN = new RegExp(`^<${CONTROL_BLOCKS.HARNESS_SPECIFIC} id="([^"]*)">$`);
-
 /**
- * `<harness-specific id="...">` and `<private>` blocks, each tag alone on its line. Blocks nest, and a
- * line that looks like a tag but does not parse fails the render, so excluded content never leaks.
+ * `<private>` blocks, each tag alone on its line. Blocks nest, and a line that looks like a tag but does
+ * not parse fails the render, so excluded content never leaks.
  */
 @injectable()
 export class ControlBlockRenderer {
@@ -38,7 +32,7 @@ export class ControlBlockRenderer {
       const lineNumber = lineIndex + 1;
       const tag = line.trim();
 
-      const openBlock = this.parseOpenTag(tag, options, lineNumber);
+      const openBlock = this.parseOpenTag(tag, options.includePrivate, lineNumber);
       if (openBlock) {
         openBlocks.push(openBlock);
         continue;
@@ -65,21 +59,12 @@ export class ControlBlockRenderer {
     return output.join('\n');
   }
 
-  private parseOpenTag(tag: string, options: iControlBlockOptions, lineNumber: number) {
-    if (tag === `<${CONTROL_BLOCKS.PRIVATE}>`) {
-      return {
-        type: CONTROL_BLOCKS.PRIVATE,
-        isIncluded: options.includePrivate,
-        lineNumber,
-      } satisfies iOpenControlBlock;
-    }
-
-    const harnessId = HARNESS_OPEN_TAG_PATTERN.exec(tag)?.[1];
-    if (!harnessesEnumwaii.is(harnessId)) return null;
+  private parseOpenTag(tag: string, includePrivate: boolean, lineNumber: number) {
+    if (tag !== `<${CONTROL_BLOCKS.PRIVATE}>`) return null;
 
     return {
-      type: CONTROL_BLOCKS.HARNESS_SPECIFIC,
-      isIncluded: harnessId === options.harness,
+      type: CONTROL_BLOCKS.PRIVATE,
+      isIncluded: includePrivate,
       lineNumber,
     } satisfies iOpenControlBlock;
   }

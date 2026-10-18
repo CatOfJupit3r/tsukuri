@@ -40,7 +40,6 @@ describe('ProjectGenerator', () => {
         'package.json',
         'pnpm-workspace.yaml',
         'AGENTS.md',
-        'CLAUDE.md',
         'README.md',
         'scripts/verify.ts',
         'configs/lint-config/package.json',
@@ -70,7 +69,6 @@ describe('ProjectGenerator', () => {
     expect(workspace.catalog).toEqual(expect.objectContaining({ zod: '4.4.3', typescript: '6.0.3' }));
 
     expect(await readFile(path.join(targetDir, 'AGENTS.md'), 'utf8')).toMatch(/^---\napplyTo/);
-    expect(await readFile(path.join(targetDir, 'CLAUDE.md'), 'utf8')).not.toMatch(/^---/);
 
     for (const file of files) {
       const content = await readFile(path.join(targetDir, file));

@@ -28,7 +28,7 @@ export const projectRecordSchema = z.object({
     .default({ excluded: [] }),
   markdown: z
     .object({
-      /** Keeps the `<private>` blocks of markdown fragments in AGENTS.md, CLAUDE.md and README.md. */
+      /** Keeps the `<private>` blocks of markdown fragments in AGENTS.md and README.md. */
       includePrivate: z.boolean().default(false),
     })
     .default({ includePrivate: false }),

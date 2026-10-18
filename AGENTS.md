@@ -45,7 +45,7 @@ Examples:
 - Modules plug web UI into the shell through generated slots (`apps/web/src/generated/web-slots.ts`, read via `#~/lib/web-slots`), root preloads and devtools panels; glue modules (for example the Better Auth web client) install themselves when the modules they connect are both present.
 - `packages/server-contract` contains the API contracts shared by the API and its clients.
 - `packages/common` contains shared utilities, types, constants, and helpers used by both apps.
-- `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the Handlebars templates in `templates/` (markdown fragments and connection points; `{{#module "id"}}...{{else}}...{{/module}}` blocks, literal braces escaped as `\{{`) that generated projects are built from. Markdown fragments also take line-based `<harness-specific id="claude|codex">` blocks (kept only in CLAUDE.md or AGENTS.md) and `<private>` blocks (kept only when the project record sets `markdown.includePrivate`). Module source files stay real, type-checked files and are never templated.
+- `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the Handlebars templates in `templates/` (markdown fragments and connection points; `{{#module "id"}}...{{else}}...{{/module}}` blocks, literal braces escaped as `\{{`) that generated projects are built from. Markdown fragments also take line-based `<private>` blocks (kept only when the project record sets `markdown.includePrivate`). Module source files stay real, type-checked files and are never templated.
 - `docs` contains product notes, roadmaps, and design documentation, if present.
 
 ## Core Conventions

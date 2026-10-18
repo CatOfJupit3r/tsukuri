@@ -13,18 +13,7 @@ vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'))
 
 const FRAGMENT_SOURCE = 'fragments/agents.md.hbs';
 
-const FRAGMENT = [
-  '# {{projectName}}',
-  '<harness-specific id="claude">',
-  'Claude only',
-  '</harness-specific>',
-  '<harness-specific id="codex">',
-  'Codex only',
-  '</harness-specific>',
-  '<private>',
-  'Private notes',
-  '</private>',
-].join('\n');
+const FRAGMENT = ['# {{projectName}}', '<private>', 'Private notes', '</private>'].join('\n');
 
 describe('MarkdownRenderer', () => {
   const createTempDir = useTempDir();
@@ -49,16 +38,16 @@ describe('MarkdownRenderer', () => {
     return new Map(documents.map((document) => [document.path, document.content]));
   }
 
-  it('writes each output file with the harness blocks of its own harness', async () => {
+  it('writes AGENTS.md with its frontmatter and drops private blocks by default', async () => {
     const documents = await renderAgentsDocuments(false);
 
-    expect(documents.get('CLAUDE.md')).toBe('# acme\nClaude only\n');
-    expect(documents.get('AGENTS.md')).toBe("---\napplyTo: '**/*.ts'\n---\n\n# acme\nCodex only\n");
+    expect([...documents.keys()]).toEqual(['AGENTS.md']);
+    expect(documents.get('AGENTS.md')).toBe("---\napplyTo: '**/*.ts'\n---\n\n# acme\n");
   });
 
   it('keeps private blocks only when the record includes them', async () => {
     const documents = await renderAgentsDocuments(true);
 
-    expect(documents.get('CLAUDE.md')).toBe('# acme\nClaude only\nPrivate notes\n');
+    expect(documents.get('AGENTS.md')).toBe("---\napplyTo: '**/*.ts'\n---\n\n# acme\nPrivate notes\n");
   });
 });
