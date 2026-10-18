@@ -6,7 +6,10 @@ allowBuilds:
   '@swc/core': true
   esbuild: true
   unrs-resolver: true
+  workerd: true
 catalog:
+  '@cloudflare/workers-types': 5.20261016.1
+  wrangler: 4.151.1
   eslint: 9.39.2
   prettier: 3.9.5
   zod: 4.4.3

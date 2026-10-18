@@ -22,7 +22,8 @@ export const sqliteModule = defineModule({
   description: 'SQLite on the built-in node:sqlite through Drizzle, with drizzle-kit migrations',
   category: MODULE_CATEGORIES.DATABASE,
   requires: [MODULE_IDS.API],
-  provides: [CAPABILITIES.DATABASE],
+  requiresCapabilities: [CAPABILITIES.NODE_RUNTIME],
+  provides: [CAPABILITIES.DATABASE, CAPABILITIES.SQLITE_DIALECT],
   files: [
     { source: `${SQLITE_VARIANT}/drizzle.config.ts`, target: `${API_WORKSPACE}/drizzle.config.ts` },
     { source: `${SQLITE_VARIANT}/src/features/database`, target: `${API_WORKSPACE}/src/features/database` },

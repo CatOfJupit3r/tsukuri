@@ -45,6 +45,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
     "@electric-sql/pglite": "0.5.4",
     "@startername/lint-config": "workspace:*",
     "@startername/prettier-config": "workspace:*",
@@ -64,6 +65,7 @@
     "prettier": "catalog:",
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
   }
 }

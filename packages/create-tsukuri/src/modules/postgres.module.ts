@@ -22,7 +22,8 @@ export const postgresModule = defineModule({
   provides: [CAPABILITIES.DATABASE],
   files: [
     { source: `${API_WORKSPACE}/drizzle.config.ts` },
-    { source: `${API_WORKSPACE}/src/features/database` },
+    // The service comes from the glue module of the runtime: a Node pool, or Hyperdrive on a Worker.
+    { source: `${API_WORKSPACE}/src/features/database`, exclude: ['database.service.ts'] },
     { source: `${API_WORKSPACE}/test/helpers/postgres-memory.ts` },
     { source: `${API_WORKSPACE}/test/helpers/setup/database.setup.ts` },
   ],

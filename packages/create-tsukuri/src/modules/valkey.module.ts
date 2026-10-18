@@ -1,3 +1,4 @@
+import { CAPABILITIES } from '#~/enums/capabilities.enums';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
@@ -13,6 +14,8 @@ export const valkeyModule = defineModule({
   description: 'Valkey (Redis) as the key-value store behind caching and auth sessions',
   category: MODULE_CATEGORIES.INFRASTRUCTURE,
   requires: [MODULE_IDS.API],
+  // ioredis needs TCP sockets.
+  requiresCapabilities: [CAPABILITIES.NODE_RUNTIME],
   files: [{ source: `${API_WORKSPACE}/src/features/valkey` }],
   packageJson: [
     {
