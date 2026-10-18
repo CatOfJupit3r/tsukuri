@@ -31,7 +31,10 @@ export default defineConfig({
       // Runs on the finished chunk, after rolldown added its `createRequire` helper.
       name: 'worker-module-url',
       // Same lines before and after, so the existing sourcemap still applies (`map: null`).
-      renderChunk: (code) => ({ code: code.replaceAll('import.meta.url', JSON.stringify(WORKER_MODULE_URL)), map: null }),
+      renderChunk: (code) => ({
+        code: code.replaceAll('import.meta.url', JSON.stringify(WORKER_MODULE_URL)),
+        map: null,
+      }),
     },
   ],
   inputOptions: {
