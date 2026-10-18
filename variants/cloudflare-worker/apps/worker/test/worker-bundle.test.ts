@@ -7,7 +7,10 @@ const BUNDLE_TIMEOUT_MS = 120_000;
 
 /** The example env as plain-text vars, which the Worker runtime exposes on `process.env`. */
 function exampleVars() {
-  const variables = loadExampleEnv(path.resolve(import.meta.dirname, '../../..'), { NODE_ENV: 'test', LOG_LEVEL: 'error' });
+  const variables = loadExampleEnv(path.resolve(import.meta.dirname, '../../..'), {
+    NODE_ENV: 'test',
+    LOG_LEVEL: 'error',
+  });
   return Object.fromEntries(
     Object.entries(variables).map(([name, value]) => [name, { type: 'plain_text' as const, value }]),
   );

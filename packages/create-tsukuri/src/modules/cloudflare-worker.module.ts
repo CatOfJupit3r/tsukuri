@@ -12,6 +12,7 @@ export const WORKER_WORKSPACE = 'apps/worker';
 const WORKER_PACKAGE_NAME = 'worker';
 /** The Worker app only exists in generated projects, so its sources live outside the workspaces here. */
 const WORKER_VARIANT = 'variants/cloudflare-worker/apps/worker';
+const LINT_STAGED_SOURCE = 'lintstagedrc.cjs';
 
 export const cloudflareWorkerModule = defineModule({
   id: MODULE_IDS.CLOUDFLARE_WORKER,
@@ -22,7 +23,9 @@ export const cloudflareWorkerModule = defineModule({
   requires: [MODULE_IDS.API],
   provides: [CAPABILITIES.BACKEND_TARGET, CAPABILITIES.REMOTE_BACKEND, CAPABILITIES.WORKER_RUNTIME],
   files: [
-    { source: WORKER_VARIANT, target: WORKER_WORKSPACE },
+    { source: WORKER_VARIANT, target: WORKER_WORKSPACE, exclude: [LINT_STAGED_SOURCE] },
+    // Stored without the dot so lint-staged here does not load a config whose paths only resolve in a project.
+    { source: `${WORKER_VARIANT}/${LINT_STAGED_SOURCE}`, target: `${WORKER_WORKSPACE}/.lintstagedrc.cjs` },
     { source: `${API_WORKSPACE}/test/helpers/cloudflare-platform.ts` },
   ],
   packageJson: [
