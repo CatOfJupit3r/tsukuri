@@ -120,6 +120,23 @@ export const envVariableContributionSchema = z.object({
   example: z.string().default(''),
 });
 
+/**
+ * A Cloudflare binding the Worker registers in the container under `token` and lists in its generated
+ * `wrangler.jsonc` (`wrangler.section` entries get `binding` added).
+ */
+export const workerBindingContributionSchema = z.object({
+  kind: z.literal(CONNECTION_POINT_KINDS.WORKER_BINDING),
+  workspace: workspaceSchema,
+  binding: z.string().regex(/^[A-Z][A-Z0-9_]*$/, 'Binding names are CONSTANT_CASE'),
+  /** The binding type exported by `@cloudflare/workers-types`, such as `D1Database`. */
+  type: identifierSchema,
+  token: namedImportSchema,
+  wrangler: z.object({
+    section: z.string().regex(/^[a-z][a-z0-9_]*$/),
+    entry: z.record(z.string(), z.unknown()).default({}),
+  }),
+});
+
 export const composeServiceContributionSchema = z.object({
   kind: z.literal(CONNECTION_POINT_KINDS.COMPOSE_SERVICE),
   name: z.string().regex(/^[a-z][a-z0-9-]*$/),
@@ -168,6 +185,7 @@ export const connectionPointContributionSchema = z.discriminatedUnion('kind', [
   webRootPreloadContributionSchema,
   webDevtoolsPluginContributionSchema,
   envVariableContributionSchema,
+  workerBindingContributionSchema,
   composeServiceContributionSchema,
   ciStepContributionSchema,
   devTaskContributionSchema,
@@ -193,6 +211,7 @@ export type iConnectionPointContributionInput =
   | iWebRootPreloadContribution
   | iWebDevtoolsPluginContribution
   | iWithDefaults<iEnvVariableContribution, 'imports' | 'example'>
+  | iWorkerBindingContributionInput
   | iWithDefaults<iComposeServiceContribution, 'volumes'>
   | iWithDefaults<iCiStepContribution, 'env'>
   | iDevTaskContribution
@@ -209,6 +228,10 @@ export type iWebRootPreloadContribution = z.output<typeof webRootPreloadContribu
 export type iWebDevtoolsPluginContribution = z.output<typeof webDevtoolsPluginContributionSchema>;
 export type iDiRegistrationContribution = z.output<typeof diRegistrationContributionSchema>;
 export type iEnvVariableContribution = z.output<typeof envVariableContributionSchema>;
+export type iWorkerBindingContribution = z.output<typeof workerBindingContributionSchema>;
+type iWorkerBindingContributionInput = Omit<iWorkerBindingContribution, 'wrangler'> & {
+  wrangler: iWithDefaults<iWorkerBindingContribution['wrangler'], 'entry'>;
+};
 export type iComposeServiceContribution = z.output<typeof composeServiceContributionSchema>;
 export type iCiStepContribution = z.output<typeof ciStepContributionSchema>;
 export type iDevTaskContribution = z.output<typeof devTaskContributionSchema>;

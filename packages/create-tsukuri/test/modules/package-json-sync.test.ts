@@ -12,17 +12,20 @@ const ROOT_WORKSPACE = '.';
 /**
  * Manifests declare package.json contents explicitly, so they must stay in step with the real
  * package.json files in this repository, which are the union of every module contributing to
- * that workspace. The root package.json also carries repo-only scripts and is not compared.
+ * that workspace. The root package.json also carries repo-only scripts and is neither merged nor compared.
  */
 describe('module package.json contributions', () => {
   const manifests = MODULE_MANIFESTS.map((input) => moduleManifestSchema.parse(input));
+  // Alternative modules (one database or another) may give the same root script different commands.
   const composed = new PackageJsonMerger().merge(
     manifests.flatMap((manifest) =>
-      manifest.packageJson.map((contribution) => ({ moduleId: manifest.id, contribution })),
+      manifest.packageJson
+        .filter((contribution) => contribution.workspace !== ROOT_WORKSPACE)
+        .map((contribution) => ({ moduleId: manifest.id, contribution })),
     ),
   );
-  const workspaces = [...composed.keys()].filter(
-    (workspace) => workspace !== ROOT_WORKSPACE && existsSync(path.join(REPOSITORY_ROOT, workspace, 'package.json')),
+  const workspaces = [...composed.keys()].filter((workspace) =>
+    existsSync(path.join(REPOSITORY_ROOT, workspace, 'package.json')),
   );
 
   it.each(workspaces)('%s matches the repository package.json', (workspace) => {

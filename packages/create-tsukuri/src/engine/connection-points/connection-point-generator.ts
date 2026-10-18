@@ -23,11 +23,12 @@ import { StartupTaskRenderer } from './renderers/startup-task.renderer';
 import { WebDevtoolsPluginRenderer } from './renderers/web-devtools-plugin.renderer';
 import { WebRootPreloadRenderer } from './renderers/web-root-preload.renderer';
 import { WebSlotRenderer } from './renderers/web-slot.renderer';
+import { WorkerBindingRenderer } from './renderers/worker-binding.renderer';
 
 /**
  * Builds the files where modules meet (router and contract maps, DI registrations, startup tasks,
- * HTTP handlers, API context, database schema, error codes, env schema, compose file, CI workflow,
- * root scripts) from the installed modules' contributions. Output depends only on the module list,
+ * HTTP handlers, API context, database schema, error codes, env schema, Worker bindings, compose file,
+ * CI workflow, root scripts) from the installed modules' contributions. Output depends only on the module list,
  * so regenerating is idempotent.
  */
 @injectable()
@@ -45,6 +46,7 @@ export class ConnectionPointGenerator {
     private readonly webRootPreloadRenderer: WebRootPreloadRenderer,
     private readonly webDevtoolsPluginRenderer: WebDevtoolsPluginRenderer,
     private readonly envRenderer: EnvRenderer,
+    private readonly workerBindingRenderer: WorkerBindingRenderer,
     private readonly composeRenderer: ComposeRenderer,
     private readonly ciRenderer: CiRenderer,
     private readonly rootScriptsRenderer: RootScriptsRenderer,
@@ -116,6 +118,11 @@ export class ConnectionPointGenerator {
         this.ofKind(contributions, CONNECTION_POINT_KINDS.ENV_VARIABLE),
         templateContext,
         this.hostsOf(modules, CONNECTION_POINT_KINDS.ENV_VARIABLE),
+      )),
+      ...(await this.workerBindingRenderer.render(
+        this.ofKind(contributions, CONNECTION_POINT_KINDS.WORKER_BINDING),
+        templateContext,
+        this.hostsOf(modules, CONNECTION_POINT_KINDS.WORKER_BINDING),
       )),
       ...(await this.composeRenderer.render(this.ofKind(contributions, CONNECTION_POINT_KINDS.COMPOSE_SERVICE))),
       ...(await this.ciRenderer.render(this.ofKind(contributions, CONNECTION_POINT_KINDS.CI_STEP))),

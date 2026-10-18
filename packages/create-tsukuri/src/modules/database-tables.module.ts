@@ -1,3 +1,4 @@
+import { CAPABILITIES } from '#~/enums/capabilities.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
@@ -28,7 +29,7 @@ export const betterAuthSqliteModule = defineModule({
   name: 'Better Auth tables on SQLite',
   description: 'Better Auth users, sessions, accounts and verifications as SQLite tables',
   category: MODULE_CATEGORIES.BASE,
-  autoInclude: { modules: [MODULE_IDS.BETTER_AUTH, MODULE_IDS.SQLITE] },
+  autoInclude: { modules: [MODULE_IDS.BETTER_AUTH], capabilities: [CAPABILITIES.SQLITE_DIALECT] },
   files: [{ source: `${SQLITE_VARIANT}/${AUTH_SCHEMA}`, target: `${API_WORKSPACE}/${AUTH_SCHEMA}` }],
 });
 
@@ -48,7 +49,7 @@ export const exampleDomainSqliteModule = defineModule({
   name: 'Example domain tables on SQLite',
   description: 'User profile and achievement tables on SQLite',
   category: MODULE_CATEGORIES.BASE,
-  autoInclude: { modules: [MODULE_IDS.EXAMPLE_DOMAIN, MODULE_IDS.SQLITE] },
+  autoInclude: { modules: [MODULE_IDS.EXAMPLE_DOMAIN], capabilities: [CAPABILITIES.SQLITE_DIALECT] },
   files: EXAMPLE_DOMAIN_SCHEMAS.map((file) => ({
     source: `${SQLITE_VARIANT}/${file}`,
     target: `${API_WORKSPACE}/${file}`,
