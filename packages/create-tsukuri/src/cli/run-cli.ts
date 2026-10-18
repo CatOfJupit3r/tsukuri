@@ -1,30 +1,40 @@
-import path from 'node:path';
-import 'reflect-metadata';
-
 import { GeneratorError } from '@~/engine/generator-error';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
 import { modifyActionsEnumwaii } from '@~/enums/modify-actions.enums';
 
 import { ClackPrompter } from './clack-prompter';
 import { createCliContainer } from './cli-container';
+import type { iCliContainerOptions } from './cli-container';
 import { NodeCommandRunner } from './command-runner';
 import { CreateCommand } from './create-command';
 import { ModifyCommand } from './modify-command';
 
-/** Module sources of a local checkout: the repository root. */
-const LOCAL_SOURCE_ROOT = path.resolve(import.meta.dirname, '../../../..');
 const CANCELLED_EXIT_CODE = 130;
 const CREATE_SUBCOMMAND = 'create';
+const ARGUMENT_SEPARATOR = '--';
 
-async function main() {
-  // `pnpm run create -- <args>` forwards the `--` separator itself.
-  const rawArgv = process.argv.slice(2);
-  const argv = rawArgv[0] === '--' ? rawArgv.slice(1) : rawArgv;
+/** `pnpm run create -- <args>` forwards the separator itself; no command of the CLI takes one. */
+function withoutArgumentSeparator(argv: string[]) {
+  const separatorIndex = argv.indexOf(ARGUMENT_SEPARATOR);
+  return separatorIndex === -1 ? argv : argv.toSpliced(separatorIndex, 1);
+}
+
+/**
+ * Runs `create`, `add` or `remove` against the module sources under `sourceRoot`, resolving the
+ * project folders given on the command line against `cwd`. The local and the published entry
+ * points differ only in these.
+ */
+export async function runCli({
+  sourceRoot,
+  sourceLayout,
+  cwd,
+}: Pick<iCliContainerOptions, 'sourceRoot' | 'sourceLayout' | 'cwd'>) {
+  const argv = withoutArgumentSeparator(process.argv.slice(2));
   const prompter = new ClackPrompter();
   const container = createCliContainer({
-    sourceRoot: LOCAL_SOURCE_ROOT,
-    // pnpm sets INIT_CWD to the directory the user ran `pnpm run ...` from.
-    cwd: process.env.INIT_CWD ?? process.cwd(),
+    sourceRoot,
+    sourceLayout,
+    cwd,
     prompter,
     runner: new NodeCommandRunner(),
   });
@@ -43,5 +53,3 @@ async function main() {
     throw error;
   }
 }
-
-await main();

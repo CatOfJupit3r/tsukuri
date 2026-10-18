@@ -19,12 +19,20 @@
     "lint:fix": "pnpm run lint",
     "verify": "tsx scripts/verify.ts",
     "build:server": "pnpm --filter=server... run build",
+    "create": "pnpm --filter=create-tsukuri run cli create",
+    "add": "pnpm --filter=create-tsukuri run cli add",
+    "remove": "pnpm --filter=create-tsukuri run cli remove",
     "clean:modules": "tsx scripts/clean.ts",
     "prepare": "husky",
     "commit": "cz",
-    "update:workspaces": "pnpm update --interactive --recursive"
+    "update:workspaces": "pnpm update --interactive --recursive",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && pnpm install --lockfile-only",
+    "changeset:publish": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "1.0.1",
+    "@changesets/cli": "3.0.3",
     "@startername/lint-config": "workspace:*",
     "@types/node": "catalog:",
     "commitizen": "4.3.2",

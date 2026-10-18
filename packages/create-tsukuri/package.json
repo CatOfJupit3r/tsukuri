@@ -2,17 +2,36 @@
   "name": "create-tsukuri",
   "version": "0.0.0",
   "type": "module",
-  "private": true,
   "description": "Module-based project generator for tsukuri monorepos",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CatOfJupit3r/tsukuri.git",
+    "directory": "packages/create-tsukuri"
+  },
+  "bin": {
+    "create-tsukuri": "./dist/published-main.mjs"
+  },
+  "files": [
+    "dist",
+    "sources"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
+    "build": "tsdown && pnpm run bundle:sources",
+    "bundle:sources": "node --no-deprecation --conditions=workspace-source --import @swc-node/register/esm-register ./src/bundle/bundle-sources.ts",
+    "cli": "node --no-deprecation --conditions=workspace-source --import @swc-node/register/esm-register ./src/cli/local-main.ts",
+    "prepack": "pnpm run build",
     "check-types": "tsgo --noEmit",
     "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
     "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
     "lint:eslint": "eslint . --fix",
     "prettify": "prettier --write ./src/ ./test/",
     "test": "vitest run",
-    "test:install": "vitest run --config vitest.install.config.ts",
-    "create": "node --no-deprecation --conditions=workspace-source --import @swc-node/register/esm-register ./src/cli/main.ts"
+    "test:install": "vitest run --config vitest.install.config.ts"
   },
   "engines": {
     "node": ">=26.0.0"
@@ -40,6 +59,7 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "prettier": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
     "vitest": "catalog:"

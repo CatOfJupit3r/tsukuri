@@ -166,6 +166,7 @@ apps/<workspace>/test/
 
 - `pnpm run verify` is THE verification command: it runs check-types, oxlint and ESLint (add `--tests` to also run the suite, `--filter <pkg>` (repeatable) or `--changed-since <ref>` to scope, `--files <paths>` to lint exact files) and reports honest PASS/FAIL with an exit code you can trust. The full output of the last run is in `node_modules/.cache/verify/last-run.log`. Use it before handing work off.
 - `pnpm run dev` boots the local stack.
+- `pnpm run create <dir>`, `pnpm run add <ids> --dir <dir>` and `pnpm run remove <ids> --dir <dir>` run the generator against the module sources of this checkout; `<dir>` resolves next to the repository. The published `create-tsukuri` package (`pnpm create tsukuri`) bundles the same sources; release it with a changeset (`pnpm run changeset`) and the manual Release workflow.
 - `pnpm run build` builds the monorepo.
 - `pnpm run check-types` runs TypeScript checks across the workspace.
 - `pnpm run lint` runs one oxlint pass over every workspace, then ESLint for the rules oxlint cannot run. Each workspace's `oxlint.config.mjs` is translated from its ESLint config, so `eslint.config.mjs` stays the single rule set. Shared configs live in `configs/lint-config` (`@startername/lint-config/eslint`, `@startername/lint-config/oxlint-workspaces`).

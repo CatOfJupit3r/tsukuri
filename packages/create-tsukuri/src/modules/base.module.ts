@@ -19,7 +19,8 @@ export const baseModule = defineModule({
     { source: '.node-version' },
     { source: '.nvmrc' },
     { source: '.vscode' },
-    { source: '.husky' },
+    // `_` is the runtime husky writes on install.
+    { source: '.husky', exclude: ['_'] },
     { source: '.github/ISSUE_TEMPLATE' },
     { source: 'cz.config.cjs' },
     { source: 'lint-staged.shared.cjs' },
@@ -201,6 +202,7 @@ export const baseModule = defineModule({
       fields: {
         name: '@startername/common',
         version: '0.0.0',
+        private: true,
         type: 'module',
         exports: {
           './globals': {

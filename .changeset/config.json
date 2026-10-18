@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "CatOfJupit3r/tsukuri", "disableThanks": true }],
+  "commit": false,
+  "access": "public",
+  "baseBranch": "main",
+  "format": "prettier",
+  "privatePackages": { "version": false, "tag": false },
+  "updateInternalDependencies": "patch",
+  "fixed": [],
+  "linked": [],
+  "ignore": []
+}

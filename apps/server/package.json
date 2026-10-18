@@ -1,5 +1,6 @@
 {
   "name": "server",
+  "private": true,
   "main": "dist/server.mjs",
   "type": "module",
   "scripts": {

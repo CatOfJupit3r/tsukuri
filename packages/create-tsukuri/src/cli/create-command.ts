@@ -94,7 +94,7 @@ export class CreateCommand {
     spinner.stop(`Wrote ${plan.directory}`);
 
     await this.runPostSteps(plan);
-    this.prompter.outro(`Done. Next: cd ${plan.directory}`);
+    this.prompter.outro(`Done. Next: cd "${plan.targetDir}"`);
     return plan;
   }
 

@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { injectable } from 'tsyringe';
 
+import { skillPath } from '@~/constants/skill-path';
 import { FILE_KINDS } from '@~/enums/file-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
 import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
@@ -23,7 +24,6 @@ export interface iComposeOptions {
   record: iProjectRecord;
 }
 
-const SKILLS_DIR = '.agents/skills';
 const PNPM_WORKSPACE_FILE = 'pnpm-workspace.yaml';
 const ROOT_WORKSPACE = '.';
 /** First bytes inspected when deciding whether a file is text. */
@@ -86,7 +86,7 @@ export class ProjectComposer {
       }
 
       for (const skill of new Set(manifest.skills.filter((id) => !excludedSkills.has(id)))) {
-        for (const file of await this.reader.listEntry({ source: `${SKILLS_DIR}/${skill}`, exclude: [] })) {
+        for (const file of await this.reader.listEntry({ source: skillPath(skill), exclude: [] })) {
           if (project.has(file.targetPath)) continue;
           project.write(file.targetPath, rename(await this.reader.readText(file.sourcePath)), {
             kind: FILE_KINDS.SKILL,
