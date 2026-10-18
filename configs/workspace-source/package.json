@@ -1,0 +1,25 @@
+{
+  "name": "@startername/workspace-source",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Resolve workspace packages to their TypeScript source in dev, tests and type checks",
+  "exports": {
+    "./conditions": {
+      "types": "./src/conditions.d.mts",
+      "default": "./src/conditions.mjs"
+    },
+    "./vite": {
+      "types": "./src/vite.d.mts",
+      "default": "./src/vite.mjs"
+    }
+  },
+  "peerDependencies": {
+    "vite": ">=8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  }
+}

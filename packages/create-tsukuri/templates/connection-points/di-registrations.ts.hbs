@@ -1,0 +1,25 @@
+// {{header}}
+
+import type { DependencyContainer, InjectionToken } from 'tsyringe';
+{{#if imports.length}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+{{/if}}
+
+const GENERATED_BINDINGS: [InjectionToken<unknown>, InjectionToken<unknown>][] = [
+{{#each bindings}}
+  [{{token.name}}, {{implementation.name}}],
+{{/each}}
+];
+
+/** Loads every module-provided service and binds module-provided implementations to their tokens. */
+export async function registerGeneratedServices(container: DependencyContainer) {
+{{#each sideEffects}}
+  await import('{{this}}');
+{{/each}}
+  for (const [token, implementation] of GENERATED_BINDINGS) {
+    container.registerSingleton(token, implementation);
+  }
+}

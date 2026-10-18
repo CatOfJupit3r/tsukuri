@@ -1,0 +1,47 @@
+{
+  "name": "create-tsukuri",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Module-based project generator for tsukuri monorepos",
+  "scripts": {
+    "check-types": "tsgo --noEmit",
+    "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
+    "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
+    "lint:eslint": "eslint . --fix",
+    "prettify": "prettier --write ./src/ ./test/",
+    "test": "vitest run",
+    "test:install": "vitest run --config vitest.install.config.ts",
+    "create": "node --no-deprecation --conditions=workspace-source --import @swc-node/register/esm-register ./src/cli/main.ts"
+  },
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "prettier": "@startername/prettier-config",
+  "dependencies": {
+    "@clack/prompts": "1.8.1",
+    "enumwaii": "1.2.0",
+    "handlebars": "4.7.9",
+    "reflect-metadata": "0.2.2",
+    "tsyringe": "4.10.0",
+    "yaml": "2.9.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@startername/lint-config": "workspace:*",
+    "@startername/prettier-config": "workspace:*",
+    "@startername/swc-config": "workspace:*",
+    "@startername/vitest-config": "workspace:*",
+    "@swc-node/register": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "eslint": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  }
+}

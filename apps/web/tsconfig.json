@@ -6,17 +6,14 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "customConditions": ["workspace-source"],
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "types": ["vite/client", "node"],
     "rootDirs": ["."],
     "paths": {
-      "@~/*": ["./src/*"],
-      "@startername/common/*": ["../../packages/common/src/*"],
-      "@startername/server-contract/*": ["../../packages/server-contract/src/*"]
-    },
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+      "@~/*": ["./src/*"]
+    }
   },
   "exclude": ["./eslint.config.js"],
   "files": ["../../packages/common/src/globals.d.ts"],

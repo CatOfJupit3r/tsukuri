@@ -6,6 +6,8 @@ import path from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import z from 'zod';
 
+import { withWorkspaceSourceResolve } from '@startername/workspace-source/vite';
+
 // Uncomment to enable logging for proxy. Use for debugging purposes only.
 // const configureProxy = (proxy: HttpProxy.Server) => {
 //     proxy.on('error', (err, _req, _res) => {
@@ -46,11 +48,9 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
-    resolve: {
-      alias: {
-        '@~': path.resolve(__dirname, './src'),
-      },
-    },
+    ...withWorkspaceSourceResolve({
+      '@~': path.resolve(__dirname, './src'),
+    }),
     server: {
       host: env.VITE_HOST,
       port: env.VITE_PORT,

@@ -36,7 +36,6 @@ Examples:
 
 - `AGENTS.md` for repo-wide conventions, workflow, and codebase standards
 - `.agents/skills/*/SKILL.md` for task-specific implementation guidance
-- `.agents/skills/enumwaii/SKILL.md` is mandatory before declaring, comparing, or reviewing any closed-set string value (status, role, mode, kind, event type)
 
 ## Repository Layout
 
@@ -44,6 +43,7 @@ Examples:
 - `apps/web` contains the React 19 client, TanStack Router tree, UI components, and client-side state.
 - `packages/server-contract` contains the API contracts used by both apps.
 - `packages/common` contains shared utilities, types, constants, and helpers used by both apps.
+- `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the Handlebars templates in `templates/` (markdown fragments and connection points; `{{#module "id"}}...{{else}}...{{/module}}` blocks, literal braces escaped as `\{{`) that generated projects are built from. Markdown fragments also take line-based `<harness-specific id="claude|codex">` blocks (kept only in CLAUDE.md or AGENTS.md) and `<private>` blocks (kept only when the project record sets `markdown.includePrivate`). Module source files stay real, type-checked files and are never templated.
 - `docs` contains product notes, roadmaps, and design documentation, if present.
 
 ## Core Conventions
@@ -80,7 +80,7 @@ Examples:
   ```
 - Do not generate a reference guide, comprehensive summary document, or new docs markdown files unless the user explicitly asks for them.
 - Follow standard TypeScript conventions with strict typing, `async/await`, and modular design.
-- Use the `enumwaii` skill for every reusable closed set of string values. Do not use TypeScript `enum`, `z.enum`, plain `as const` objects, duplicate unions, or raw literals for enum-backed values.
+- Use the `enumwaii` package (`em([...])`) for every reusable closed set of string values; `eslint-plugin-enumwaii` enforces it. Do not use TypeScript `enum`, `z.enum`, plain `as const` objects, duplicate unions, or raw literals for enum-backed values.
 - Always name files with kebab-case, interfaces with `i` prefix.
 - Never create a type alias that just re-exports an `i`-prefixed interface/type (e.g. `export type UserResponse = iUserResponse`). Use the `i`-prefixed name directly everywhere. Example:
   ```typescript
@@ -113,8 +113,10 @@ Examples:
 - The Better Auth server is mounted under `/auth/*` and expects HTTPS cookies (`sameSite: 'none'`, `secure: true`); keep this in mind when testing locally.
 - Aliases: `@~/` resolves to `apps/server/src` or `apps/web/src` depending on the package; `@startername/common` surfaces shared utilities and types, while `@startername/server-contract` surfaces API contracts.
 - PostgreSQL runs at `postgresql://postgres:postgres@localhost:5432/startername` by default; adjust via `POSTGRES_URL` and update docker-compose if ports change.
-- Node.js v24 is required; use nvm or similar to manage Node versions.
-- pnpm ≥10.0.0 is the package manager; use `corepack enable` to activate it.
+- Workspace packages export a `workspace-source` condition pointing at their TypeScript source; TypeScript, Vite/Vitest and Node dev servers resolve it, so nothing has to be built before `dev`, `test` or `check-types`. Add the condition to every new export (see `configs/workspace-source`).
+- Workspaces that use tsyringe decorators extend `@startername/swc-config/tsconfig.decorators.json` (read by `@swc-node/register` in dev) and use `createSwcPlugin()` from `@startername/swc-config/vitest` in tests; tsdown builds emit the same decorator metadata.
+- Node.js v26 is required; use nvm or similar to manage Node versions.
+- pnpm ≥12.14.0 is the package manager; use `corepack enable` to activate it.
 
 ## Environment (Windows)
 
@@ -162,11 +164,11 @@ apps/<workspace>/test/
 
 ## Commands
 
-- `pnpm run verify` is THE verification command: it runs check-types + lint (add `--tests` to also run the suite, `--filter <pkg>` to scope) and reports honest PASS/FAIL with an exit code you can trust. Use it before handing work off.
+- `pnpm run verify` is THE verification command: it runs check-types, oxlint and ESLint (add `--tests` to also run the suite, `--filter <pkg>` (repeatable) or `--changed-since <ref>` to scope, `--files <paths>` to lint exact files) and reports honest PASS/FAIL with an exit code you can trust. The full output of the last run is in `node_modules/.cache/verify/last-run.log`. Use it before handing work off.
 - `pnpm run dev` boots the local stack.
 - `pnpm run build` builds the monorepo.
 - `pnpm run check-types` runs TypeScript checks across the workspace.
-- `pnpm run lint` runs ESLint across the workspace.
+- `pnpm run lint` runs one oxlint pass over every workspace, then ESLint for the rules oxlint cannot run. Each workspace's `oxlint.config.mjs` is translated from its ESLint config, so `eslint.config.mjs` stays the single rule set. Shared configs live in `configs/lint-config` (`@startername/lint-config/eslint`, `@startername/lint-config/oxlint-workspaces`).
 - `pnpm run prettify` formats the workspace.
 - `pnpm run test` runs the test suite across the workspace.
 - `pnpm run db:generate` generates a Drizzle migration from the current schema (root alias for the `server` package script).
@@ -179,30 +181,15 @@ apps/<workspace>/test/
 - If a task spans backend and frontend, coordinate the contract first and then implement the UI against that contract.
 - Run `pnpm run verify` before handing work off. If you are changing code, ALWAYS run it to catch type and lint issues early; trust its exit code over raw pnpm stderr.
 - For any task of the form "replace/remove/rename X everywhere": first enumerate ALL matches with grep (including tests, fixtures, docs, and generated-adjacent files) into an explicit checklist; work the checklist down; finish by re-running the same grep and pasting its empty result as proof. Do not report completion without the zero-match re-run.
-- If you are implementing a roadmap, then always make sure to mark the relevant roadmap items as "completed".
 
 <!-- intent-skills:start -->
 # Skill mappings - when working in these areas, load the linked skill file into context.
 skills:
   # Local project skills
-  - task: "MANDATORY before declaring, comparing, or reviewing any closed-set string value (status, role, mode, kind, event type)"
-    load: ".agents/skills/enumwaii/SKILL.md"
   - task: "Organizing or implementing server features with service, repository, resolver, and nested module boundaries"
     load: ".agents/skills/server-module/SKILL.md"
-  - task: "Creating new roadmaps from ideas, research, stale plans, or architectural direction"
-    load: ".agents/skills/roadmap-creation-workflow/SKILL.md"
   - task: "Setting up dependency injection with tsyringe for server services"
     load: ".agents/skills/dependency-injection-setup/SKILL.md"
-  - task: "Implementing a full-stack feature from contracts to UI following contract-first development"
-    load: ".agents/skills/feature-implementation-workflow/SKILL.md"
-  - task: "Splitting a broad roadmap phase into small, budget-aware agent work packets before implementation"
-    load: ".agents/skills/roadmap-task-slicing/SKILL.md"
-  - task: "Delegating implementation to Claude Code or another coding agent while requiring evidence-backed completion reports"
-    load: ".agents/skills/agent-implementation-proof/SKILL.md"
-  - task: "Reviewing an agent-made branch, pull request, or diff against roadmap acceptance criteria to detect false completion"
-    load: ".agents/skills/codex-diff-verification/SKILL.md"
-  - task: "Auditing whether a roadmap phase is actually implemented, or archiving a completed roadmap"
-    load: ".agents/skills/roadmap-phase-audit/SKILL.md"
   - task: "Creating new oRPC contracts for API endpoints with Zod validation"
     load: ".agents/skills/orpc-contract-creation/SKILL.md"
   - task: "Building accessible React components with UI primitives, nuqs, and design tokens"

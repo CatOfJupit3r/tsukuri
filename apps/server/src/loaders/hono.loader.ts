@@ -68,7 +68,7 @@ function logTransportError(
     transport,
     operation,
     pathname,
-    ...(metadata?.context ?? {}),
+    ...metadata?.context,
     ...(isORPCError(error)
       ? {
           errorCode: error.code,

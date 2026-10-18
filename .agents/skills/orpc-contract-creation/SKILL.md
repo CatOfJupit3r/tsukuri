@@ -147,7 +147,7 @@ pnpm run check-types
 .input(
   z.object({
     search: z.string().optional(),
-    status: recordStatusSchema.optional(), // Enumwaii schema, see the enumwaii skill
+    status: recordStatusSchema.optional(), // emToZodSchema(...) of an enumwaii declaration
   })
 )
 ```

@@ -1,5 +1,5 @@
 import { call } from '@orpc/server';
-import { it, expect, describe, beforeEach } from 'vitest';
+import { it, expect, describe } from 'vitest';
 
 import { USER_ACHIEVEMENTS } from '@startername/common/constants/achievements';
 import { BADGE_IDS } from '@startername/common/constants/badges';

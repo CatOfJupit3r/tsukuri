@@ -1,0 +1,137 @@
+import path from 'node:path';
+import { injectable } from 'tsyringe';
+
+import { FILE_KINDS } from '@~/enums/file-kinds.enums';
+import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
+import type { iProjectRecord } from '@~/record/project-record.schema';
+import { PROJECT_RECORD_FILE } from '@~/record/project-record.schema';
+
+import { ConnectionPointGenerator } from './connection-points/connection-point-generator';
+import { GeneratorError } from './generator-error';
+import { MarkdownRenderer } from './markdown-renderer';
+import { COMPOSED_FILE_NAME, ModuleSourceReader } from './module-source-reader';
+import { PackageJsonMerger } from './package-json-merger';
+import { PnpmWorkspaceMerger } from './pnpm-workspace-merger';
+import { applyProjectName } from './project-identity';
+import type { iTemplateContext } from './template-renderer';
+import { VirtualProject } from './virtual-project';
+
+export interface iComposeOptions {
+  /** Installed modules in resolution order; must match `record.modules`. */
+  modules: iModuleManifest[];
+  record: iProjectRecord;
+}
+
+const SKILLS_DIR = '.agents/skills';
+const PNPM_WORKSPACE_FILE = 'pnpm-workspace.yaml';
+const ROOT_WORKSPACE = '.';
+/** First bytes inspected when deciding whether a file is text. */
+const BINARY_SNIFF_LENGTH = 8000;
+
+function isBinary(content: Buffer) {
+  return content.subarray(0, BINARY_SNIFF_LENGTH).includes(0);
+}
+
+function workspaceFile(workspace: string, fileName: string) {
+  return workspace === ROOT_WORKSPACE ? fileName : path.posix.join(workspace, fileName);
+}
+
+@injectable()
+export class ProjectComposer {
+  constructor(
+    private readonly reader: ModuleSourceReader,
+    private readonly packageJsonMerger: PackageJsonMerger,
+    private readonly pnpmWorkspaceMerger: PnpmWorkspaceMerger,
+    private readonly markdownRenderer: MarkdownRenderer,
+    private readonly connectionPointGenerator: ConnectionPointGenerator,
+  ) {}
+
+  /**
+   * Combines the recorded modules into an in-memory project tree. The same record always yields
+   * the same tree, which is what lets `add` regenerate an existing project.
+   */
+  public async compose({ modules, record }: iComposeOptions) {
+    const project = new VirtualProject();
+    const rename = (content: string) => applyProjectName(content, record.projectName);
+    const excludedSkills = new Set(record.skills.excluded);
+    const context: iTemplateContext = {
+      installedModules: modules.map((manifest) => manifest.id),
+      projectName: record.projectName,
+      skills: [...new Set(modules.flatMap((manifest) => manifest.skills))].filter((id) => !excludedSkills.has(id)),
+    };
+    const connectionPoints = await this.connectionPointGenerator.generate(modules, context);
+
+    const packageJsons = this.packageJsonMerger.merge([
+      ...modules.flatMap((manifest) =>
+        manifest.packageJson.map((contribution) => ({ moduleId: manifest.id, contribution })),
+      ),
+      ...(modules[0] ? [{ moduleId: modules[0].id, contribution: connectionPoints.rootPackageJson }] : []),
+    ]);
+
+    for (const manifest of modules) {
+      for (const entry of manifest.files) {
+        for (const file of await this.reader.listEntry(entry)) {
+          if (path.posix.basename(file.targetPath) === COMPOSED_FILE_NAME) {
+            this.assertComposedPackage(file.targetPath, packageJsons, manifest.id);
+            continue;
+          }
+
+          const content = await this.reader.read(file.sourcePath);
+          project.write(file.targetPath, isBinary(content) ? content : rename(content.toString('utf8')), {
+            kind: FILE_KINDS.MODULE_FILE,
+            moduleId: manifest.id,
+          });
+        }
+      }
+
+      for (const skill of new Set(manifest.skills.filter((id) => !excludedSkills.has(id)))) {
+        for (const file of await this.reader.listEntry({ source: `${SKILLS_DIR}/${skill}`, exclude: [] })) {
+          if (project.has(file.targetPath)) continue;
+          project.write(file.targetPath, rename(await this.reader.readText(file.sourcePath)), {
+            kind: FILE_KINDS.SKILL,
+            moduleId: manifest.id,
+          });
+        }
+      }
+    }
+
+    for (const file of connectionPoints.files) {
+      project.write(file.path, rename(file.content), { kind: FILE_KINDS.CONNECTION_POINT });
+    }
+
+    for (const [workspace, packageJson] of packageJsons) {
+      project.write(
+        workspaceFile(workspace, COMPOSED_FILE_NAME),
+        rename(this.packageJsonMerger.serialize(packageJson)),
+        { kind: FILE_KINDS.PACKAGE_JSON },
+      );
+    }
+
+    const pnpmWorkspace = this.pnpmWorkspaceMerger.merge(
+      modules.map((manifest) => ({ moduleId: manifest.id, contribution: manifest.pnpmWorkspace })),
+    );
+    this.pnpmWorkspaceMerger.assertCatalogCoverage(pnpmWorkspace, packageJsons);
+    project.write(PNPM_WORKSPACE_FILE, rename(this.pnpmWorkspaceMerger.serialize(pnpmWorkspace)), {
+      kind: FILE_KINDS.PNPM_WORKSPACE,
+    });
+
+    for (const document of await this.markdownRenderer.render(modules, context, record.markdown)) {
+      project.write(document.path, rename(document.content), { kind: FILE_KINDS.MARKDOWN });
+    }
+
+    project.write(PROJECT_RECORD_FILE, `${JSON.stringify(record, null, 2)}\n`, { kind: FILE_KINDS.MODULE_RECORD });
+
+    return project;
+  }
+
+  private assertComposedPackage(targetPath: string, packageJsons: Map<string, unknown>, moduleId: string) {
+    const workspace = path.posix.dirname(targetPath);
+    if (packageJsons.has(workspace)) return;
+
+    throw new GeneratorError(
+      GENERATOR_ERROR_CODES.SOURCE_NOT_FOUND,
+      `Module "${moduleId}" ships "${targetPath}", but no module declares a package.json for workspace "${workspace}"`,
+    );
+  }
+}

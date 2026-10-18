@@ -1,4 +1,4 @@
-import { useStore } from '@tanstack/react-form';
+import { useSelector } from '@tanstack/react-form';
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
 
 import { Button } from './button/button';
@@ -111,7 +111,7 @@ export const SelectField = ({ label, options, ...selectProps }: iSelectFieldProp
 const useFormErrors = () => {
   const form = useFormContext();
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  const errors = useStore(form.store, (state) => state.errors);
+  const errors = useSelector(form.store, (state) => state.errors);
   return { errors, hasErrors: Object.keys(errors).length > 0 };
 };
 
@@ -123,7 +123,7 @@ export function SubmitButton({ children, className, isDisabled, ...props }: iSub
   const form = useFormContext();
   const { hasErrors } = useFormErrors();
 
-  const [isSubmitting, canSubmit] = useStore(form.store, (state) => [state.isSubmitting, state.canSubmit]);
+  const [isSubmitting, canSubmit] = useSelector(form.store, (state) => [state.isSubmitting, state.canSubmit]);
 
   return (
     <Button

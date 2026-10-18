@@ -3,7 +3,7 @@
   "main": "dist/server.mjs",
   "type": "module",
   "scripts": {
-    "dev": "node --import @swc-node/register/esm-register --watch ./src/server.ts",
+    "dev": "node --conditions=workspace-source --import @swc-node/register/esm-register --watch ./src/server.ts",
     "start": "node ./dist/server.mjs",
     "build": "tsdown",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
@@ -11,14 +11,16 @@
     "db:push": "drizzle-kit push --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
     "check-types": "tsgo --noEmit",
-    "lint": "eslint . --fix",
+    "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
+    "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
+    "lint:eslint": "eslint . --fix",
     "prettify": "prettier --write ./src/",
     "test": "vitest run",
     "test:watch": "NODE_ENV=test vitest",
     "test:ui": "NODE_ENV=test vitest --ui"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=26.0.0"
   },
   "prettier": "@startername/prettier-config",
   "dependencies": {
@@ -48,8 +50,11 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.4",
-    "@startername/eslint-config": "workspace:*",
+    "@startername/lint-config": "workspace:*",
     "@startername/prettier-config": "workspace:*",
+    "@startername/swc-config": "workspace:*",
+    "@startername/vitest-config": "workspace:*",
+    "@startername/workspace-source": "workspace:*",
     "@swc-node/register": "catalog:",
     "@swc/core": "catalog:",
     "@types/lodash-es": "catalog:",
@@ -59,6 +64,8 @@
     "@vitest/ui": "catalog:",
     "drizzle-kit": "^0.31.10",
     "eslint": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "prettier": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",

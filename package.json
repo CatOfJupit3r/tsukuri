@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "docker compose -f ./docker-compose.dev.yml --profile postgres up -d --wait && pnpm --parallel --filter=server --filter=web --filter=@startername/common --filter=@startername/server-contract run dev",
+    "dev": "docker compose -f ./docker-compose.dev.yml --profile postgres up -d --wait && pnpm --parallel --filter=server --filter=web run dev",
     "build": "pnpm --recursive run build",
     "test": "pnpm --recursive --stream run test",
     "check-types": "pnpm --recursive --stream --no-bail run check-types",
@@ -11,28 +11,28 @@
     "prettier": "pnpm run prettify",
     "dev:web": "pnpm --filter=web run dev",
     "dev:server": "pnpm --filter=server run dev",
-    "dev:common": "pnpm --filter=@startername/common run dev",
-    "dev:server-contract": "pnpm --filter=@startername/server-contract run dev",
     "db:generate": "pnpm --filter=server run db:generate",
     "db:migrate": "pnpm --filter=server run db:migrate",
     "db:push": "pnpm --filter=server run db:push",
     "db:studio": "pnpm --filter=server run db:studio",
-    "lint": "pnpm --recursive --stream --no-bail run lint",
+    "lint": "oxlint -c oxlint.config.mjs --fix apps packages && pnpm --recursive --no-sort --stream --no-bail run lint:eslint",
     "lint:fix": "pnpm run lint",
     "verify": "tsx scripts/verify.ts",
     "build:server": "pnpm --filter=server... run build",
     "clean:modules": "tsx scripts/clean.ts",
     "prepare": "husky",
     "commit": "cz",
-    "build:deps": "pnpm --filter=@startername/server-contract... run build",
     "update:workspaces": "pnpm update --interactive --recursive"
   },
   "devDependencies": {
+    "@startername/lint-config": "workspace:*",
     "@types/node": "catalog:",
     "commitizen": "4.3.2",
     "cz-git": "1.13.1",
     "husky": "9.1.7",
     "lint-staged": "17.0.8",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "rimraf": "6.1.3",
     "tsx": "catalog:"
   },
@@ -42,9 +42,9 @@
       "czConfig": "./cz.config.cjs"
     }
   },
-  "packageManager": "pnpm@11.5.0",
+  "packageManager": "pnpm@12.14.0",
   "engines": {
-    "node": "24.13.0",
-    "pnpm": ">=11.5.0"
+    "node": "26.12.0",
+    "pnpm": ">=12.14.0"
   }
 }

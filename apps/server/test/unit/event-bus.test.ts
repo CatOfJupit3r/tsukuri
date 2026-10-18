@@ -1,6 +1,5 @@
 import 'reflect-metadata';
-
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { EventBus } from '@~/features/events/event-bus';
 import { Listener } from '@~/features/events/listener.class';
@@ -10,6 +9,10 @@ describe('EventBus', () => {
 
   beforeEach(() => {
     eventBus = new EventBus();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should emit events and wait for all handlers to complete', async () => {
@@ -51,7 +54,7 @@ describe('EventBus', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const results: number[] = [];
 
-    eventBus.on(testListener, async ({ value }) => {
+    eventBus.on(testListener, async () => {
       throw new Error('Handler error');
     });
 
@@ -99,8 +102,8 @@ describe('EventBus', () => {
   });
 
   it('should run multiple handlers in parallel', async () => {
+    vi.useFakeTimers();
     const testListener = new Listener<{ delay: number }>('PARALLEL_TEST');
-    const startTime = Date.now();
     const delays: number[] = [];
 
     eventBus.on(testListener, async ({ delay }) => {
@@ -113,11 +116,11 @@ describe('EventBus', () => {
       delays.push(delay * 2);
     });
 
-    await eventBus.emit(testListener, { delay: 50 });
-    const elapsed = Date.now() - startTime;
+    const emitted = eventBus.emit(testListener, { delay: 50 });
+    // Sequential handlers would need 100ms, so both finish within 50ms only when they run in parallel
+    await vi.advanceTimersByTimeAsync(50);
 
-    // Handlers should run in parallel, so total time should be ~50ms, not ~100ms
-    expect(elapsed).toBeLessThan(80);
-    expect(delays).toHaveLength(2);
+    expect(delays).toEqual([50, 100]);
+    await emitted;
   });
 });

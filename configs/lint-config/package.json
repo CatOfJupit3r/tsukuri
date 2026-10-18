@@ -1,0 +1,46 @@
+{
+  "name": "@startername/lint-config",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Shared ESLint and oxlint configuration for startername monorepo",
+  "exports": {
+    "./eslint": "./src/eslint.mjs",
+    "./oxlint-workspaces": "./src/oxlint-workspaces.mjs"
+  },
+  "engines": {
+    "node": "26.12.0"
+  },
+  "dependencies": {
+    "@eslint/compat": "^2.1.0",
+    "@eslint/js": "^9.39.2",
+    "@oxlint/migrate": "1.87.0",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@tanstack/eslint-plugin-query": "^5.101.2",
+    "@tanstack/eslint-plugin-router": "^1.162.0",
+    "@typescript-eslint/eslint-plugin": "^8.63.0",
+    "@typescript-eslint/parser": "^8.63.0",
+    "eslint-config-airbnb-extended": "^3.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-better-tailwindcss": "^4.6.1",
+    "eslint-plugin-enumwaii": "1.2.0",
+    "eslint-plugin-import-x": "^4.17.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-n": "^18.2.2",
+    "eslint-plugin-oxlint": "1.87.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.7.0",
+    "typescript-eslint": "^8.63.0"
+  },
+  "peerDependencies": {
+    "eslint": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
+  }
+}

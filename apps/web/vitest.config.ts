@@ -2,6 +2,9 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
+import { MODULE_CACHE_TEST_OPTIONS, moduleCacheKeyPlugin } from '@startername/vitest-config/module-cache';
+import { withWorkspaceSourceResolve } from '@startername/workspace-source/vite';
+
 export default defineConfig({
   plugins: [
     react({
@@ -9,8 +12,14 @@ export default defineConfig({
         plugins: ['babel-plugin-react-compiler'],
       },
     }),
+    moduleCacheKeyPlugin({
+      rootDirectory: __dirname,
+      configFilePaths: [],
+      transformerPackageNames: ['@vitejs/plugin-react', 'babel-plugin-react-compiler'],
+    }),
   ],
   test: {
+    experimental: MODULE_CACHE_TEST_OPTIONS,
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
@@ -22,9 +31,7 @@ export default defineConfig({
       exclude: ['node_modules', 'dist', 'test', '**/*.{test,spec}.{ts,tsx}', '**/*.config.ts'],
     },
   },
-  resolve: {
-    alias: {
-      '@~': path.resolve(__dirname, './src'),
-    },
-  },
+  ...withWorkspaceSourceResolve({
+    '@~': path.resolve(__dirname, './src'),
+  }),
 });
