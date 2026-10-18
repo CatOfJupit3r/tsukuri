@@ -8,6 +8,7 @@ import type { iProjectRecord } from '@~/record/project-record.schema';
 import { ModuleResolver } from './module-resolver';
 import { ProjectComposer } from './project-composer';
 import { assertProjectName } from './project-identity';
+import { ProjectTargetGuard } from './project-target-guard';
 import { ProjectWriter } from './project-writer';
 
 export interface iCreateProjectOptions {
@@ -23,11 +24,13 @@ export class ProjectGenerator {
     private readonly resolver: ModuleResolver,
     private readonly composer: ProjectComposer,
     private readonly writer: ProjectWriter,
+    private readonly targetGuard: ProjectTargetGuard,
   ) {}
 
   /** Resolves the selection into a module record, then composes and writes it into an empty folder. */
   public async create({ targetDir, projectName, modules, excludedSkills = [] }: iCreateProjectOptions) {
     assertProjectName(projectName);
+    this.targetGuard.assertTarget(targetDir);
     const resolved = this.resolver.resolve(modules);
     const record: iProjectRecord = {
       projectName,

@@ -89,6 +89,15 @@ describe('ProjectGenerator', () => {
     expect(await readdir(targetDir)).toEqual(['keep.txt']);
   });
 
+  it('refuses a folder inside the generator sources before writing anything', async () => {
+    const targetDir = path.join(REPOSITORY_ROOT, 'acme');
+
+    await expect(createGenerator().create({ targetDir, projectName: 'acme', modules: [] })).rejects.toMatchObject({
+      code: GENERATOR_ERROR_CODES.TARGET_INSIDE_SOURCE,
+    });
+    await expect(readdir(targetDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
   it('rejects invalid project names before writing anything', async () => {
     const targetDir = path.join(await createTempDir(), 'out');
 

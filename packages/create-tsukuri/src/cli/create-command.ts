@@ -8,6 +8,7 @@ import type { iResolvedModules } from '@~/engine/module-resolver';
 import { ModuleResolver } from '@~/engine/module-resolver';
 import { ProjectGenerator } from '@~/engine/project-generator';
 import { getProjectNameProblem } from '@~/engine/project-identity';
+import { ProjectTargetGuard } from '@~/engine/project-target-guard';
 import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
 import type { ModuleId } from '@~/enums/module-ids.enums';
 import type { PromptId } from '@~/enums/prompt-ids.enums';
@@ -66,6 +67,7 @@ export class CreateCommand {
     private readonly planner: SelectionPlanner,
     private readonly resolver: ModuleResolver,
     private readonly generator: ProjectGenerator,
+    private readonly targetGuard: ProjectTargetGuard,
     @inject(PROMPTER_TOKEN) private readonly prompter: iPrompter,
     @inject(COMMAND_RUNNER_TOKEN) private readonly runner: iCommandRunner,
     @inject(CWD_TOKEN) private readonly cwd: string,
@@ -172,7 +174,10 @@ export class CreateCommand {
     const problemOf = async (value: string) => {
       const nameProblem = getProjectNameProblem(path.basename(value));
       if (nameProblem) return nameProblem;
-      return (await isEmptyOrMissing(path.resolve(this.cwd, value))) ? undefined : `"${value}" is not empty`;
+      const targetDir = path.resolve(this.cwd, value);
+      const targetProblem = this.targetGuard.getTargetProblem(targetDir);
+      if (targetProblem) return targetProblem;
+      return (await isEmptyOrMissing(targetDir)) ? undefined : `"${value}" is not empty`;
     };
 
     if (args.directory !== null || args.isYes) {
@@ -183,11 +188,12 @@ export class CreateCommand {
     }
 
     for (;;) {
-      const directory = await this.prompter.text({
+      const answer = await this.prompter.text({
         message: 'Project name (folder to create)',
         defaultValue: previous?.directory ?? DEFAULT_DIRECTORY,
-        validate: (value) => getProjectNameProblem(path.basename(value)) ?? undefined,
+        validate: (value) => getProjectNameProblem(path.basename(value.trim())) ?? undefined,
       });
+      const directory = answer.trim();
       const problem = await problemOf(directory);
       if (!problem) return directory;
       this.prompter.error(problem);

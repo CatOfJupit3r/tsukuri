@@ -180,6 +180,32 @@ describe('create command', () => {
     expect(existsSync(path.join(cwd, 'acme'))).toBe(false);
   });
 
+  it('trims the typed project name', async () => {
+    const { cwd, command } = await setup({
+      [MESSAGES.name]: '  acme  ',
+      [MESSAGES.backend]: ALPHA,
+      [MESSAGES.database]: DELTA,
+      [MESSAGES.skills]: [[]],
+      [MESSAGES.git]: false,
+      [MESSAGES.install]: false,
+      [MESSAGES.summary]: 'CREATE',
+    });
+
+    await command.run([]);
+
+    expect(readRecord(path.join(cwd, 'acme')).projectName).toBe('acme');
+  });
+
+  it('refuses a folder inside the generator sources', async () => {
+    const { command } = await setup({});
+    const targetDir = path.join(REPOSITORY_ROOT, 'acme');
+
+    await expect(command.run([targetDir, '--yes'])).rejects.toMatchObject({
+      code: GENERATOR_ERROR_CODES.INVALID_ARGUMENTS,
+    });
+    expect(existsSync(targetDir)).toBe(false);
+  });
+
   it('refuses a folder that is not empty and an invalid project name', async () => {
     const { cwd, command } = await setup({});
     await mkdir(path.join(cwd, 'taken'));

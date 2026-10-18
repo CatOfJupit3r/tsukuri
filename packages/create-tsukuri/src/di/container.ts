@@ -12,6 +12,7 @@ import { PackageJsonMerger } from '@~/engine/package-json-merger';
 import { PnpmWorkspaceMerger } from '@~/engine/pnpm-workspace-merger';
 import { ProjectComposer } from '@~/engine/project-composer';
 import { ProjectGenerator } from '@~/engine/project-generator';
+import { ProjectTargetGuard } from '@~/engine/project-target-guard';
 import { ProjectWriter } from '@~/engine/project-writer';
 import { TemplateRenderer } from '@~/engine/template-renderer';
 import type { iModuleManifestInput } from '@~/manifest/module-manifest.schema';
@@ -37,6 +38,7 @@ const SERVICES: constructor<object>[] = [
   ConnectionPointGenerator,
   ProjectComposer,
   ProjectWriter,
+  ProjectTargetGuard,
   ProjectGenerator,
 ];
 

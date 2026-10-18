@@ -8,7 +8,8 @@ import { GeneratorError } from './generator-error';
  */
 export const PROJECT_NAME_TOKEN = 'startername';
 
-const NPM_NAME_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
+/** Lowercase letters and digits, with single "-", "." or "_" separators between them. */
+const NPM_NAME_PATTERN = /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/;
 const MAX_NPM_NAME_LENGTH = 214;
 const RESERVED_NAMES = new Set(['node_modules', 'favicon.ico']);
 
@@ -18,7 +19,7 @@ export function getProjectNameProblem(value: string) {
   if (value.length > MAX_NPM_NAME_LENGTH) return `Name must be at most ${MAX_NPM_NAME_LENGTH} characters`;
   if (value !== value.toLowerCase()) return 'Name must be lowercase';
   if (!NPM_NAME_PATTERN.test(value)) {
-    return 'Name may only contain lowercase letters, digits, "-", "." and "_", and must start with a letter or digit';
+    return 'Name may only contain lowercase letters and digits, separated by single "-", "." or "_"';
   }
   if (RESERVED_NAMES.has(value)) return `"${value}" is a reserved name`;
   return null;
