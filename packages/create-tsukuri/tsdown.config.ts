@@ -6,4 +6,6 @@ export default defineConfig({
   format: 'esm',
   platform: 'node',
   dts: false,
+  // The npm bin runs the file directly; set here because formatters strip a shebang from the source.
+  banner: '#!/usr/bin/env node',
 });
