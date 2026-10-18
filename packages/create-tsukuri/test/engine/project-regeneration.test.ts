@@ -40,6 +40,7 @@ function record(moduleIds: string[]): iProjectRecord {
     generator: { name: 'create-tsukuri', version: '0.0.0' },
     modules: moduleIds.map((id) => ({ id: testModuleId(id), version: '1.0.0', options: {} })),
     skills: { excluded: [] },
+    markdown: { includePrivate: false },
   };
 }
 

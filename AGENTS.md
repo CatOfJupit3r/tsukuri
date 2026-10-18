@@ -44,7 +44,7 @@ Examples:
 - `apps/web` contains the React 19 client, TanStack Router tree, UI components, and client-side state.
 - `packages/server-contract` contains the API contracts used by both apps.
 - `packages/common` contains shared utilities, types, constants, and helpers used by both apps.
-- `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the Handlebars templates in `templates/` (markdown fragments and connection points; `{{#module "id"}}...{{else}}...{{/module}}` blocks, literal braces escaped as `\{{`) that generated projects are built from. Module source files stay real, type-checked files and are never templated.
+- `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the Handlebars templates in `templates/` (markdown fragments and connection points; `{{#module "id"}}...{{else}}...{{/module}}` blocks, literal braces escaped as `\{{`) that generated projects are built from. Markdown fragments also take line-based `<harness-specific id="claude|codex">` blocks (kept only in CLAUDE.md or AGENTS.md) and `<private>` blocks (kept only when the project record sets `markdown.includePrivate`). Module source files stay real, type-checked files and are never templated.
 - `docs` contains product notes, roadmaps, and design documentation, if present.
 
 ## Core Conventions

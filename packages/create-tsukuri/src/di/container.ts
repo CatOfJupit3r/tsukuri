@@ -3,6 +3,7 @@ import { container } from 'tsyringe';
 import type { constructor } from 'tsyringe/dist/typings/types';
 
 import { ConnectionPointGenerator } from '@~/engine/connection-points/connection-point-generator';
+import { ControlBlockRenderer } from '@~/engine/control-block-renderer';
 import { MarkdownRenderer } from '@~/engine/markdown-renderer';
 import { ModuleRegistry } from '@~/engine/module-registry';
 import { ModuleResolver } from '@~/engine/module-resolver';
@@ -30,6 +31,7 @@ const SERVICES: constructor<object>[] = [
   ModuleSourceReader,
   PackageJsonMerger,
   PnpmWorkspaceMerger,
+  ControlBlockRenderer,
   TemplateRenderer,
   MarkdownRenderer,
   ConnectionPointGenerator,

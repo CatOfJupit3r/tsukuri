@@ -107,7 +107,7 @@ export class ProjectComposer {
     this.pnpmWorkspaceMerger.assertCatalogCoverage(pnpmWorkspace, packageJsons);
     project.write(PNPM_WORKSPACE_FILE, rename(this.pnpmWorkspaceMerger.serialize(pnpmWorkspace)), 'pnpm workspace');
 
-    for (const document of await this.markdownRenderer.render(modules, context)) {
+    for (const document of await this.markdownRenderer.render(modules, context, record.markdown)) {
       project.write(document.path, rename(document.content), 'markdown rendering');
     }
 

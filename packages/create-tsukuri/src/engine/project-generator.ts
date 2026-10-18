@@ -34,6 +34,7 @@ export class ProjectGenerator {
       generator: { name: GENERATOR_NAME, version: GENERATOR_VERSION },
       modules: resolved.modules.map((manifest) => ({ id: manifest.id, version: manifest.version, options: {} })),
       skills: { excluded: [...excludedSkills] },
+      markdown: { includePrivate: false },
     };
 
     const project = await this.compose(record);

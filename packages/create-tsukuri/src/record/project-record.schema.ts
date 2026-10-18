@@ -26,6 +26,12 @@ export const projectRecordSchema = z.object({
       excluded: z.array(skillIdSchema).default([]),
     })
     .default({ excluded: [] }),
+  markdown: z
+    .object({
+      /** Keeps the `<private>` blocks of markdown fragments in AGENTS.md, CLAUDE.md and README.md. */
+      includePrivate: z.boolean().default(false),
+    })
+    .default({ includePrivate: false }),
 });
 
 export type iProjectRecord = z.output<typeof projectRecordSchema>;
