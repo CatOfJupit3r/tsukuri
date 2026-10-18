@@ -2,7 +2,7 @@ import { Button as ButtonPrimitive } from '@base-ui/react/button';
 import type { VariantProps } from 'class-variance-authority';
 import type { ComponentProps, ReactElement } from 'react';
 
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
 import { buttonVariants } from './constants';

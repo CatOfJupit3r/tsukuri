@@ -1,7 +1,7 @@
 import path from 'node:path';
 import 'reflect-metadata';
 
-import { SOURCE_LAYOUTS } from '@~/enums/source-layouts.enums';
+import { SOURCE_LAYOUTS } from '#~/enums/source-layouts.enums';
 
 import { runCli } from './run-cli';
 

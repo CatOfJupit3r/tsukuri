@@ -1,12 +1,12 @@
 import { injectable } from 'tsyringe';
 
-import type { Capability } from '@~/enums/capabilities.enums';
-import { CAPABILITY_META } from '@~/enums/capabilities.enums';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { GeneratorErrorCode } from '@~/enums/generator-error-codes.enums';
-import { MODULE_CATEGORY_ORDER } from '@~/enums/module-categories.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
+import type { Capability } from '#~/enums/capabilities.enums';
+import { CAPABILITY_META } from '#~/enums/capabilities.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { GeneratorErrorCode } from '#~/enums/generator-error-codes.enums';
+import { MODULE_CATEGORY_ORDER } from '#~/enums/module-categories.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { iModuleManifest } from '#~/manifest/module-manifest.schema';
 
 import { GeneratorError } from './generator-error';
 import { ModuleRegistry } from './module-registry';

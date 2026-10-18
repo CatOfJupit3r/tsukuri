@@ -3,14 +3,14 @@ import { useState, useEffect } from 'react';
 import { LuArrowLeft, LuTriangleAlert } from 'react-icons/lu';
 import z from 'zod';
 
-import Loader from '@~/components/loader';
-import { Alert, AlertDescription } from '@~/components/ui/alert';
-import { Button } from '@~/components/ui/button/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@~/components/ui/card';
-import { useAppForm } from '@~/components/ui/field';
-import { Input } from '@~/components/ui/input';
-import { Label } from '@~/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@~/components/ui/tabs';
+import Loader from '#~/components/loader';
+import { Alert, AlertDescription } from '#~/components/ui/alert';
+import { Button } from '#~/components/ui/button/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/card';
+import { useAppForm } from '#~/components/ui/field';
+import { Input } from '#~/components/ui/input';
+import { Label } from '#~/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#~/components/ui/tabs';
 
 import { useMe } from '../hooks/use-me';
 import { useUpdateUserProfile } from '../hooks/use-update-user-profile';

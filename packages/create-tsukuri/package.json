@@ -2,6 +2,9 @@
   "name": "create-tsukuri",
   "version": "0.0.0",
   "type": "module",
+  "imports": {
+    "#~/*": "./src/*.js"
+  },
   "description": "Module-based project generator for tsukuri monorepos",
   "license": "MIT",
   "repository": {
@@ -23,13 +26,14 @@
   "scripts": {
     "build": "tsdown && pnpm run bundle:sources",
     "bundle:sources": "node --no-deprecation --conditions=workspace-source --import @swc-node/register/esm-register ./src/bundle/bundle-sources.ts",
+    "sync:repo": "node --no-deprecation --conditions=workspace-source --import @swc-node/register/esm-register ./src/sync/sync-repository.ts",
     "cli": "node --no-deprecation --conditions=workspace-source --import @swc-node/register/esm-register ./src/cli/local-main.ts",
     "prepack": "pnpm run build",
     "check-types": "tsgo --noEmit",
     "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
     "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
     "lint:eslint": "eslint . --fix",
-    "prettify": "prettier --write ./src/ ./test/",
+    "prettify": "prettier --write ./src/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
     "test": "vitest run",
     "test:install": "vitest run --config vitest.install.config.ts"
   },

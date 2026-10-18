@@ -1,7 +1,7 @@
 import { confirm, intro, isCancel, log, multiselect, note, outro, select, spinner, text } from '@clack/prompts';
 
-import { GeneratorError } from '@~/engine/generator-error';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import { GeneratorError } from '#~/engine/generator-error';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 
 import type { iPrompter, iPromptOption } from './prompter';
 

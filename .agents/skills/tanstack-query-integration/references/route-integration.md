@@ -8,7 +8,7 @@ Load data before rendering to eliminate loading states:
 
 ```typescript
 import { createFileRoute } from '@tanstack/react-router';
-import { USER_PROFILE_QUERY_OPTIONS } from '@~/features/user/hooks/use-user-profile';
+import { USER_PROFILE_QUERY_OPTIONS } from '#~/features/user/hooks/use-user-profile';
 
 export const Route = createFileRoute('/profile/$userId')({
   async loader({ context, params }) {

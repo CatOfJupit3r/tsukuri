@@ -3,17 +3,17 @@ import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { inject, injectable } from 'tsyringe';
 
-import { GeneratorError } from '@~/engine/generator-error';
-import type { iResolvedModules } from '@~/engine/module-resolver';
-import { ModuleResolver } from '@~/engine/module-resolver';
-import { ProjectGenerator } from '@~/engine/project-generator';
-import { getProjectNameProblem } from '@~/engine/project-identity';
-import { ProjectTargetGuard } from '@~/engine/project-target-guard';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import type { PromptId } from '@~/enums/prompt-ids.enums';
-import { PROMPT_META, promptIdsEnumwaii } from '@~/enums/prompt-ids.enums';
-import type { SkillId } from '@~/enums/skill-ids.enums';
+import { GeneratorError } from '#~/engine/generator-error';
+import type { iResolvedModules } from '#~/engine/module-resolver';
+import { ModuleResolver } from '#~/engine/module-resolver';
+import { ProjectGenerator } from '#~/engine/project-generator';
+import { getProjectNameProblem } from '#~/engine/project-identity';
+import { ProjectTargetGuard } from '#~/engine/project-target-guard';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { PromptId } from '#~/enums/prompt-ids.enums';
+import { PROMPT_META, promptIdsEnumwaii } from '#~/enums/prompt-ids.enums';
+import type { SkillId } from '#~/enums/skill-ids.enums';
 
 import { renderCreateCommandLine } from './command-line';
 import { COMMAND_RUNNER_TOKEN } from './command-runner';

@@ -17,11 +17,6 @@ export function createVitestConfig(test: Pick<iTestOptions, 'include' | 'exclude
         transformerPackageNames: ['@swc/core', 'unplugin-swc'],
       }),
     ],
-    resolve: {
-      alias: {
-        '@~': path.resolve(__dirname, './src'),
-      },
-    },
     cacheDir: 'node_modules/.vitest',
     test: {
       experimental: MODULE_CACHE_TEST_OPTIONS,

@@ -5,9 +5,9 @@ import type { VariantProps } from 'class-variance-authority';
 import { useCallback, useMemo } from 'react';
 import type { SubmitEvent } from 'react';
 
-import { Label } from '@~/components/ui/label';
-import { Separator } from '@~/components/ui/separator';
-import { cn } from '@~/lib/utils';
+import { Label } from '#~/components/ui/label';
+import { Separator } from '#~/components/ui/separator';
+import { cn } from '#~/lib/utils';
 
 // eslint-disable-next-line import-x/no-cycle
 import { CheckboxField, SelectField, SubmitButton, TextField, TextareaField } from './form-fields';

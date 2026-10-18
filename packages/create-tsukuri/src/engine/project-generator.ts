@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe';
 
-import { GENERATOR_NAME, GENERATOR_VERSION } from '@~/constants/generator-info';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import type { SkillId } from '@~/enums/skill-ids.enums';
-import type { iProjectRecord } from '@~/record/project-record.schema';
+import { GENERATOR_NAME, GENERATOR_VERSION } from '#~/constants/generator-info';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { SkillId } from '#~/enums/skill-ids.enums';
+import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { ModuleResolver } from './module-resolver';
 import { ProjectComposer } from './project-composer';

@@ -1,0 +1,14 @@
+// {{header}}
+{{#if schemas.length}}
+
+{{#each schemas}}
+import * as {{alias}} from '{{from}}';
+{{/each}}
+{{/if}}
+
+/** Tables and relations of the installed modules, passed to drizzle. */
+export const generatedDatabaseSchema = {
+{{#each schemas}}
+  ...{{alias}},
+{{/each}}
+};

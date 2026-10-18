@@ -1,7 +1,7 @@
-import { ControlBlockRenderer } from '@~/engine/control-block-renderer';
-import type { iControlBlockOptions } from '@~/engine/control-block-renderer';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { HARNESSES } from '@~/enums/harnesses.enums';
+import { ControlBlockRenderer } from '#~/engine/control-block-renderer';
+import type { iControlBlockOptions } from '#~/engine/control-block-renderer';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { HARNESSES } from '#~/enums/harnesses.enums';
 
 const renderer = new ControlBlockRenderer();
 

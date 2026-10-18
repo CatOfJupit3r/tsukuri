@@ -3,6 +3,12 @@ import { emToZodSchema } from 'enumwaii/zod';
 
 export const moduleIdsEnumwaii = em({
   BASE: 'base',
+  API: 'api',
+  NODE_HONO: 'node-hono',
+  POSTGRES: 'postgres',
+  VALKEY: 'valkey',
+  BETTER_AUTH: 'better-auth',
+  EXAMPLE_DOMAIN: 'example-domain',
 });
 
 export const MODULE_IDS = moduleIdsEnumwaii.enum;

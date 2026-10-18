@@ -1,4 +1,4 @@
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 import { USER_THEME } from '../themes/constants';
 import { useTheme } from '../themes/use-theme';

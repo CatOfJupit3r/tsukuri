@@ -1,0 +1,14 @@
+// {{header}}
+{{#if imports.length}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+{{/if}}
+
+/** Startup tasks of the installed modules, in module order. */
+export const generatedStartupTasks = [
+{{#each tasks}}
+  {{task.name}},
+{{/each}}
+];

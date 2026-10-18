@@ -1,8 +1,8 @@
 import path from 'node:path';
 import 'reflect-metadata';
 
-import { BUNDLED_SOURCES_DIR } from '@~/constants/bundled-sources';
-import { createGeneratorContainer } from '@~/di/container';
+import { BUNDLED_SOURCES_DIR } from '#~/constants/bundled-sources';
+import { createGeneratorContainer } from '#~/di/container';
 
 import { ModuleSourceBundler } from './module-source-bundler';
 

@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { PackageJsonMerger } from '@~/engine/package-json-merger';
-import { moduleManifestSchema } from '@~/manifest/module-manifest.schema';
-import { MODULE_MANIFESTS } from '@~/modules/module-manifests';
+import { PackageJsonMerger } from '#~/engine/package-json-merger';
+import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
+import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
 
 import { REPOSITORY_ROOT } from '../helpers/temp-dir';
 

@@ -7,7 +7,7 @@ description: Create React components following project conventions for UI compos
 
 ## Core Principles
 
-- **Compose from UI primitives** - Use `@~/components/ui/*` instead of building from scratch
+- **Compose from UI primitives** - Use `#~/components/ui/*` instead of building from scratch
 - **Type safety** - Interface props with `i` prefix convention
 - **Design tokens** - Use Tailwind tokens (`bg-background`, `text-muted-foreground`) never hardcoded colors
 - **Accessibility first** - Semantic HTML, ARIA labels, keyboard navigation
@@ -153,7 +153,7 @@ If a component needs both heavy orchestration and a large render tree, that is t
 
 ### Available Primitives
 
-Common primitives from `@~/components/ui`:
+Common primitives from `#~/components/ui`:
 
 - **Layout**: `Card`, `CardHeader`, `CardTitle`, `CardContent`, `Separator`, `ScrollArea`
 - **Forms**: `Button`, `Input`, `Textarea`, `Label`, `Checkbox`, `Switch`, `Select`
@@ -165,9 +165,9 @@ Common primitives from `@~/components/ui`:
 ### Composition Pattern
 
 ```typescript
-import { Card, CardHeader, CardTitle, CardContent } from '@~/components/ui/card';
-import { Button } from '@~/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@~/components/ui/avatar';
+import { Card, CardHeader, CardTitle, CardContent } from '#~/components/ui/card';
+import { Button } from '#~/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '#~/components/ui/avatar';
 
 interface iCharacterCardProps {
   character: {
@@ -208,7 +208,7 @@ Quick reference - use `useAppForm` with Zod validation:
 
 ```typescript
 import z from 'zod';
-import { useAppForm } from '@~/components/ui/field';
+import { useAppForm } from '#~/components/ui/field';
 import { useCreateCharacter } from '../hooks/use-create-character';
 
 const characterSchema = z.object({
@@ -246,7 +246,7 @@ export function CreateCharacterForm() {
 **Always import skeletons from dedicated shared files** - never declare them inline in the main component file:
 
 ```typescript
-import { Alert } from '@~/components/ui/alert';
+import { Alert } from '#~/components/ui/alert';
 import { useCharacter } from '../hooks/use-character';
 import { CharacterDetailNotFound, CharacterDetailQueryError } from './error-components';
 import { CharacterDetailSkeleton } from './skeleton-components';
@@ -275,8 +275,8 @@ Example dedicated state file:
 
 ```typescript
 // skeleton-components.tsx
-import { Card, CardContent, CardHeader } from '@~/components/ui/card';
-import { Skeleton } from '@~/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '#~/components/ui/card';
+import { Skeleton } from '#~/components/ui/skeleton';
 
 export function CharacterDetailSkeleton() {
   return (
@@ -295,8 +295,8 @@ export function CharacterDetailSkeleton() {
 
 ```typescript
 // error-components.tsx
-import { Alert, AlertDescription, AlertTitle } from '@~/components/ui/alert';
-import { Empty } from '@~/components/ui/empty';
+import { Alert, AlertDescription, AlertTitle } from '#~/components/ui/alert';
+import { Empty } from '#~/components/ui/empty';
 
 export function CharacterDetailQueryError() {
   return (
@@ -318,7 +318,7 @@ export function CharacterDetailNotFound() {
 
 ```typescript
 // In router configuration
-import { ErrorBoundary } from '@~/components/error-boundary';
+import { ErrorBoundary } from '#~/components/error-boundary';
 
 export const router = createRouter({
   defaultErrorComponent: ErrorBoundary,
@@ -375,7 +375,7 @@ function handleDelete() {
 
 ```typescript
 // ✅ Appropriate: File upload (can't show inline easily)
-import { toastError, toastSuccess } from '@~/components/toastifications';
+import { toastError, toastSuccess } from '#~/components/toastifications';
 
 function handleUpload(file: File) {
   uploadFile(
@@ -471,7 +471,7 @@ import { NuqsAdapter } from 'nuqs/adapters/react';
 Dialogs should reset state when closing:
 
 ```typescript
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@~/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '#~/components/ui/dialog';
 import { useState } from 'react';
 
 interface iCreateDialogProps {
@@ -585,7 +585,7 @@ export function Navigation({ items, isMobile = false }: iNavigationProps) {
 Prefetch data before user clicks:
 
 ```typescript
-import { usePrefetchOnHover } from '@~/hooks/use-prefetch-query';
+import { usePrefetchOnHover } from '#~/hooks/use-prefetch-query';
 import { getCharacterQueryOptions } from '../hooks/use-character';
 
 export function CharacterLink({ characterId }: { characterId: string }) {
@@ -694,7 +694,7 @@ Common tokens:
 Use `cn()` utility for conditional styling:
 
 ```typescript
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 <Button
   className={cn(

@@ -1,6 +1,6 @@
-import { GeneratorError } from '@~/engine/generator-error';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { modifyActionsEnumwaii } from '@~/enums/modify-actions.enums';
+import { GeneratorError } from '#~/engine/generator-error';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { modifyActionsEnumwaii } from '#~/enums/modify-actions.enums';
 
 import { ClackPrompter } from './clack-prompter';
 import { createCliContainer } from './cli-container';

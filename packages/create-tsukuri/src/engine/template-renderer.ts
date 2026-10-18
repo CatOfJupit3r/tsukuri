@@ -2,9 +2,9 @@ import Handlebars from 'handlebars';
 import type { HelperOptions } from 'handlebars';
 import { injectable } from 'tsyringe';
 
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import { moduleIdSchema } from '@~/enums/module-ids.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import { moduleIdSchema } from '#~/enums/module-ids.enums';
 
 import { GeneratorError } from './generator-error';
 import { ModuleSourceReader } from './module-source-reader';

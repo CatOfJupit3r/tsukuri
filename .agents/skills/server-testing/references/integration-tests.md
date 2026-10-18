@@ -2,6 +2,8 @@
 
 Integration tests verify complete feature flows by testing routers, services, and database operations together. This is the **preferred** testing approach for the server.
 
+They live in `packages/api/test/integration/` and run against the real DI container (started once by `test/helpers/setup.ts`) and an in-memory PGlite database.
+
 ## Why Integration Tests?
 
 Integration tests provide the most value because they:
@@ -14,26 +16,26 @@ Integration tests provide the most value because they:
 
 The most important principle: **Always create specialized fixtures for test setup instead of calling endpoints directly in tests.**
 
-Fixtures **should** call endpoints via `call()`, but tests **should not**. This separation keeps tests clean and focused.
+Fixtures **should** call endpoints via `call()` where the API has one (and use the repository fixtures where it has none), but tests **should not**. This separation keeps tests clean and focused.
 
 ```typescript
 // ❌ BAD: Test has to know how to set up scenarios
 it('should update user badge', async () => {
-  // Creating tight coupling between test and setup logic
-  await call(appRouter.achievements.grant, { achievementId: 'BETA' }, ctx());
-  await call(appRouter.user.grantBadge, { badgeId: 'BETA_BADGE' }, ctx());
-  
-  const result = await call(appRouter.user.updateUserBadge, { badgeId: 'BETA_TESTER' }, ctx());
-  expect(result).toBeDefined();
+  const { ctx, user } = await createUser();
+  // Couples the test to how achievements are unlocked
+  await getUserAchievementRepository().ensureUnlocked(user.id, USER_ACHIEVEMENTS.BETA_TESTER);
+
+  const result = await call(appRouter.user.updateUserBadge, { badgeId: BADGE_IDS.BETA_TESTER }, ctx());
+  expect(result.selectedBadge).toBe(BADGE_IDS.BETA_TESTER);
 });
 
 // ✅ GOOD: Fixture encapsulates setup, test focuses on behavior
 it('should update user badge', async () => {
   // Clear intent, fixture handles all the complexity
-  const { ctx } = await createUserWithAchievements(['BETA']);
-  
-  const result = await call(appRouter.user.updateUserBadge, { badgeId: 'BETA_TESTER' }, ctx());
-  expect(result).toBeDefined();
+  const { ctx } = await createUserWithAchievement(USER_ACHIEVEMENTS.BETA_TESTER);
+
+  const result = await call(appRouter.user.updateUserBadge, { badgeId: BADGE_IDS.BETA_TESTER }, ctx());
+  expect(result.selectedBadge).toBe(BADGE_IDS.BETA_TESTER);
 });
 ```
 
@@ -51,8 +53,9 @@ it('should update user badge', async () => {
 import { call } from '@orpc/server';
 import { describe, it, expect } from 'vitest';
 
-import { appRouter } from '../helpers/instance';
-import { createUser } from './utilities';
+import { appRouter } from '#~/app-router';
+
+import { createUser } from '../helpers/auth-users';
 
 describe('Feature Name', () => {
   it('should handle typical use case', async () => {
@@ -73,54 +76,54 @@ describe('Feature Name', () => {
 });
 ```
 
+`appRouter` is the router the API serves (`#~/app-router`); `namespace` is the key the feature's router is registered under. `createUser()` comes from `test/helpers/auth-users.ts`, and its `ctx()` returns the call options with a session and `resolve`.
+
 ## Creating and Using Specialized Fixtures
 
-The foundation of maintainable tests is building a library of specialized fixtures that express intent clearly. Each fixture should represent a specific test scenario.
+The foundation of maintainable tests is building a library of specialized fixtures that express intent clearly. Each fixture should represent a specific test scenario. Put them in `test/integration/fixtures/<feature>.fixtures.ts`; see `examples/test-utilities.ts`.
 
 ### Fixture Types to Create
 
 **1. Domain-Specific User Fixtures**
 
 ```typescript
-// test/integration/utilities.ts
+// test/integration/fixtures/user-profile.fixtures.ts
 
-export async function createAdminUser() {
-  const user = await createUser({ /* admin-specific data */ });
-  // Grant admin permissions via endpoint
-  await call(appRouter.admin.grantRole, { userId: user.user.id, role: 'ADMIN' }, user.ctx());
-  return user;
-}
-
-export async function createUserWithAchievements(achievementIds: string[]) {
+export async function createUserWithAchievement(achievementId: UserAchievementId) {
   const user = await createUser();
-  // Grant achievements via endpoints
-  await Promise.all(
-    achievementIds.map(id =>
-      call(appRouter.achievements.grant, { achievementId: id }, user.ctx())
-    )
-  );
+  // No endpoint grants achievements, so the fixture goes through the repository
+  await getUserAchievementRepository().ensureUnlocked(user.user.id, achievementId);
   return user;
 }
 
-export async function createUserWithBadge(badgeId: string) {
-  const user = await createUserWithAchievements(['required_achievement']);
-  // Select badge via endpoint
+export async function createUserWithBadge(badgeId: BadgeId) {
+  const requiredAchievement = BADGES_META.find((badge) => badge.id === badgeId)?.requiresAchievement;
+  const user = requiredAchievement ? await createUserWithAchievement(requiredAchievement) : await createUser();
+  // Select the badge via endpoint
   await call(appRouter.user.updateUserBadge, { badgeId }, user.ctx());
   return user;
+}
+
+export async function createUserWithBio(bio: string) {
+  const user = await createUser();
+  const profile = await call(appRouter.user.updateUserProfile, { bio }, user.ctx());
+  return { ...user, profile };
 }
 ```
 
 **2. Resource Creation Fixtures**
 
+The `challenges` and `teams` endpoints in the remaining examples are illustrative; use the procedures of your own features.
+
 ```typescript
 export async function createChallengeWithParticipants(count: number) {
   const creator = await createUser();
   const challenge = await call(appRouter.challenges.create, { title: '...' }, creator.ctx());
-  
+
   const participants = await Promise.all(
     Array.from({ length: count }).map(() => createUser())
   );
-  
+
   return { creator, challenge, participants };
 }
 ```
@@ -131,10 +134,10 @@ export async function createChallengeWithParticipants(count: number) {
 export async function setupCompletedUserChallenge() {
   const user = await createUser();
   const { challenge } = await createChallengeWithParticipants(1);
-  
+
   // Complete the challenge via endpoint
   await call(appRouter.challenges.submit, { challengeId: challenge.id, answer: '...' }, user.ctx());
-  
+
   return { user, challenge };
 }
 ```
@@ -145,10 +148,11 @@ export async function setupCompletedUserChallenge() {
 describe('Badge System', () => {
   it('should have badge selected when user has achievement', async () => {
     // Use specialized fixture - immediately clear what this test needs
-    const { ctx, user } = await createUserWithBadge('BETA_BADGE');
+    const { ctx } = await createUserWithBadge(BADGE_IDS.BETA_TESTER);
 
     // Test verifies the state, not the setup
-    expect(user.selectedBadge).toBe('BETA_BADGE');
+    const profile = await call(appRouter.user.getUserProfile, null, ctx());
+    expect(profile.selectedBadge).toBe(BADGE_IDS.BETA_TESTER);
   });
 
   it('should reject badge without achievement', async () => {
@@ -156,9 +160,10 @@ describe('Badge System', () => {
     const { ctx } = await createUser();
 
     // Test the actual behavior
-    await expect(
-      call(appRouter.user.updateUserBadge, { badgeId: 'BETA_BADGE' }, ctx())
-    ).rejects.toThrow();
+    await expectORPCError(
+      call(appRouter.user.updateUserBadge, { badgeId: BADGE_IDS.BETA_TESTER }, ctx()),
+      { code: errorCodes.USER_BADGE_NOT_ALLOWED },
+    );
   });
 });
 ```
@@ -173,34 +178,28 @@ Most tests should use specialized fixtures. The test verifies behavior, the fixt
 
 ```typescript
 // ✅ GOOD: Fixture creates scenario, test verifies behavior
-it('should have valid profile for admin user', async () => {
-  const { ctx } = await createAdminUser();
-  
+it('should return the saved bio', async () => {
+  const { ctx } = await createUserWithBio('My bio');
+
   // Test only verifies the outcome
   const profile = await call(appRouter.user.getUserProfile, null, ctx());
-  expect(profile).toBeDefined();
-  expect(profile.role).toBe('ADMIN');
+  expect(profile.bio).toBe('My bio');
 });
 ```
 
 ### 2. Authorization Checks
 
-Test that unauthorized access is rejected:
+Test that unauthorized access is rejected, asserting the structured error code with `expectORPCError` (`test/helpers/orpc-errors.ts`):
 
 ```typescript
 it('should reject badge selection without achievement', async () => {
   const { ctx } = await createUser(); // Basic user, no achievements
 
   // Test the actual rejection behavior
-  await expect(
-    call(appRouter.user.updateUserBadge, { badgeId: 'BETA_BADGE' }, ctx())
-  ).rejects.toThrow('You do not have the required achievement');
-});
-```
-
-  await expect(
-    call(appRouter.user.updateUserBadge, { badgeId: 'BETA_TESTER' }, ctx())
-  ).rejects.toThrow('You do not have the required achievement');
+  await expectORPCError(
+    call(appRouter.user.updateUserBadge, { badgeId: BADGE_IDS.BETA_TESTER }, ctx()),
+    { code: errorCodes.USER_BADGE_NOT_ALLOWED },
+  );
 });
 ```
 
@@ -212,7 +211,7 @@ Create specialized fixtures for multi-user scenarios:
 it('should handle team with multiple members', async () => {
   // Use fixture that creates team with members
   const { owner, member1, member2 } = await createTeamWithMembers();
-  
+
   // Test team interaction behavior
   const teamData = await call(appRouter.teams.getTeam, { teamId: owner.id }, owner.ctx());
   expect(teamData.members).toHaveLength(2);
@@ -246,151 +245,39 @@ it('should show completed challenges', async () => {
 });
 ```
 
-### 5. Edge Cases with Fixtures
+### 5. Validation Testing
 
-Test edge cases by using specialized fixtures that handle the scenario:
-
-```typescript
-// Create a fixture that gets/creates profile
-export async function createUserWithProfileAccess() {
-  const user = await createUser();
-  // Fixture calls the endpoint
-  // const profile = await call(appRouter.user.getUserProfile, null, user.ctx());
-  return { ...user };
-}
-
-// Test just verifies the fixture worked
-it('should auto-create profile on first access', async () => {
-  const { ctx } = await createUserWithProfileAccess();
-
-  expect(ctx).toBeDefined();
-});
-```
-
-### 6. Validation Testing with Fixtures
-
-Create specialized fixtures for validation scenarios:
+The contract validates input before the handler runs, so assert both sides of a boundary:
 
 ```typescript
-// Fixture that sets up a user with a specific bio
-export async function createUserWithBio(bio: string) {
-  const user = await createUser();
-  // Fixture calls the endpoint to validate and set bio
-  // await call(appRouter.user.updateUserProfile, { bio }, user.ctx());
-  return { ...user, bio };
-}
+it('should allow bio with exactly 500 chars', async () => {
+  const { profile } = await createUserWithBio('a'.repeat(500));
 
-// Test just verifies the fixture created the scenario
-it('should validate bio max length (500 chars)', async () => {
-  const maxBio = 'a'.repeat(500);
-  
-  // Fixture ensures the max-length bio exists
-  const { bio } = await createUserWithBio(maxBio);
-  
-  expect(bio.length).toBe(500);
+  expect(profile.bio).toHaveLength(500);
 });
-
-// Test validation failure with a separate fixture
-export async function createInvalidUserBio() {
-  const longBio = 'a'.repeat(501);
-  const user = await createUser();
-  
-  // Fixture attempts invalid operation and captures error
-  return {
-    promise: createUserWithBio(longBio),
-  };
-}
 
 it('should reject bio exceeding max length', async () => {
-  const { promise } = await createInvalidUserBio();
-  
-  await expect(promise).rejects.toThrow();
+  await expect(createUserWithBio('a'.repeat(501))).rejects.toThrow();
 });
 ```
 
-### 7. Edge Cases with Fixtures
+### 6. Missing Resources and Persistence
 
-Test boundary conditions using specialized fixtures:
+Use the repository fixtures to arrange or verify database state that no endpoint exposes:
 
 ```typescript
-// Fixture for empty bio scenario
-export async function createUserWithEmptyBio() {
-  const user = await createUser();
-  // Fixture calls endpoint to set empty bio
-  // await call(appRouter.user.updateUserProfile, { bio: '' }, user.ctx());
-  return user;
-}
+it('should auto-create profile on first update if missing', async () => {
+  const { ctx, user } = await createUser();
+  await getUserProfileRepository().deleteByUserId(user.id);
 
-it('should handle empty input gracefully', async () => {
-  // Fixture sets up the scenario with empty bio
-  const { ctx } = await createUserWithEmptyBio();
-  
-  // Test verifies the user was created with no bio
-  expect(ctx).toBeDefined();
-});
+  const updated = await call(appRouter.user.updateUserProfile, { bio: 'New bio' }, ctx());
 
-// Fixture for missing resource scenario
-export async function attemptMissingResourceOperation() {
-  const { ctx } = await createUser();
-  
-  // Fixture tries to operate on non-existent profile
-  return {
-    promise: call(appRouter.user.deleteProfile, null, ctx()),
-  };
-}
-
-it('should reject operations on missing resources', async () => {
-  const { promise } = await attemptMissingResourceOperation();
-  
-  await expect(promise).rejects.toThrow();
+  expect(updated.userId).toBe(user.id);
+  expect((await getUserProfileRepository().findByUserId(user.id))?.bio).toBe('New bio');
 });
 ```
 
-### 8. Complex Scenarios with Fixtures
-
-Use specialized fixtures to encapsulate complex setup:
-
-```typescript
-// Fixture that creates user with all achievements via API
-export async function createUserWithAllAchievements() {
-  const user = await createUser();
-  
-  // Fixture grants achievements via endpoints
-  // await Promise.all(
-  //   ACHIEVEMENT_IDS.map(id =>
-  //     call(appRouter.achievements.grant, { achievementId: id }, user.ctx())
-  //   )
-  // );
-  
-  return user;
-}
-
-describe('Badge System with Achievements', () => {
-  it('should allow badge selection when user has achievements', async () => {
-    // Fixture creates user with all achievements
-    const { ctx } = await createUserWithAllAchievements();
-    
-    // Test verifies user can select badge (verification happens in assertion below)
-    const result = { selectedBadge: 'BETA_TESTER' }; // Would come from actual call
-    expect(result.selectedBadge).toBe('BETA_TESTER');
-  });
-
-  it('should restrict badge selection without achievements', async () => {
-    // Fixture creates basic user without achievements
-    const { ctx } = await createUser();
-    
-    // Test verifies rejection - fixture would encapsulate this call
-    // In real implementation, fixture would attempt the call and we'd verify it rejects
-    const testScenario = async () => {
-      // Fixture would make this call
-      // return await call(appRouter.user.updateUserBadge, { badgeId: 'BETA_TESTER' }, ctx());
-      throw new Error('You do not have the required achievement');
-    };
-    
-    await expect(testScenario()).rejects.toThrow('You do not have the required achievement');
-  });
-});
-```
+`getUserProfileRepository()` and `getUserAchievementRepository()` live in `test/integration/fixtures/repository.fixtures.ts` and resolve the repository through its token from the container.
 
 ## Using oRPC's `call()` Helper
 
@@ -401,16 +288,18 @@ import { call } from '@orpc/server';
 
 const result = await call(
   appRouter.namespace.procedure,  // The router procedure
-  { input: 'value' },              // Input data
-  ctx()                            // Context (session, etc.)
+  { input: 'value' },              // Input data (null for procedures without input)
+  ctx()                            // Context (session, resolve)
 );
 ```
 
 This provides:
 - Full type safety
-- Automatic validation
+- Automatic input validation
 - Context injection
-- Contract enforcement
+- The same middleware chain the API serves (including the unexpected-error boundary)
+
+To test transport behavior (headers, cookies, module HTTP handlers, unmatched routes), send a `Request` through `ApiRequestHandler` instead, as `test/integration/health.test.ts` does.
 
 ## Test Organization
 

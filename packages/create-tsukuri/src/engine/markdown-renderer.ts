@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe';
 
-import type { MarkdownDocument } from '@~/enums/markdown-documents.enums';
-import { MARKDOWN_DOCUMENT_OUTPUTS } from '@~/enums/markdown-documents.enums';
-import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
-import type { iProjectRecord } from '@~/record/project-record.schema';
+import type { MarkdownDocument } from '#~/enums/markdown-documents.enums';
+import { MARKDOWN_DOCUMENT_OUTPUTS } from '#~/enums/markdown-documents.enums';
+import type { iModuleManifest } from '#~/manifest/module-manifest.schema';
+import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import type { iControlBlockOptions } from './control-block-renderer';
 import { ControlBlockRenderer } from './control-block-renderer';

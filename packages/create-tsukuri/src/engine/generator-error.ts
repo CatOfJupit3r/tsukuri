@@ -1,4 +1,4 @@
-import type { GeneratorErrorCode } from '@~/enums/generator-error-codes.enums';
+import type { GeneratorErrorCode } from '#~/enums/generator-error-codes.enums';
 
 export class GeneratorError extends Error {
   public readonly code: GeneratorErrorCode;

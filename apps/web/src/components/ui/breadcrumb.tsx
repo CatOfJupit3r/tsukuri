@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { forwardRef } from 'react';
 import { LuChevronRight } from 'react-icons/lu';
 
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 function Breadcrumb({ className, ...props }: ComponentProps<'nav'>) {
   return (

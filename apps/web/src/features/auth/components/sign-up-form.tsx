@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { Button } from '@~/components/ui/button/button';
-import { useAppForm } from '@~/components/ui/field';
+import { Button } from '#~/components/ui/button/button';
+import { useAppForm } from '#~/components/ui/field';
 
 import useRegister from '../hooks/use-register';
 

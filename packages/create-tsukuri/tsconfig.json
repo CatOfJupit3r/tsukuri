@@ -1,9 +1,6 @@
 {
   "extends": ["../../tsconfig.base.json", "@startername/swc-config/tsconfig.decorators.json"],
   "compilerOptions": {
-    "paths": {
-      "@~/*": ["./src/*"]
-    },
     "types": ["node", "vitest/globals"],
     "noEmit": true
   },

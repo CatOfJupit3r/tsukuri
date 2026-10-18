@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { LuArrowLeft } from 'react-icons/lu';
 import z from 'zod';
 
-import Loader from '@~/components/loader';
+import Loader from '#~/components/loader';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,12 +11,12 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@~/components/ui/breadcrumb';
-import { Button } from '@~/components/ui/button/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@~/components/ui/card';
-import { useAppForm } from '@~/components/ui/field';
-import { Input } from '@~/components/ui/input';
-import { Label } from '@~/components/ui/label';
+} from '#~/components/ui/breadcrumb';
+import { Button } from '#~/components/ui/button/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/card';
+import { useAppForm } from '#~/components/ui/field';
+import { Input } from '#~/components/ui/input';
+import { Label } from '#~/components/ui/label';
 
 import { useMe } from '../hooks/use-me';
 import { useUpdateUserProfile } from '../hooks/use-update-user-profile';

@@ -3,10 +3,10 @@ import { createIsomorphicFn } from '@tanstack/react-start';
 import { getRequestHeaders } from '@tanstack/react-start/server';
 import { useMemo } from 'react';
 
-import { USE_ME_QUERY_KEYS } from '@~/features/user/hooks/use-me';
-import { tanstackRPC } from '@~/utils/tanstack-orpc';
+import { USE_ME_QUERY_KEYS } from '#~/features/user/hooks/use-me';
+import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
-const listAllUsersQueryOptions = tanstackRPC.user.devToolsListAllUsers.queryOptions();
+const listAllUsersQueryOptions = tanstackRPC.auth.devToolsListAllUsers.queryOptions();
 
 const getImpersonateURL = createIsomorphicFn()
   .client((userId: string) => `/api/dev-tools/impersonate/${userId}`)

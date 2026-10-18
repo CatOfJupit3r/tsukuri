@@ -1,4 +1,4 @@
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 
 import { GeneratorError } from './generator-error';
 

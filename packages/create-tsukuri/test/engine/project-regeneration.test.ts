@@ -1,16 +1,16 @@
-import { createGeneratorContainer } from '@~/di/container';
-import { ProjectGenerator } from '@~/engine/project-generator';
-import type { VirtualProject } from '@~/engine/virtual-project';
-import { CONNECTION_POINT_KINDS } from '@~/enums/connection-point-kinds.enums';
-import { MARKDOWN_DOCUMENTS } from '@~/enums/markdown-documents.enums';
-import type { iModuleManifestInput } from '@~/manifest/module-manifest.schema';
-import { baseModule } from '@~/modules/base.module';
-import type { iProjectRecord } from '@~/record/project-record.schema';
+import { createGeneratorContainer } from '#~/di/container';
+import { ProjectGenerator } from '#~/engine/project-generator';
+import type { VirtualProject } from '#~/engine/virtual-project';
+import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
+import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
+import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
+import { baseModule } from '#~/modules/base.module';
+import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';
 import { REPOSITORY_ROOT } from '../helpers/temp-dir';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const ALPHA = testModuleId('alpha');
 
@@ -26,7 +26,7 @@ const alphaModule: iModuleManifestInput = createManifest(ALPHA, {
       kind: CONNECTION_POINT_KINDS.ROUTER,
       workspace: 'apps/api',
       key: 'clean',
-      router: { name: 'cleanRouter', from: '@~/clean' },
+      router: { name: 'cleanRouter', from: '#~/clean' },
     },
     { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: 'apps/api', name: 'API_PORT', schema: 'z.coerce.number()' },
     { kind: CONNECTION_POINT_KINDS.COMPOSE_SERVICE, name: 'cache', service: { image: 'valkey/valkey:8' } },
@@ -81,7 +81,7 @@ describe('regenerating from the module record', () => {
         'docker-compose.dev.yml',
         'apps/api/src/generated/routers.ts',
         'apps/api/src/generated/env.schema.ts',
-        'apps/api/.env.example',
+        '.env.example',
         'apps/api/package.json',
         'apps/api/src/clean.ts',
       ]),

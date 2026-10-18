@@ -1,10 +1,10 @@
-import { templatePath } from '@~/constants/template-path';
-import { CONNECTION_POINT_KINDS } from '@~/enums/connection-point-kinds.enums';
-import { MARKDOWN_DOCUMENTS } from '@~/enums/markdown-documents.enums';
-import { MODULE_CATEGORIES } from '@~/enums/module-categories.enums';
-import { MODULE_IDS } from '@~/enums/module-ids.enums';
-import { SKILL_IDS } from '@~/enums/skill-ids.enums';
-import { defineModule } from '@~/manifest/define-module';
+import { templatePath } from '#~/constants/template-path';
+import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
+import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
+import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
+import { MODULE_IDS } from '#~/enums/module-ids.enums';
+import { SKILL_IDS } from '#~/enums/skill-ids.enums';
+import { defineModule } from '#~/manifest/define-module';
 
 export const baseModule = defineModule({
   id: MODULE_IDS.BASE,
@@ -24,6 +24,7 @@ export const baseModule = defineModule({
     { source: '.github/ISSUE_TEMPLATE' },
     { source: 'cz.config.cjs' },
     { source: 'lint-staged.shared.cjs' },
+    { source: '.prettierignore' },
     { source: 'tsconfig.json' },
     { source: 'tsconfig.base.json' },
     { source: 'oxlint.config.mjs' },
@@ -157,13 +158,20 @@ export const baseModule = defineModule({
         version: '1.0.0',
         type: 'module',
         private: true,
-        description: 'Shared Vitest module cache settings',
+        description: 'Shared Vitest settings: module cache and the example test environment',
         exports: {
           './module-cache': {
             types: './src/module-cache.d.mts',
             default: './src/module-cache.mjs',
           },
+          './example-env': {
+            types: './src/example-env.d.mts',
+            default: './src/example-env.mjs',
+          },
         },
+      },
+      dependencies: {
+        dotenv: 'catalog:',
       },
       peerDependencies: {
         vitest: 'catalog:',
@@ -220,6 +228,11 @@ export const baseModule = defineModule({
             types: './dist/enums/*.d.mts',
             default: './dist/enums/*.mjs',
           },
+          './generated/*': {
+            'workspace-source': './src/generated/*.ts',
+            types: './dist/generated/*.d.mts',
+            default: './dist/generated/*.mjs',
+          },
           './helpers/*': {
             'workspace-source': './src/helpers/*.ts',
             types: './dist/helpers/*.d.mts',
@@ -235,7 +248,7 @@ export const baseModule = defineModule({
         lint: 'pnpm run lint:oxlint && pnpm run lint:eslint',
         'lint:oxlint': 'oxlint -c oxlint.config.mjs --fix',
         'lint:eslint': 'eslint . --fix',
-        prettify: 'prettier --write ./src/',
+        prettify: 'prettier --write ./src/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore',
         test: "echo 'No tests for common library yet'",
       },
       dependencies: {
@@ -272,6 +285,7 @@ export const baseModule = defineModule({
       '@types/node': '26.1.1',
       tsdown: '0.22.4',
       tsx: '4.23.0',
+      dotenv: '17.4.2',
       '@typescript/native-preview': '7.0.0-dev.20260707.2',
     },
     allowBuilds: {

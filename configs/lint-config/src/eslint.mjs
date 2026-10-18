@@ -110,7 +110,7 @@ const getBaseConfig = (options) => {
         'error',
         {
           ignore: [
-            '^@~/',
+            '^#~/',
             // Workspace packages (prevent false positives)
             createWorkspaceIgnorePattern('startername'),
             createWorkspaceIgnorePattern('shared'),
@@ -197,6 +197,8 @@ const getBaseConfig = (options) => {
           'dist/**',
           'build/**',
           '.lintstagedrc.{js,cjs,mjs}',
+          // Connection points, rewritten by create-tsukuri on every add/remove.
+          'src/generated/**',
         ],
       },
       ...(gitignorePath ? [includeIgnoreFile(gitignorePath)] : []),

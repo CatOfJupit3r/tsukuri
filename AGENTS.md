@@ -39,9 +39,10 @@ Examples:
 
 ## Repository Layout
 
-- `apps/server` contains the Hono API, oRPC routers, Drizzle schema, and server-side services.
+- `packages/api` contains every server feature (oRPC routers, services, repositories, Drizzle schema, DI registrations). It is runtime-agnostic: backend targets mount it.
+- `apps/server` is the Node backend target: Hono forwarding every request to the shared API.
 - `apps/web` contains the React 19 client, TanStack Router tree, UI components, and client-side state.
-- `packages/server-contract` contains the API contracts used by both apps.
+- `packages/server-contract` contains the API contracts shared by the API and its clients.
 - `packages/common` contains shared utilities, types, constants, and helpers used by both apps.
 - `packages/create-tsukuri` contains the project generator: module manifests (`src/modules/*.module.ts`), the composition engine, and the Handlebars templates in `templates/` (markdown fragments and connection points; `{{#module "id"}}...{{else}}...{{/module}}` blocks, literal braces escaped as `\{{`) that generated projects are built from. Markdown fragments also take line-based `<harness-specific id="claude|codex">` blocks (kept only in CLAUDE.md or AGENTS.md) and `<private>` blocks (kept only when the project record sets `markdown.includePrivate`). Module source files stay real, type-checked files and are never templated.
 - `docs` contains product notes, roadmaps, and design documentation, if present.
@@ -93,7 +94,7 @@ Examples:
   export type UserProfileResponse = iUserProfileResponse; // redundant alias, delete it
   ```
 - Repository response types should be derived from the Drizzle schema (`typeof table.$inferSelect`) with `Omit`/`Pick`/intersections rather than hand-duplicating every column. See the **drizzle-orm** skill.
-- Don't hand-write a field-by-field `toResponse(row)` mapper in a repository. Build it with `createRowResolver` (`@~/lib/row-resolver`) and group a feature's mappers on a `<feature>.resolver.ts` resolver class. Resolvers are `@singleton()` and constructor-injected into repositories like any other dependency (e.g. `PostgresService`) — never static classes/methods. See the **drizzle-orm** skill.
+- Don't hand-write a field-by-field `toResponse(row)` mapper in a repository. Build it with `createRowResolver` (`#~/lib/row-resolver`) and group a feature's mappers on a `<feature>.resolver.ts` resolver class. Resolvers are `@singleton()` and constructor-injected into repositories like any other dependency (e.g. `PostgresService`) — never static classes/methods. See the **drizzle-orm** skill.
 - If your variable is reused across server and client, define it in `packages/common/src/constants` and import it from `@startername/common/constants`. Only do this for non-sensitive data.
 - When resolving warnings or errors, prefer addressing the root cause instead of using `// @ts-ignore` or `as unknown as <Type>`. Use these only as a last resort with a comment explaining why.
 - If you encounter eslint warnings, run `pnpm run lint` to fix them in the file.
@@ -109,9 +110,11 @@ Examples:
 
 ## Environment and Configuration
 
-- Copy `.env.example` to `.env` in `apps/server` and `apps/web`; server validates configuration with `zod` in `src/constants/env.ts`.
+- Copy the root `.env.example` (generated from the installed modules' variables, `pnpm run sync` keeps it current) to `.env`; every server workspace validates its variables with `zod` in `src/constants/env.ts`. `apps/web` still reads its own `apps/web/.env`.
+- This repository is a project of its own modules: `starter.json` lists them and `pnpm run sync` regenerates every `src/generated/` connection point and the root `.env.example`. Run it after changing a module manifest; a test fails while they are out of date.
 - The Better Auth server is mounted under `/auth/*` and expects HTTPS cookies (`sameSite: 'none'`, `secure: true`); keep this in mind when testing locally.
-- Aliases: `@~/` resolves to `apps/server/src` or `apps/web/src` depending on the package; `@startername/common` surfaces shared utilities and types, while `@startername/server-contract` surfaces API contracts.
+- Imports inside a package use `#~/` (Node subpath imports: `"imports": { "#~/*": "./src/*.js" }` in its package.json), never tsconfig `paths`. Every tool resolves `#~/` against the package that contains the importing file, so shared packages such as `packages/api` can be type-checked, bundled and run from source by any app; a `paths` alias would resolve against whichever app is compiling and break across packages. The `.js` target is mapped to `.ts`/`.tsx` sources by TypeScript, Vite and the Node dev loader.
+- `@startername/common` surfaces shared utilities and types, `@startername/server-contract` the API contracts, and `@startername/api` the server code every backend target mounts.
 - PostgreSQL runs at `postgresql://postgres:postgres@localhost:5432/startername` by default; adjust via `POSTGRES_URL` and update docker-compose if ports change.
 - Workspace packages export a `workspace-source` condition pointing at their TypeScript source; TypeScript, Vite/Vitest and Node dev servers resolve it, so nothing has to be built before `dev`, `test` or `check-types`. Add the condition to every new export (see `configs/workspace-source`).
 - Workspaces that use tsyringe decorators extend `@startername/swc-config/tsconfig.decorators.json` (read by `@swc-node/register` in dev) and use `createSwcPlugin()` from `@startername/swc-config/vitest` in tests; tsdown builds emit the same decorator metadata.
@@ -127,7 +130,7 @@ The default shell is Windows PowerShell 5.1. Assume these rules unless told othe
 - `rm` is permission-denied by policy — always use `Remove-Item -Recurse -Force` directly.
 - pnpm writes progress to stderr, and PS 5.1 wraps native stderr as `NativeCommandError`, so error-looking output does NOT mean failure. Trust exit codes.
 - Always use absolute paths rooted at the repository root; never rely on the current working directory, and do not prefix commands with `cd`.
-- Canonical command forms: `pnpm run check-types`, `pnpm run lint`, `pnpm run db:generate`, `pnpm --filter=server run <script>`.
+- Canonical command forms: `pnpm run check-types`, `pnpm run lint`, `pnpm run db:generate`, `pnpm --filter=@startername/api run <script>`.
 
 ## Testing
 
@@ -149,11 +152,11 @@ Do not duplicate code blocks and prefer to extract shared code into utility func
 Our repository is organized to promote clarity, maintainability, and scalability. We use a feature-based structure for both backend and frontend code, ensuring that related files are grouped together.
 
 - Shared API contracts live in `packages/server-contract/src/contract/*.contract.ts`.
-- Server schema files live in `apps/server/src/db/schema/*.ts`.
-- Repositories live under `apps/server/src/features/**/drizzle-*.repository.ts`.
-- Routers live under `apps/server/src/routers/*.router.ts`.
-- Error handling utilities live in `apps/server/src/lib/orpc-error-wrapper.ts`.
-- Shared error codes live in `packages/common/src/enums/errors.enums.ts`.
+- Server schema files live next to their feature as `packages/api/src/features/**/*.schema.ts`.
+- Repositories live under `packages/api/src/features/**/drizzle-*.repository.ts`.
+- Routers live under `packages/api/src/features/**/*.router.ts` and are combined through `src/generated/routers.ts`.
+- Error handling utilities live in `packages/api/src/lib/orpc-error-wrapper.ts`.
+- Error codes are declared by each module and generated into `packages/common/src/generated/error-codes.ts`.
 - Tests should mirror the feature structure inside each app or package.
 ```
 apps/<workspace>/test/
@@ -172,7 +175,7 @@ apps/<workspace>/test/
 - `pnpm run lint` runs one oxlint pass over every workspace, then ESLint for the rules oxlint cannot run. Each workspace's `oxlint.config.mjs` is translated from its ESLint config, so `eslint.config.mjs` stays the single rule set. Shared configs live in `configs/lint-config` (`@startername/lint-config/eslint`, `@startername/lint-config/oxlint-workspaces`).
 - `pnpm run prettify` formats the workspace.
 - `pnpm run test` runs the test suite across the workspace.
-- `pnpm run db:generate` generates a Drizzle migration from the current schema (root alias for the `server` package script).
+- `pnpm run db:generate` generates a Drizzle migration from the current schema (root alias for the `@startername/api` package script).
 - `pnpm install` installs dependencies across the workspace.
 
 ## Workflow

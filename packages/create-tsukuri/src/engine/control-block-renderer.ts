@@ -1,10 +1,10 @@
 import { injectable } from 'tsyringe';
 
-import type { ControlBlock } from '@~/enums/control-blocks.enums';
-import { CONTROL_BLOCKS, controlBlocksEnumwaii } from '@~/enums/control-blocks.enums';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { Harness } from '@~/enums/harnesses.enums';
-import { harnessesEnumwaii } from '@~/enums/harnesses.enums';
+import type { ControlBlock } from '#~/enums/control-blocks.enums';
+import { CONTROL_BLOCKS, controlBlocksEnumwaii } from '#~/enums/control-blocks.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { Harness } from '#~/enums/harnesses.enums';
+import { harnessesEnumwaii } from '#~/enums/harnesses.enums';
 
 import { GeneratorError } from './generator-error';
 

@@ -4,12 +4,12 @@ import { HiOutlineSparkles } from 'react-icons/hi';
 import { LuRocket, LuServerCog } from 'react-icons/lu';
 import { TbLayoutDashboard } from 'react-icons/tb';
 
-import { Badge } from '@~/components/ui/badge';
-import { Button } from '@~/components/ui/button/button';
-import { Card, CardContent } from '@~/components/ui/card';
-import { Skeleton } from '@~/components/ui/skeleton';
-import { useHealthCheck } from '@~/hooks/queries/use-health-check';
-import { useMetrics } from '@~/hooks/queries/use-metrics';
+import { Badge } from '#~/components/ui/badge';
+import { Button } from '#~/components/ui/button/button';
+import { Card, CardContent } from '#~/components/ui/card';
+import { Skeleton } from '#~/components/ui/skeleton';
+import { useHealthCheck } from '#~/hooks/queries/use-health-check';
+import { useMetrics } from '#~/hooks/queries/use-metrics';
 
 export const Route = createFileRoute('/')({
   component: HomeComponent,

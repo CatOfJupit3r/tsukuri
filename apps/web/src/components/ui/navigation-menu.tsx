@@ -3,7 +3,7 @@ import { cva } from 'class-variance-authority';
 import type { ComponentProps } from 'react';
 import { LuChevronDown } from 'react-icons/lu';
 
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 function NavigationMenu({
   className,

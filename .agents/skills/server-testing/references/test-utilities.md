@@ -1,6 +1,6 @@
 # Test Utilities
 
-Reusable helpers, fixtures, and utilities that make writing tests easier and more consistent.
+Reusable helpers, fixtures, and utilities that make writing tests easier and more consistent. They live in `packages/api/test/`: shared helpers in `test/helpers/`, domain fixtures in `test/integration/fixtures/`.
 
 ## Primary Mission: Build a Fixture Library
 
@@ -12,21 +12,20 @@ The most important role of test utilities is **building a library of specialized
 // ❌ BAD: Test has to know how to set up complex scenarios
 it('should select badge', async () => {
   const { ctx, user } = await createUser();
-  
-  // How do we grant achievements? This couples the test to implementation
-  await call(appRouter.achievements.grant, { achievementId: 'BETA' }, ctx());
-  await call(appRouter.achievements.grant, { achievementId: 'TESTER' }, ctx());
-  
-  const result = await call(appRouter.user.updateUserBadge, { badgeId: 'BETA_BADGE' }, ctx());
-  expect(result.selectedBadge).toBe('BETA_BADGE');
+
+  // How do we unlock achievements? This couples the test to implementation
+  await getUserAchievementRepository().ensureUnlocked(user.id, USER_ACHIEVEMENTS.BETA_TESTER);
+
+  const result = await call(appRouter.user.updateUserBadge, { badgeId: BADGE_IDS.BETA_TESTER }, ctx());
+  expect(result.selectedBadge).toBe(BADGE_IDS.BETA_TESTER);
 });
 
 // ✅ GOOD: Fixture expresses intent, test is clean
 it('should select badge', async () => {
-  const { ctx } = await createUserWithAchievements(['BETA', 'TESTER']);
-  
-  const result = await call(appRouter.user.updateUserBadge, { badgeId: 'BETA_BADGE' }, ctx());
-  expect(result.selectedBadge).toBe('BETA_BADGE');
+  const { ctx } = await createUserWithAchievement(USER_ACHIEVEMENTS.BETA_TESTER);
+
+  const result = await call(appRouter.user.updateUserBadge, { badgeId: BADGE_IDS.BETA_TESTER }, ctx());
+  expect(result.selectedBadge).toBe(BADGE_IDS.BETA_TESTER);
 });
 ```
 
@@ -41,12 +40,12 @@ it('should select badge', async () => {
 
 ### createUser()
 
-Creates an authenticated user with a session. This is the primary test utility for integration tests.
+Creates an authenticated user with a session. This is the primary test utility for integration tests. It signs up through Better Auth (resolved from the container) and reads the session back.
 
-**Location**: `test/integration/utilities.ts`
+**Location**: `test/helpers/auth-users.ts` (installed with the better-auth module)
 
 ```typescript
-import { createUser } from './utilities';
+import { createUser } from '../helpers/auth-users';
 
 // Create user with random data
 const { ctx, user, session, cookie } = await createUser();
@@ -60,34 +59,58 @@ const { ctx, user } = await createUser({
 ```
 
 **Returns**:
-- `ctx()` - Function that returns oRPC context with session
+- `ctx()` - Function that returns the oRPC call options (`{ context: { session, resolve } }`)
 - `user` - Better Auth user object with `id`, `email`, `name`
 - `session` - Session object
 - `cookie` - Authentication cookie string
 
-### getIntegrationFixtures()
+### appRouter
 
-Gets the loaded app instance, router, and auth client.
-
-**Location**: `test/helpers/fixtures.ts`
+The router the API serves, built from the installed modules' routers:
 
 ```typescript
-import { getIntegrationFixtures } from '../helpers/fixtures';
+import { appRouter } from '#~/app-router';
 
-const { app, appRouter, auth } = await getIntegrationFixtures();
+const result = await call(appRouter.user.getUserProfile, null, ctx());
 ```
 
-### Direct Access to Instances
+There is no app instance to load or reset: `test/helpers/setup.ts` calls `startApi()` once for the whole integration run.
 
-Import pre-loaded instances directly for convenience:
+### Repository fixtures
 
-**Location**: `test/helpers/instance.ts`
+**Location**: `test/integration/fixtures/repository.fixtures.ts`
+
+Resolve a repository through its token from the container, for arranging or verifying state that no endpoint exposes:
 
 ```typescript
-import { app, appRouter, auth } from '../helpers/instance';
+export function getUserProfileRepository() {
+  return container.resolve<iUserProfileRepository>(USER_PROFILE_REPOSITORY_TOKEN);
+}
+```
 
-// Use directly in tests
-const result = await call(appRouter.user.getUserProfile, null, ctx());
+### expectORPCError()
+
+**Location**: `test/helpers/orpc-errors.ts`
+
+Asserts that a call rejects with a structured error code (and its message from `errorMessages`):
+
+```typescript
+await expectORPCError(call(appRouter.user.updateUserBadge, input, ctx()), {
+  code: errorCodes.USER_BADGE_NOT_ALLOWED,
+});
+```
+
+### mockContainerResolve()
+
+**Location**: `test/helpers/unit-mocks.ts`
+
+For unit tests of code that resolves from the global container. Each token resolves to its fake, and an unmapped token fails the test:
+
+```typescript
+mockContainerResolve([
+  [AuthService, fakeAuthService],
+  [RequestContextStorage, fakeRequestContext],
+]);
 ```
 
 ## Custom Matchers
@@ -120,54 +143,41 @@ expect(0).not.toBeNil();
 
 Create domain-specific fixtures that represent meaningful test scenarios. These become the building blocks of your test suite.
 
-Fixtures should call endpoints via `call()` to ensure full API testing.
+Fixtures should call endpoints via `call()` to ensure full API testing, and use the repository fixtures only where the API has no endpoint for the setup.
 
 ```typescript
-// test/integration/utilities.ts
+// test/integration/fixtures/user-profile.fixtures.ts
 
 /**
- * User with admin privileges
+ * User with a specific achievement unlocked
  */
-export async function createAdminUser() {
-  const user = await createUser({
-    email: `admin-${Date.now()}@example.com`,
-    name: 'Admin User',
-    password: 'admin123',
-  });
-
-  // Grant admin role via endpoint
-  await call(appRouter.admin.grantRole, { userId: user.user.id, role: 'ADMIN' }, user.ctx());
-  
-  return user;
-}
-
-/**
- * User with specific achievements granted
- */
-export async function createUserWithAchievements(achievementIds: string[]) {
+export async function createUserWithAchievement(achievementId: UserAchievementId) {
   const user = await createUser();
-
-  // Grant achievements via endpoints
-  await Promise.all(
-    achievementIds.map((id) =>
-      call(appRouter.achievements.grant, { achievementId: id }, user.ctx())
-    )
-  );
-
+  await getUserAchievementRepository().ensureUnlocked(user.user.id, achievementId);
   return user;
 }
 
 /**
- * User with specific badge selected and required achievements
+ * User with specific bio saved
  */
-export async function createUserWithBadge(badgeId: string) {
+export async function createUserWithBio(bio: string) {
+  const user = await createUser();
+  const profile = await call(appRouter.user.updateUserProfile, { bio }, user.ctx());
+  return { ...user, profile };
+}
+
+/**
+ * User with a badge selected and the achievement it requires unlocked
+ */
+export async function createUserWithBadge(badgeId: BadgeId) {
   // Compose existing fixtures
-  const { ctx, user } = await createUserWithAchievements(['required_achievement']);
-  
+  const requiredAchievement = BADGES_META.find((badge) => badge.id === badgeId)?.requiresAchievement;
+  const user = requiredAchievement ? await createUserWithAchievement(requiredAchievement) : await createUser();
+
   // Set the badge via endpoint
-  await call(appRouter.user.updateUserBadge, { badgeId }, ctx());
-  
-  return { ctx, user };
+  const profile = await call(appRouter.user.updateUserBadge, { badgeId }, user.ctx());
+
+  return { ...user, profile };
 }
 ```
 
@@ -175,7 +185,7 @@ export async function createUserWithBadge(badgeId: string) {
 
 ### Pattern 2: Building Complex Scenarios
 
-Compose simple fixtures into more complex ones:
+Compose simple fixtures into more complex ones. The `challenges` and `teams` procedures below are illustrative; use your own features' procedures:
 
 ```typescript
 /**
@@ -186,7 +196,7 @@ export async function createUserWithCompletedChallenge() {
   // Create and complete a challenge via endpoint
   const challenge = await call(appRouter.challenges.create, { title: 'Test Challenge' }, user.ctx());
   await call(appRouter.challenges.submit, { challengeId: challenge.id, answer: '...' }, user.ctx());
-  
+
   return { user, challenge };
 }
 
@@ -194,36 +204,20 @@ export async function createUserWithCompletedChallenge() {
  * Team with multiple members at different permission levels
  */
 export async function createTeamWithMembers() {
-  const owner = await createAdminUser();
+  const owner = await createUser();
   const member1 = await createUser();
   const member2 = await createUser();
-  
+
   // Create team and add members via endpoints
   const team = await call(appRouter.teams.create, { name: 'Test Team' }, owner.ctx());
   await call(appRouter.teams.addMember, { teamId: team.id, userId: member1.user.id, role: 'MEMBER' }, owner.ctx());
   await call(appRouter.teams.addMember, { teamId: team.id, userId: member2.user.id, role: 'EDITOR' }, owner.ctx());
-  
+
   return { owner, team, member1, member2 };
 }
 ```
 
-### Pattern 3: Specific Scenario Fixtures
-
-Create fixtures for specific scenarios by composing simpler fixtures and calling endpoints:
-
-```typescript
-export async function createCompletedSubmission() {
-  const user = await createUser();
-  
-  // Create challenge and submission via endpoints
-  const challenge = await call(appRouter.challenges.create, { title: 'Challenge' }, user.ctx());
-  const submission = await call(appRouter.challenges.submit, { challengeId: challenge.id, answer: '...' }, user.ctx());
-  
-  return { user, challenge, submission };
-}
-```
-
-### Pattern 4: Data Factory Functions
+### Pattern 3: Data Factory Functions
 
 Generate random test data:
 
@@ -237,23 +231,11 @@ export function createChallengeData(overrides = {}) {
     ...overrides,
   };
 }
-
-export function createProfileData(overrides = {}) {
-  return {
-    bio: 'Test bio',
-    avatarUrl: 'https://example.com/avatar.png',
-    ...overrides,
-  };
-}
 ```
 
-## Custom Matchers
-
-Define domain-specific matchers for cleaner assertions:
+Custom matchers for domain assertions go in `test/helpers/matchers.ts`:
 
 ```typescript
-// test/helpers/matchers.ts
-
 import { expect } from 'vitest';
 
 expect.extend({
@@ -286,71 +268,45 @@ declare module 'vitest' {
 expect(profile).toHaveValidTimestamps();
 ```
 
-### Pattern: API Client Helpers
+### Pattern: Request Helpers
 
-Wrap common API operations:
+To test transport behavior, send a `Request` through `ApiRequestHandler` (the handler every backend adapter forwards to) rather than starting a server:
 
 ```typescript
-// test/integration/utilities.ts
+import { container } from 'tsyringe';
 
-export async function createSession(email: string, password: string) {
-  const { headers } = await auth.api.signInEmail({
-    body: { email, password },
-    returnHeaders: true,
-  });
+import { ApiRequestHandler } from '#~/features/http/api-request-handler';
 
-  return headers.getSetCookie()[0];
+export async function sendRequest(path: string, init?: RequestInit) {
+  return container.resolve(ApiRequestHandler).handle(new Request(`http://localhost${path}`, init));
 }
 
-export async function makeAuthenticatedRequest(
-  cookie: string,
-  endpoint: string,
-  data: any
-) {
-  return fetch(`http://localhost:3000${endpoint}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      cookie,
-    },
-    body: JSON.stringify(data),
-  });
-}
+// Authenticated: pass the cookie from createUser()
+const response = await sendRequest('/users/profile', { headers: { cookie } });
 ```
+
+`handle` returns `null` for paths no route serves.
 
 ## Test Database Helpers
 
-Direct database manipulation for test setup:
+Direct database manipulation goes through repositories, not tables:
 
 ```typescript
-import { UserModel } from '@~/db/models/user.model';
-import { UserProfileModel } from '@~/db/models/user-profile.model';
+// Arrange state no endpoint exposes
+await getUserProfileRepository().deleteByUserId(userId);
 
-// Clean specific collections
-export async function cleanUserData(userId: string) {
-  await Promise.all([
-    UserProfileModel.deleteMany({ userId }),
-    UserAchievementModel.deleteMany({ userId }),
-  ]);
-}
-
-// Seed test data
-export async function seedAchievements() {
-  const achievements = [
-    { id: 'FIRST_LOGIN', label: 'First Login', description: '...' },
-    { id: 'BETA_TESTER', label: 'Beta Tester', description: '...' },
-  ];
-
-  await AchievementModel.insertMany(achievements);
-}
+// Unlock an achievement
+await getUserAchievementRepository().ensureUnlocked(userId, USER_ACHIEVEMENTS.BETA_TESTER);
 ```
+
+Every table is truncated after each test (`test/helpers/setup/postgres.setup.ts`), so fixtures do not clean up after themselves.
 
 ## Setup Hooks Utilities
 
 ### beforeEach / afterEach Helpers
 
 ```typescript
-import { beforeEach, afterEach } from 'vitest';
+import { beforeEach } from 'vitest';
 
 describe('Feature with Shared Setup', () => {
   let testUser: Awaited<ReturnType<typeof createUser>>;
@@ -358,10 +314,6 @@ describe('Feature with Shared Setup', () => {
   beforeEach(async () => {
     testUser = await createUser();
     // Additional setup
-  });
-
-  afterEach(async () => {
-    // Optional: explicit cleanup (though automatic cleanup handles most cases)
   });
 
   it('uses shared testUser', async () => {
@@ -375,32 +327,26 @@ describe('Feature with Shared Setup', () => {
 });
 ```
 
-## Container Management
+## Replacing a Binding for the Whole Run
 
-Reset DI container and app cache when needed:
+The container is shared by all integration tests and is not reset between them. To swap an implementation for the whole run, register the replacement in a module setup file, which runs before `startApi()`:
 
 ```typescript
-import { resetContainer } from '../helpers/fixtures';
-import { resetAppCache } from '../helpers/instance';
+// test/helpers/setup/auth.setup.ts
+import { container } from 'tsyringe';
 
-// Reset DI container
-resetContainer();
+import { AuthPasswordHasher } from '#~/features/auth/auth-password-hasher';
 
-// Reset app cache (forces reload)
-await resetAppCache();
+import { PlaintextAuthPasswordHasher } from '../plaintext-auth-password-hasher';
+
+container.register(AuthPasswordHasher, { useClass: PlaintextAuthPasswordHasher });
 ```
 
-**When to use**: Rarely needed, as tests are isolated by default. Use only when testing container configuration itself.
+Files matching `test/helpers/setup/*.setup.ts` are picked up automatically by `vitest.config.ts`.
 
 ## Environment Utilities
 
-Access test environment configuration:
-
-```typescript
-// Environment variables are set in vitest.config.ts
-process.env.NODE_ENV; // 'test'
-process.env.POSTGRES_URL; // PostgreSQL connection string used by the runtime service
-```
+Test environment variables come from the root `.env.example` (`loadExampleEnv` from `@startername/vitest-config/example-env`, with `NODE_ENV=test` and `LOG_LEVEL=error`). The validated values are available through `env` from `#~/constants/env`; do not read `process.env` in tests or fixtures.
 
 ## Async Test Utilities
 
@@ -425,10 +371,12 @@ export async function waitFor(
 
 // Usage
 await waitFor(async () => {
-  const user = await UserModel.findById(userId);
-  return user?.status === 'ACTIVE';
+  const profile = await getUserProfileRepository().findByUserId(userId);
+  return profile?.selectedBadge === BADGE_IDS.DEFAULT;
 });
 ```
+
+Prefer awaiting `EventBus.emitAsync` effects or the call that triggers them; use `waitFor` only for work that is genuinely detached.
 
 ## Best Practices
 
@@ -439,15 +387,15 @@ await waitFor(async () => {
 5. **Document utility functions** - Add JSDoc comments for complex helpers
 6. **Use TypeScript** - Ensure type safety in test utilities
 7. **Avoid over-abstraction** - Balance reusability with clarity
-8. **Co-locate utilities** - Put test-specific utilities near tests
-9. **Export from utilities.ts** - Make all fixtures discoverable in one place
+8. **Co-locate utilities** - Put fixtures in `test/integration/fixtures/`, shared helpers in `test/helpers/`
+9. **One fixtures file per feature** - Make all fixtures of a feature discoverable in one place
 
 ### Fixture Naming Convention
 
 ```typescript
 // ✅ GOOD: Clear purpose from name
-export async function createUserWithAchievements(ids: string[]) { }
-export async function createAdminUser() { }
+export async function createUserWithAchievement(id: UserAchievementId) { }
+export async function createUserWithBadge(id: BadgeId) { }
 export async function createTeamWithMembers() { }
 export async function createCompletedChallenge() { }
 
@@ -461,12 +409,12 @@ export async function prepareData() { }
 
 When building your fixture library, consider creating:
 - ✅ Basic user creation (`createUser`)
-- ✅ Specialized user types (`createAdminUser`, `createUserWithAchievements`)
+- ✅ Specialized user types (`createUserWithBio`, `createUserWithAchievement`)
 - ✅ Complex scenarios (`createTeamWithMembers`, `createCompletedChallenge`)
-- ✅ Data factories (`createChallengeData`, `createProfileData`)
+- ✅ Data factories (`createChallengeData`)
 - ✅ Custom matchers (`toHaveValidTimestamps`, `toBeValidId`)
-- ✅ Database helpers (`seedAchievements`, `cleanUserData`)
-- ✅ Async utilities (`waitFor`, `waitForCondition`)
+- ✅ Repository accessors (`getUserProfileRepository`)
+- ✅ Async utilities (`waitFor`)
 
 ## Anti-Patterns to Avoid
 
@@ -474,7 +422,7 @@ When building your fixture library, consider creating:
 ❌ Don't repeat setup code across tests (extract to fixture)
 ❌ Don't have fixtures that are too generic (be specific)
 ❌ Don't forget to document fixture purpose
-❌ Don't mix setup concerns in test files (keep in utilities)
+❌ Don't mix setup concerns in test files (keep in fixtures)
 
 ✅ Do call endpoints in fixtures to test the full API
 ✅ Do create specialized fixtures for each scenario

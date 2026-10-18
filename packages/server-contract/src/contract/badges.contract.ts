@@ -22,8 +22,6 @@ const listBadges = oc
   })
   .output(z.array(BADGE_META_SCHEMA));
 
-const badgesContract = oc.prefix('/badges').router({
+export const badgesContract = oc.prefix('/badges').router({
   listBadges,
 });
-
-export default badgesContract;

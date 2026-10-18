@@ -1,59 +1,71 @@
 ---
 name: dependency-injection-setup
-description: Set up and use dependency injection with tsyringe for server-side services. Use when creating services, implementing service-to-service dependencies, or using the logger factory pattern.
+description: Set up and use dependency injection with tsyringe for server-side services. Use when creating services, implementing service-to-service dependencies, binding interface tokens, writing startup tasks, or using the logger factory pattern.
 ---
 
 # Dependency Injection Setup
 
-This codebase uses tsyringe with decorator-based auto-registration. Services are injected by class type using `@singleton()` or `@injectable()` decorators.
+The server code in `packages/api` (`@startername/api`) uses tsyringe with decorator-based auto-registration. Concrete classes are injected by class type using `@singleton()` or `@injectable()` decorators. Interfaces are injected through per-feature tokens.
 
 ## Creating a Service
 
-Create your service in `apps/server/src/features/<feature>/<feature>.service.ts`:
+Create your service in `packages/api/src/features/<feature>/<feature>.service.ts`:
 
 ```typescript
 import { singleton } from 'tsyringe';
-import { LoggerFactory } from '@~/features/logger/logger.factory';
-import type { iWithLogger } from '@~/features/logger/logger.types';
+
+import { LoggerFactory } from '#~/features/logger/logger.factory';
+import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
 
 @singleton()
 export class MyFeatureService implements iWithLogger {
-  public readonly logger;
+  public readonly logger: LoggerType;
 
   constructor(loggerFactory: LoggerFactory) {
     this.logger = loggerFactory.create('my-feature-service');
   }
 
-  public async doSomething(input: string): Promise<string> {
+  public async doSomething(input: string) {
     this.logger.info('Processing input', { input });
     return `Processed: ${input}`;
   }
 }
 ```
 
-## Register the Service
+## No Manual Registration for Classes
 
-Add the import to `apps/server/src/di/container.ts`:
+A decorated class needs no registration step: tsyringe resolves it by class once its module is loaded. Do not add imports to a container file; there is no `di/container.ts` or central `di/tokens.ts`. Only interface bindings (tokens, below) and startup tasks are registered, and both go through generated connection points.
 
-```typescript
-export async function registerServices() {
-  // ... existing imports
-  await import('@~/features/my-feature/my-feature.service');
-}
-```
+`#~/di/register-services.ts` runs once at startup (from `startApi()`). It binds the core defaults first (`KEY_VALUE_STORE_TOKEN` to `NoopKeyValueStore`) and then the generated bindings, so a module's binding replaces a core default.
 
 ## Using Services
 
 ### In Handlers
 
+Resolve services from the request context. `context.resolve` uses a container created for the request:
+
+```typescript
+import { publicProcedure } from '#~/lib/orpc';
+
+import { MyFeatureService } from './my-feature.service';
+
+publicProcedure.myFeature.doSomething.handler(async ({ input, context }) =>
+  context.resolve(MyFeatureService).doSomething(input.value),
+);
+```
+
+### Outside Handlers
+
+Startup tasks, HTTP handlers, and context providers have no request context. Inject dependencies through the constructor where the code is a class; plain functions such as an HTTP handler resolve from the global container:
+
 ```typescript
 import { container } from 'tsyringe';
-import { MyFeatureService } from '@~/features/my-feature/my-feature.service';
 
-export const myHandler = async (input, context) => {
-  const service = container.resolve(MyFeatureService);
-  return await service.doSomething(input.value);
-};
+import { AuthService } from './auth.service';
+
+export async function handleAuthRequest(request: Request) {
+  return container.resolve(AuthService).getInstance().handler(request);
+}
 ```
 
 ### Constructor Injection
@@ -62,12 +74,14 @@ For service-to-service dependencies, inject via constructor:
 
 ```typescript
 import { singleton } from 'tsyringe';
-import { LoggerFactory } from '@~/features/logger/logger.factory';
-import { UserService } from '@~/features/user/user.service';
+
+import { LoggerFactory } from '#~/features/logger/logger.factory';
+import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
+import { UserService } from '#~/features/user/user.service';
 
 @singleton()
-export class NotificationService {
-  public readonly logger;
+export class NotificationService implements iWithLogger {
+  public readonly logger: LoggerType;
 
   constructor(
     loggerFactory: LoggerFactory,
@@ -77,11 +91,8 @@ export class NotificationService {
   }
 
   public async notifyUser(userId: string, message: string) {
-    const user = await this.userService.findById(userId);
-    if (!user) {
-      this.logger.warn('User not found', { userId });
-      return;
-    }
+    const profile = await this.userService.getUserProfile(userId);
+    this.logger.info('Notifying user', { userId, profileId: profile.id });
     // Send notification
   }
 }
@@ -97,63 +108,97 @@ constructor(loggerFactory: LoggerFactory) {
 }
 ```
 
+## Startup Tasks
+
+Work that must happen once before the API serves requests (connecting to a database, subscribing event handlers) is a startup task: an injectable class implementing `iStartupTask`. Keep the work in a service and let the task call it:
+
+```typescript
+import { injectable } from 'tsyringe';
+
+import type { iStartupTask } from '#~/features/startup/startup-task.types';
+
+import { AchievementsService } from './achievements.service';
+
+@injectable()
+export class InitializeAchievementsTask implements iStartupTask {
+  public readonly name = 'Subscribe achievements to their events';
+
+  constructor(private readonly achievementsService: AchievementsService) {}
+
+  public async run() {
+    this.achievementsService.initialize();
+  }
+}
+```
+
+Name the file `<name>.task.ts`. `StartupTaskRunner` resolves and runs the installed modules' tasks one after another inside `startApi()`. A task reaches it through the `STARTUP_TASK` connection point of a module manifest (see the `server-module` skill); `src/generated/startup-tasks.ts` is rebuilt and never edited by hand.
+
 ## Token-Based Injection (For Interfaces)
 
-When injecting **interfaces** instead of concrete classes, use tokens:
+When injecting **interfaces** instead of concrete classes, use tokens. A feature keeps its tokens in `<feature>.tokens.ts`:
 
 ### 1. Define the interface and token
 
 ```typescript
-// my-feature.types.ts
-export interface iPaymentService {
-  processPayment(amount: number);
+// packages/api/src/features/user/user-profile.repository.ts
+import type { iUserProfileResponse } from './user.types';
+
+export interface iUserProfileRepository {
+  findByUserId: (userId: string) => Promise<iUserProfileResponse | null>;
 }
 
-// Create token in apps/server/src/di/tokens.ts
-export const PAYMENT_SERVICE_TOKEN = Symbol.for('PaymentService');
+// packages/api/src/features/user/user.tokens.ts
+export const USER_PROFILE_REPOSITORY_TOKEN = Symbol.for('UserProfileRepository');
 ```
 
-### 2. Register the implementation
+### 2. Bind the implementation
+
+Bindings are not written in a container file. A module declares a `DI_REGISTRATION` contribution (token plus implementation) in its manifest; `pnpm run sync` (or `create-tsukuri add` in a generated project) writes it to `src/generated/di-registrations.ts`, which `registerServices()` applies with `container.registerSingleton(token, implementation)`. The binding for the example above comes from `packages/create-tsukuri/src/modules/example-domain.module.ts`:
 
 ```typescript
-// In apps/server/src/di/container.ts
-import { StripePaymentService } from '@~/features/payment/stripe-payment.service';
-import { PAYMENT_SERVICE_TOKEN } from './tokens';
-
-export async function registerServices() {
-  // ... other imports
-  
-  // Register interface implementation
-  container.registerSingleton<iPaymentService>(
-    PAYMENT_SERVICE_TOKEN,
-    StripePaymentService
-  );
+{
+  kind: CONNECTION_POINT_KINDS.DI_REGISTRATION,
+  workspace: 'packages/api',
+  bindings: [
+    {
+      token: { name: 'USER_PROFILE_REPOSITORY_TOKEN', from: '#~/features/user/user.tokens' },
+      implementation: {
+        name: 'DrizzleUserProfileRepository',
+        from: '#~/features/user/drizzle-user-profile.repository',
+      },
+    },
+  ],
 }
 ```
+
+Never edit `src/generated/`. In a generated project the file is rebuilt from `starter.json` and the module manifests, so follow its header and the project's `AGENTS.md` when adding a binding for the project's own feature.
 
 ### 3. Inject with @inject() decorator
 
 ```typescript
-import { singleton, inject } from 'tsyringe';
-import { PAYMENT_SERVICE_TOKEN } from '@~/di/tokens';
-import type { iPaymentService } from '@~/features/payment/payment.types';
+import { inject, injectable } from 'tsyringe';
 
-@singleton()
-export class CheckoutService {
+import type { iUserProfileRepository } from './user-profile.repository';
+import { USER_PROFILE_REPOSITORY_TOKEN } from './user.tokens';
+
+@injectable()
+export class UserService {
   constructor(
-    @inject(PAYMENT_SERVICE_TOKEN) private payment: iPaymentService,
-    loggerFactory: LoggerFactory, // Still auto-injected
+    @inject(USER_PROFILE_REPOSITORY_TOKEN)
+    private readonly userProfileRepository: iUserProfileRepository,
   ) {}
 }
 ```
 
 **When to use tokens:**
-- Injecting interfaces with multiple implementations
+- Injecting interfaces with multiple implementations (repositories, key-value stores)
 - Swapping implementations for testing
 - Plugin/strategy patterns
 
 **When NOT to use tokens:**
 - Injecting concrete classes (use direct injection instead)
+
+Tests swap a class implementation by registering a replacement before `startApi()`, in a `test/helpers/setup/*.setup.ts` file (see the `server-testing` skill).
 
 ## Service Lifecycle
 

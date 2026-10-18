@@ -1,15 +1,15 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { createGeneratorContainer } from '@~/di/container';
-import { MarkdownRenderer } from '@~/engine/markdown-renderer';
-import { MARKDOWN_DOCUMENTS } from '@~/enums/markdown-documents.enums';
-import { moduleManifestSchema } from '@~/manifest/module-manifest.schema';
+import { createGeneratorContainer } from '#~/di/container';
+import { MarkdownRenderer } from '#~/engine/markdown-renderer';
+import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
+import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';
 import { useTempDir } from '../helpers/temp-dir';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const FRAGMENT_SOURCE = 'fragments/agents.md.hbs';
 

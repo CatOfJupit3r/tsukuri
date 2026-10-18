@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { LuHouse } from 'react-icons/lu';
 
-import { useMe } from '@~/features/user/hooks/use-me';
+import { useMe } from '#~/features/user/hooks/use-me';
 
 import { ModeToggle } from './mode-toggle';
 import { Logo } from './ui/logo';

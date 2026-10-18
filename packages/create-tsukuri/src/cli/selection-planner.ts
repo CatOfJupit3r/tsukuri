@@ -1,14 +1,14 @@
 import { injectable } from 'tsyringe';
 
-import { GeneratorError } from '@~/engine/generator-error';
-import { ModuleRegistry } from '@~/engine/module-registry';
-import { ModuleResolver } from '@~/engine/module-resolver';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import type { PromptId } from '@~/enums/prompt-ids.enums';
-import { PROMPT_META } from '@~/enums/prompt-ids.enums';
-import type { SkillId } from '@~/enums/skill-ids.enums';
-import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
+import { GeneratorError } from '#~/engine/generator-error';
+import { ModuleRegistry } from '#~/engine/module-registry';
+import { ModuleResolver } from '#~/engine/module-resolver';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { PromptId } from '#~/enums/prompt-ids.enums';
+import { PROMPT_META } from '#~/enums/prompt-ids.enums';
+import type { SkillId } from '#~/enums/skill-ids.enums';
+import type { iModuleManifest } from '#~/manifest/module-manifest.schema';
 
 export interface iPromptChoices {
   /** Modules of the prompt's category that can be added to the current selection. */

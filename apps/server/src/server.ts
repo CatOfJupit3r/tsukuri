@@ -1,26 +1,18 @@
 // sort-imports-ignore
 import 'reflect-metadata';
+import './load-env';
 import { serve } from '@hono/node-server';
 
-import env from './constants/env';
-import loaders from './loaders/loaders';
+import { startApi } from '@startername/api/start-api';
 
-if (process.env.NODE_ENV === 'test') {
-  throw new Error('Server should not be started in test environment');
-}
+import { createApp } from './app';
+import { env } from './constants/env';
 
-const { app } = await loaders();
+const app = createApp(await startApi());
 
-const server = serve(
-  {
-    fetch: app.fetch,
-    port: env.SERVER_PORT,
-    hostname: env.SERVER_HOST,
-  },
-  (info) => {
-    console.log(`CDN server listening on http://${info.address}:${info.port}`);
-  },
-);
+const server = serve({ fetch: app.fetch, port: env.SERVER_PORT, hostname: env.SERVER_HOST }, (info) => {
+  console.log(`Server listening on http://${info.address}:${info.port}`);
+});
 
 const shutdown = (signal: NodeJS.Signals) => {
   console.log(`Received ${signal}, performing shutdown tasks...`);

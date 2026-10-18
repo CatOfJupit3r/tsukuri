@@ -1,0 +1,3 @@
+# Generated connection points are rewritten by create-tsukuri on every add/remove.
+**/src/generated/
+**/routeTree.gen.ts

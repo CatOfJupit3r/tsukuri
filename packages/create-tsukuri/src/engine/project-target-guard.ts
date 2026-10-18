@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { inject, injectable } from 'tsyringe';
 
-import { SOURCE_ROOT_TOKEN } from '@~/di/tokens';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import { SOURCE_ROOT_TOKEN } from '#~/di/tokens';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 
 import { GeneratorError } from './generator-error';
 

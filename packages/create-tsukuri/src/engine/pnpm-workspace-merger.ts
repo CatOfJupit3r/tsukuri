@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe';
 import { stringify } from 'yaml';
 
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import type { iPnpmWorkspaceContribution } from '@~/manifest/module-manifest.schema';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { iPnpmWorkspaceContribution } from '#~/manifest/module-manifest.schema';
 
 import { GeneratorError } from './generator-error';
 import type { iOwnedContribution, iPackageJson } from './package-json-merger';

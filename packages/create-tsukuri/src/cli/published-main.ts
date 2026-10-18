@@ -1,8 +1,8 @@
 import path from 'node:path';
 import 'reflect-metadata';
 
-import { BUNDLED_SOURCES_DIR } from '@~/constants/bundled-sources';
-import { SOURCE_LAYOUTS } from '@~/enums/source-layouts.enums';
+import { BUNDLED_SOURCES_DIR } from '#~/constants/bundled-sources';
+import { SOURCE_LAYOUTS } from '#~/enums/source-layouts.enums';
 
 import { runCli } from './run-cli';
 

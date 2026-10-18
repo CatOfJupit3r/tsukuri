@@ -2,7 +2,7 @@ import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion';
 import type { ComponentProps } from 'react';
 import { LuChevronDown } from 'react-icons/lu';
 
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 function Accordion({ ...props }: ComponentProps<typeof AccordionPrimitive.Root>) {
   return <AccordionPrimitive.Root data-slot="accordion" {...props} />;

@@ -2,7 +2,7 @@ import { Menu as DropdownMenuPrimitive } from '@base-ui/react/menu';
 import type { ComponentProps } from 'react';
 import { LuCheck, LuChevronRight, LuCircle } from 'react-icons/lu';
 
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 function DropdownMenu({ ...props }: DropdownMenuPrimitive.Root.Props) {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;

@@ -24,7 +24,7 @@
     "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
     "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
     "lint:eslint": "eslint . --fix",
-    "prettify": "prettier --write ./src/",
+    "prettify": "prettier --write ./src/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
     "test": "echo 'No tests for server contract library yet'"
   },
   "prettier": "@startername/prettier-config",

@@ -1,4 +1,4 @@
-import { mergeThreeWay } from '@~/engine/three-way-merge';
+import { mergeThreeWay } from '#~/engine/three-way-merge';
 
 describe('mergeThreeWay', () => {
   it('takes the generator change when the user did not touch the value', () => {

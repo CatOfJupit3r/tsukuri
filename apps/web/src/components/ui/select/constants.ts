@@ -1,6 +1,6 @@
 import type { ClassNamesConfig, GroupBase, StylesConfig } from 'react-select';
 
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 import type { iOptionType } from './types';
 

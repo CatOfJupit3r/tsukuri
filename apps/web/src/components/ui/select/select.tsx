@@ -19,7 +19,7 @@ import type {
 } from 'react-select';
 import { List } from 'react-window';
 
-import { isOnClient } from '@~/utils/ssr-helpers';
+import { isOnClient } from '#~/utils/ssr-helpers';
 
 import { DEFAULT_SELECT_CLASSNAMES, DEFAULT_SELECT_STYLES } from './constants';
 import type { iOptionType } from './types';

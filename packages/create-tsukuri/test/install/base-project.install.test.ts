@@ -1,7 +1,7 @@
 import path from 'node:path';
 
-import { createGeneratorContainer } from '@~/di/container';
-import { ProjectGenerator } from '@~/engine/project-generator';
+import { createGeneratorContainer } from '#~/di/container';
+import { ProjectGenerator } from '#~/engine/project-generator';
 
 import { runCommand } from '../helpers/run-command';
 import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';

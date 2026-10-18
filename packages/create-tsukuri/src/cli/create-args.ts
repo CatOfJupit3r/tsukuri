@@ -1,15 +1,15 @@
 import { parseArgs } from 'node:util';
 import type { ParseArgsConfig } from 'node:util';
 
-import { GeneratorError } from '@~/engine/generator-error';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { moduleIdSchema } from '@~/enums/module-ids.enums';
-import type { PresetId } from '@~/enums/preset-ids.enums';
-import { presetIdSchema } from '@~/enums/preset-ids.enums';
-import type { PromptId } from '@~/enums/prompt-ids.enums';
-import { PROMPT_META, promptIdsEnumwaii } from '@~/enums/prompt-ids.enums';
-import type { SkillId } from '@~/enums/skill-ids.enums';
-import { skillIdSchema } from '@~/enums/skill-ids.enums';
+import { GeneratorError } from '#~/engine/generator-error';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { moduleIdSchema } from '#~/enums/module-ids.enums';
+import type { PresetId } from '#~/enums/preset-ids.enums';
+import { presetIdSchema } from '#~/enums/preset-ids.enums';
+import type { PromptId } from '#~/enums/prompt-ids.enums';
+import { PROMPT_META, promptIdsEnumwaii } from '#~/enums/prompt-ids.enums';
+import type { SkillId } from '#~/enums/skill-ids.enums';
+import { skillIdSchema } from '#~/enums/skill-ids.enums';
 
 import type { iPromptAnswers } from './presets';
 

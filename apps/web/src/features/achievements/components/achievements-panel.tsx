@@ -1,9 +1,9 @@
 import { LuCircleAlert, LuTrophy } from 'react-icons/lu';
 
-import { Alert, AlertDescription, AlertTitle } from '@~/components/ui/alert';
-import { Badge } from '@~/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@~/components/ui/card';
-import { Skeleton } from '@~/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '#~/components/ui/alert';
+import { Badge } from '#~/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/card';
+import { Skeleton } from '#~/components/ui/skeleton';
 
 import { useAllAchievements } from '../hooks/use-all-achievements';
 import { useMyAchievements } from '../hooks/use-my-achievements';

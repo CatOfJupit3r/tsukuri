@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { getCookie, setCookie } from '@tanstack/react-start/server';
 
-import { isOnClient } from '@~/utils/ssr-helpers';
+import { isOnClient } from '#~/utils/ssr-helpers';
 
 import { THEME_COOKIE, USER_THEME, userThemeValidator } from './constants';
 import type { AppTheme, UserTheme } from './constants';

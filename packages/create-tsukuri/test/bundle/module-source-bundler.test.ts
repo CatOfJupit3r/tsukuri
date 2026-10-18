@@ -1,14 +1,14 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-import { ModuleSourceBundler } from '@~/bundle/module-source-bundler';
-import { createGeneratorContainer } from '@~/di/container';
-import { ProjectGenerator } from '@~/engine/project-generator';
-import type { VirtualProject } from '@~/engine/virtual-project';
-import { SOURCE_LAYOUTS } from '@~/enums/source-layouts.enums';
-import type { iModuleManifestInput } from '@~/manifest/module-manifest.schema';
-import { MODULE_MANIFESTS } from '@~/modules/module-manifests';
-import type { iProjectRecord } from '@~/record/project-record.schema';
+import { ModuleSourceBundler } from '#~/bundle/module-source-bundler';
+import { createGeneratorContainer } from '#~/di/container';
+import { ProjectGenerator } from '#~/engine/project-generator';
+import type { VirtualProject } from '#~/engine/virtual-project';
+import { SOURCE_LAYOUTS } from '#~/enums/source-layouts.enums';
+import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
+import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
+import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
 

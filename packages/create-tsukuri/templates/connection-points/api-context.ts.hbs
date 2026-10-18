@@ -1,0 +1,23 @@
+// {{header}}
+{{#if imports.length}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+{{/if}}
+
+/** Request context the installed modules add to every API call. */
+export type iGeneratedContext = {{#each providers}}Awaited<ReturnType<typeof {{provider.name}}>> & {{/each}}Record<never, never>;
+
+export async function createGeneratedContext(request: Request): Promise<iGeneratedContext> {
+{{#if providers.length}}
+  return {
+{{#each providers}}
+    ...(await {{provider.name}}(request)),
+{{/each}}
+  };
+{{else}}
+  void request;
+  return {};
+{{/if}}
+}

@@ -1,6 +1,6 @@
 ---
 name: orpc-contract-creation
-description: Create new oRPC contracts in packages/shared following project conventions. Use when adding new API endpoints, defining RPC procedures, extending existing contract namespaces, or creating fully typed client-server communication contracts.
+description: Create new oRPC contracts in packages/server-contract following project conventions. Use when adding new API endpoints, defining RPC procedures, extending existing contract namespaces, or creating fully typed client-server communication contracts.
 ---
 
 # oRPC Contract Creation
@@ -9,93 +9,95 @@ description: Create new oRPC contracts in packages/shared following project conv
 
 ## How it works
 
-oRPC contracts are the single source of truth for both REST/OpenAPI and RPC layers. They live in `packages/shared/src/contract/` and must be properly typed with Zod schemas.
+oRPC contracts are the single source of truth for both REST/OpenAPI and RPC layers. They live in `packages/server-contract/src/contract/` (package `@startername/server-contract`) and must be properly typed with Zod schemas. The API in `packages/api` implements them (`implement(CONTRACT)` in `#~/lib/orpc`), and clients consume them.
 
 ## Step-by-step procedure
 
 ### 1. Define the contract file
 
-Create a new file in `packages/shared/src/contract/<namespace>.contract.ts`.
+Create a new file in `packages/server-contract/src/contract/<feature>.contract.ts`.
 
-**See [examples/complete-contract.ts](examples/complete-contract.ts) for a complete example with multiple procedures.**
-
-Basic structure:
+Basic structure: build each procedure as a named constant, then export one namespace router with a path prefix. Import `oc` from `@orpc/contract` (not `@orpc/server`):
 
 ```typescript
-import { oc } from '@orpc/server';
+import { oc } from '@orpc/contract';
 import z from 'zod';
-import { authProcedure } from './base';
 
-export const myNamespaceContract = oc.router({
-  myProcedure: oc
-    .route({
-      method: 'POST',
-      path: '/my-namespace/my-procedure',
-      summary: 'Brief one-line description',
-      description: 'Detailed description of what this endpoint does',
-    })
-    .input(
-      z.object({
-        param: z.string(),
-      })
-    )
-    .output(
-      z.object({
-        result: z.string(),
-      })
-    )
-    // Add authProcedure for authenticated routes
-    .use(authProcedure),
+import { authProcedure } from './auth.procedures';
+
+const myPublicProcedure = oc
+  .route({
+    method: 'GET',
+    path: '/public',
+    summary: 'Brief one-line description',
+    description: 'Detailed description of what this endpoint does',
+  })
+  .output(z.object({ result: z.string() }));
+
+// Start from authProcedure for authenticated routes
+const myProtectedProcedure = authProcedure
+  .route({
+    method: 'POST',
+    path: '/my-procedure',
+    summary: 'Brief one-line description',
+    description: 'Detailed description of what this endpoint does',
+  })
+  .input(z.object({ param: z.string() }))
+  .output(z.object({ result: z.string() }));
+
+export const myNamespaceContract = oc.prefix('/my-namespace').router({
+  myPublicProcedure,
+  myProtectedProcedure,
 });
 ```
+
+Route paths are relative to the `prefix`, so the paths above are served at `/my-namespace/public` and `/my-namespace/my-procedure`. Use `{param}` for path parameters (`/{id}`), not `:param`.
 
 ### 2. Choose the right procedure type
 
-- **Public routes**: Don't add `.use(authProcedure)` - these are accessible without authentication
-- **Authenticated routes**: Add `.use(authProcedure)` - these require a valid session and expose `auth: "USER"` metadata
+- **Public routes**: Start from `oc` - these are accessible without authentication
+- **Authenticated routes**: Start from `authProcedure` (`./auth.procedures`, present when the better-auth module is installed) instead of `oc` - it tags the procedure with `auth: 'USER'` metadata. The tag only documents the requirement: implement the procedure with `protectedProcedure`, which rejects requests without a session (see the `server-router-implementation` skill)
 
-### 3. Use shared schemas for reuse
+### 3. Reuse schemas
 
-Define common schemas in `packages/shared/src/schemas/` and import them:
-
-```typescript
-import { paginationInputSchema, paginationOutputSchema } from '../schemas/pagination';
-
-export const listItemsContract = oc
-  .route({
-    method: 'GET',
-    path: '/items',
-    summary: 'List items with pagination',
-  })
-  .input(paginationInputSchema)
-  .output(
-    z.object({
-      items: z.array(itemSchema),
-      pagination: paginationOutputSchema,
-    })
-  );
-```
-
-### 4. Export the contract
-
-Add your new contract to `packages/shared/src/contract/index.ts`:
+Define schemas reused inside one contract as constants at the top of the file (`USER_PROFILE_SCHEMA` in `user.contract.ts`). When the server also needs the schema or its values, define it in `packages/common/src/constants/` (an enumwaii declaration plus `emToZodSchema`, as `BadgeIdSchema` in `badges.ts`) and import it from `@startername/common/constants/<name>`:
 
 ```typescript
-import { oc } from '@orpc/server';
-import { myNamespaceContract } from './my-namespace.contract';
+import { BadgeIdSchema } from '@startername/common/constants/badges';
 
-export const CONTRACT = oc.router({
-  // ...existing contracts
-  myNamespace: myNamespaceContract,
+const BADGE_META_SCHEMA = z.object({
+  id: BadgeIdSchema,
+  label: z.string(),
 });
 ```
 
+### 4. Register the contract
+
+Do not edit `app.contract.ts` or `src/generated/contracts.ts`. `CONTRACT` is built from the generated map, which the generator rebuilds from module manifests. Declare a `CONTRACT` contribution and the matching `ROUTER` contribution with the same `key`; the key becomes the namespace (`appRouter.<key>`, `base.<key>.router`):
+
+```typescript
+{
+  kind: CONNECTION_POINT_KINDS.CONTRACT,
+  workspace: 'packages/server-contract',
+  key: 'user',
+  contract: { name: 'userContract', from: '../contract/user.contract' },
+},
+{
+  kind: CONNECTION_POINT_KINDS.ROUTER,
+  workspace: 'packages/api',
+  key: 'user',
+  router: { name: 'userRouter', from: '#~/features/user/user.router' },
+},
+```
+
+See `packages/create-tsukuri/src/modules/example-domain.module.ts`. In this repository run `pnpm run sync` after changing a manifest. In a generated project the entry belongs in the generated contract map the way the file shows (follow its header and the project's `AGENTS.md`); that file is rebuilt from `starter.json` and the module manifests whenever modules are added or removed, so re-check it afterwards.
+
 ### 5. Validate the contract
 
-Run type checking to ensure everything compiles:
+Run verification to ensure everything compiles:
 
 ```bash
-pnpm run check-types
+pnpm run verify
 ```
 
 ## Contract conventions
@@ -103,7 +105,7 @@ pnpm run check-types
 ### Naming
 - Use camelCase for procedure names: `getUserProfile`, `listChallenges`
 - Use kebab-case for URL paths: `/user-profile`, `/list-challenges`
-- Namespace contracts match their domain: `userContract`, `challengeContract`
+- Namespace contracts match their domain and are named exports: `userContract`, `challengeContract`
 
 ### Documentation
 - Always include `summary` (one line, used in OpenAPI docs)
@@ -114,12 +116,13 @@ pnpm run check-types
 - Use explicit Zod schemas for all inputs and outputs
 - Never use `.passthrough()` or `.any()` - be explicit about shape
 - Validate at the contract level, not just in handlers
+- The API validates input against the contract. Runtime output validation is off (`initialOutputValidationIndex: Number.NaN` in `#~/lib/orpc`), so `.output()` types the handler's return value but does not reject it
 
 ### Error responses
 - Contracts don't define error schemas - these are handled by error wrappers
-- All error codes must be defined in `packages/shared/src/enums/errors.enums.ts`
-- Handlers use custom error wrappers from `apps/server/src/lib/orpc-error-wrapper.ts`
-- Import error codes via: `import { errorCodes } from '@startername/shared';`
+- All error codes are declared by modules as `ERROR_CODE` contributions and generated into `@startername/common/generated/error-codes`
+- Handlers use custom error wrappers from `#~/lib/orpc-error-wrapper` (in `packages/api`)
+- Import error codes via: `import { errorCodes } from '@startername/common/generated/error-codes';`
 
 ## Common patterns
 
@@ -137,7 +140,7 @@ pnpm run check-types
 ```typescript
 .input(
   z.object({
-    id: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid ID format'),
+    id: z.uuid(),
   })
 )
 ```

@@ -6,9 +6,8 @@ import { withWorkspaceSourceCondition } from './conditions.mjs';
  * Vite / Vitest `resolve` settings that prefer workspace TypeScript sources, for both client
  * and SSR (Vitest's node environment) resolution. Spread into the config next to `plugins`.
  */
-export const withWorkspaceSourceResolve = (alias = {}) => ({
+export const withWorkspaceSourceResolve = () => ({
   resolve: {
-    alias,
     conditions: withWorkspaceSourceCondition(defaultClientConditions),
   },
   ssr: {

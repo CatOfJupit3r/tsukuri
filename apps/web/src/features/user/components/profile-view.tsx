@@ -1,11 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import { LuCalendar, LuTrophy, LuSettings } from 'react-icons/lu';
 
-import Loader from '@~/components/loader';
-import { Button } from '@~/components/ui/button/button';
-import { Card, CardContent } from '@~/components/ui/card';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@~/components/ui/empty';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@~/components/ui/tabs';
+import Loader from '#~/components/loader';
+import { Button } from '#~/components/ui/button/button';
+import { Card, CardContent } from '#~/components/ui/card';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '#~/components/ui/empty';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#~/components/ui/tabs';
 
 import { useMe } from '../hooks/use-me';
 import { useUserProfile } from '../hooks/use-user-profile';

@@ -1,12 +1,12 @@
 import z from 'zod';
 
-import { capabilitySchema } from '@~/enums/capabilities.enums';
-import { markdownDocumentSchema } from '@~/enums/markdown-documents.enums';
-import { moduleCategorySchema } from '@~/enums/module-categories.enums';
-import { moduleIdSchema } from '@~/enums/module-ids.enums';
-import { skillIdSchema } from '@~/enums/skill-ids.enums';
+import { capabilitySchema } from '#~/enums/capabilities.enums';
+import { markdownDocumentSchema } from '#~/enums/markdown-documents.enums';
+import { moduleCategorySchema } from '#~/enums/module-categories.enums';
+import { moduleIdSchema } from '#~/enums/module-ids.enums';
+import { skillIdSchema } from '#~/enums/skill-ids.enums';
 
-import { connectionPointContributionSchema } from './connection-point.schema';
+import { connectionPointContributionSchema, connectionPointHostSchema } from './connection-point.schema';
 import type { iConnectionPointContributionInput } from './connection-point.schema';
 
 const relativePathSchema = z
@@ -76,6 +76,7 @@ export const moduleManifestSchema = z.object({
   skills: z.array(skillIdSchema).default([]),
   markdown: z.array(markdownFragmentSchema).default([]),
   contributions: z.array(connectionPointContributionSchema).default([]),
+  hosts: z.array(connectionPointHostSchema).default([]),
 });
 
 export type iModuleManifest = z.output<typeof moduleManifestSchema>;
@@ -92,7 +93,7 @@ type iWithDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  */
 export type iModuleManifestInput = iWithDefaults<
   Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions'>,
-  'isAlwaysIncluded' | 'requires' | 'requiresCapabilities' | 'conflicts' | 'provides' | 'skills' | 'markdown'
+  'isAlwaysIncluded' | 'requires' | 'requiresCapabilities' | 'conflicts' | 'provides' | 'skills' | 'markdown' | 'hosts'
 > & {
   files?: iWithDefaults<iModuleFileEntry, 'exclude'>[];
   packageJson?: iWithDefaults<

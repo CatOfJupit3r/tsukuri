@@ -259,23 +259,26 @@ z.object({
 
 ### Error Codes Must Be Registered
 
-All error codes must be defined in `packages/shared/src/enums/errors.enums.ts` and used with proper error wrappers.
+All error codes must be declared by a module as an `ERROR_CODE` contribution in its manifest (`packages/create-tsukuri/src/modules/*.module.ts`) and used with proper error wrappers. They are generated into `packages/common/src/generated/error-codes.ts`, which is never edited by hand.
 
 **Good:**
 
 ```typescript
-// In errors.enums.ts
-export const characterErrorCodes = {
-    CHARACTER_NOT_FOUND: "CHARACTER_NOT_FOUND",
-    CHARACTER_NAME_REQUIRED: "CHARACTER_NAME_REQUIRED",
-} as const;
+// In the module manifest
+{
+    kind: CONNECTION_POINT_KINDS.ERROR_CODE,
+    workspace: "packages/common",
+    code: "CHARACTER_NOT_FOUND",
+    message: "Character not found",
+},
 
 // In router/service
-import { ORPCNotFoundError } from "@~/lib/orpc-error-wrapper";
-import { characterErrorCodes } from "@startername/shared";
+import { errorCodes } from "@startername/common/generated/error-codes";
+
+import { ORPCNotFoundError } from "#~/lib/orpc-error-wrapper";
 
 if (!character) {
-    throw ORPCNotFoundError(characterErrorCodes.CHARACTER_NOT_FOUND);
+    throw ORPCNotFoundError(errorCodes.CHARACTER_NOT_FOUND);
 }
 ```
 
@@ -493,12 +496,12 @@ import { useAuth } from "./hooks/use-auth";
 
 ### No Duplicated Constants/Helpers Between Server and Web
 
-Reusable constants and helpers must be extracted to `/packages/shared` instead of duplicating across server and web.
+Reusable constants and helpers must be extracted to `packages/common` instead of duplicating across server and web.
 
 **Bad:**
 
 ```typescript
-// apps/server/src/constants/limits.ts
+// packages/api/src/constants/limits.ts
 export const MAX_NAME_LENGTH = 200;
 
 // apps/web/src/constants/limits.ts
@@ -508,18 +511,18 @@ export const MAX_NAME_LENGTH = 200;
 **Good:**
 
 ```typescript
-// packages/shared/src/constants/limits.ts
+// packages/common/src/constants/limits.ts
 export const MAX_NAME_LENGTH = 200;
 
 // Usage in both apps
-import { MAX_NAME_LENGTH } from "@startername/shared/constants";
+import { MAX_NAME_LENGTH } from "@startername/common/constants/limits";
 ```
 
 **Note:** Only extract non-sensitive data shared between server and client.
 
-### Use Valkey Service Cache Instead of Custom Implementation
+### Use CacheService Instead of Custom Implementation
 
-Never implement custom caching when Valkey Service is available.
+Never implement custom caching when `CacheService` (`#~/features/cache/cache.service`) is available. It works over the bound key-value store and skips caching when no store is connected.
 
 **Bad:**
 
@@ -538,12 +541,12 @@ class MyService {
 
 ```typescript
 class MyService {
-    constructor(private valkeyService: ValkeyService) {}
+    constructor(private cacheService: CacheService) {}
 
-    async getData(key: string) {
-        const cached = await this.valkeyService.get(key);
-        if (cached) return cached;
-        // ...
+    async getData(userId: string) {
+        return this.cacheService.cached(buildMyFeatureCacheKey.ofUser(userId), CACHE_TTL.USER_DATA, async () => {
+            // ...
+        });
     }
 }
 ```
@@ -554,7 +557,7 @@ Use `@injectable` by default. Only use `@singleton` when truly needed (database 
 
 **@singleton** - Use when:
 
-- Service maintains global state (EventBus, DatabaseService, ValkeyService)
+- Service maintains global state (EventBus, PostgresService, ValkeyService)
 - Service is expensive to initialize
 - Service manages system resources (LoggerFactory)
 - Event listeners need to be registered once (EventServices)
@@ -579,7 +582,7 @@ export class CharactersService {}
 
 ### Event Services Pattern
 
-Feature event registration must be done in separate `${Feature}EventService` and initialized in `eventsLoader`.
+Feature event registration must be done in a separate `${Feature}EventsService` and initialized by a startup task (`iStartupTask`, registered through a `STARTUP_TASK` contribution).
 
 **Bad:**
 
@@ -604,21 +607,25 @@ export class CharactersEventsService {
         loggerFactory: LoggerFactory,
     ) {
         this.logger = loggerFactory.create("characters-events-service");
-        this.initializeEventListeners();
     }
 
-    private initializeEventListeners() {
+    public initialize() {
         this.eventBus.on(UserAfterRegisteredListener, async ({ userId }) => {
             // Handle event
         });
     }
 }
 
-// loaders/events.loader.ts
-export default async function eventsLoader() {
-    const { CharactersEventsService } =
-        await import("@~/features/characters/characters-events.service");
-    container.resolve(CharactersEventsService);
+// subscribe-characters-events.task.ts
+@injectable()
+export class SubscribeCharactersEventsTask implements iStartupTask {
+    public readonly name = "Subscribe character event handlers";
+
+    constructor(private readonly charactersEventsService: CharactersEventsService) {}
+
+    public async run() {
+        this.charactersEventsService.initialize();
+    }
 }
 ```
 
@@ -692,13 +699,10 @@ console.error("Failed to save", error);
 **Good:**
 
 ```typescript
-// In service/router
+// In a service (the logger comes from the injected LoggerFactory)
+this.logger = loggerFactory.create("feature-name");
 this.logger.info("User created", { userId });
 this.logger.error("Failed to save character", { error, characterId, userId });
-
-// In router handler
-const logger = loggerFactory.create("feature-name");
-logger.info("Processing request", { input });
 ```
 
 **Benefits:**
@@ -722,12 +726,12 @@ const apiUrl = import.meta.env.VITE_API_URL;
 **Good:**
 
 ```typescript
-// Server
-import { env } from "@~/constants/env";
+// Server (each server workspace validates its own variables in src/constants/env.ts)
+import { env } from "#~/constants/env";
 const port = env.SERVER_PORT;
 
 // Web
-import { IS_DEVELOPMENT } from "@~/constants";
+import { IS_DEVELOPMENT } from "#~/constants";
 if (IS_DEVELOPMENT) {
 }
 ```
@@ -774,7 +778,7 @@ public async getCharacter(userId: string, id: string) {
   });
 
   if (!character) {
-    throw ORPCNotFoundError(characterErrorCodes.CHARACTER_NOT_FOUND);
+    throw ORPCNotFoundError(errorCodes.CHARACTER_NOT_FOUND);
   }
 
   return character;
@@ -791,7 +795,7 @@ Return NOT_FOUND instead of FORBIDDEN to prevent information leakage.
 // Don't reveal if resource exists when user has no access
 const character = await CharacterModel.findOne({ _id: id, userId });
 if (!character) {
-    throw ORPCNotFoundError(characterErrorCodes.CHARACTER_NOT_FOUND); // Could be missing or no access
+    throw ORPCNotFoundError(errorCodes.CHARACTER_NOT_FOUND); // Could be missing or no access
 }
 ```
 
@@ -800,10 +804,10 @@ if (!character) {
 ```typescript
 const character = await CharacterModel.findOne({ _id: id });
 if (!character) {
-    throw ORPCNotFoundError(characterErrorCodes.CHARACTER_NOT_FOUND);
+    throw ORPCNotFoundError(errorCodes.CHARACTER_NOT_FOUND);
 }
 if (character.userId !== userId) {
-    throw ORPCForbiddenError(characterErrorCodes.CHARACTER_ACCESS_DENIED); // Reveals resource exists
+    throw ORPCForbiddenError(errorCodes.CHARACTER_ACCESS_DENIED); // Reveals resource exists
 }
 ```
 
@@ -818,7 +822,7 @@ Tests must validate meaningful behavior, not implementation details or trivial l
 **Bad (useless):**
 
 ```typescript
-import { someEnum } from "@startername/shared";
+import { someEnum } from "@startername/common/constants/some-enum";
 
 it("should return true when true is passed", () => {
     expect(identity(true)).toBe(true);
@@ -850,17 +854,17 @@ it("should create character with pseudonyms", async () => {
 });
 ```
 
-### No Direct Model Calls in Integration Tests
+### No Direct Repository Calls in Integration Tests
 
-Tests must call server functions, not interact with models directly (except when testing specific model behavior).
+Tests must call server functions, not interact with repositories or tables directly (except when arranging state no endpoint exposes, or when testing specific repository behavior).
 Calling services should only be done in unit tests for service logic, never in integration tests which should test the full stack.
 
 **Bad:**
 
 ```typescript
 it("should create user", async () => {
-    const user = await UserModel.create({ name: "Test" }); // Direct model call
-    const updatedUser = await UserService.updateUser({
+    const user = await getUserRepository().create({ name: "Test" }); // Direct repository call
+    const updatedUser = await container.resolve(UserService).updateUser({
         id: user.id,
         name: "New Name",
     }); // Call service method
@@ -887,11 +891,11 @@ it("should create user", async () => {
 });
 ```
 
-**Exception:** Direct model calls are acceptable when testing:
+**Exception:** Direct repository calls are acceptable when testing:
 
-- Model methods/virtuals
-- Database indexes
-- Model-specific validations
+- Repository query behavior
+- Database indexes and constraints
+- Arranging state that no endpoint exposes (through `test/integration/fixtures/repository.fixtures.ts`)
 - Custom query builders
 
 ### Test File Organization
@@ -899,16 +903,19 @@ it("should create user", async () => {
 Tests must mirror the feature structure:
 
 ```
-apps/server/test/
+packages/api/test/
   ├── integration/         # Feature integration tests
   │   ├── characters.test.ts
   │   ├── chats.test.ts
-  │   └── worldinfo.test.ts
+  │   ├── worldinfo.test.ts
+  │   └── fixtures/        # Domain fixtures
   ├── unit/               # Utility unit tests
   │   ├── template-renderer.test.ts
   │   └── prompt-builder.test.ts
   └── helpers/            # Test utilities
-      └── instance.ts
+      ├── setup.ts        # Starts the API once
+      ├── setup/          # One *.setup.ts per module
+      └── auth-users.ts   # createUser()
 ```
 
 **Prefer integration tests** for features; use unit tests only for utilities and helpers.
@@ -926,24 +933,27 @@ TanStack Query handles errors automatically. Only use toast for:
 
 ### Use Error Wrappers with Error Codes
 
-All errors must use custom error wrappers from `apps/server/src/lib/orpc-error-wrapper.ts`.
+All errors must use custom error wrappers from `packages/api/src/lib/orpc-error-wrapper.ts`.
 
 **Available wrappers:**
 
 - `ORPCUnauthorizedError` - User not authenticated
 - `ORPCNotFoundError` - Resource not found OR user has no access
 - `ORPCForbiddenError` - User lacks permissions
-- `ORPCValidationError` - Input validation failed
-- `ORPCInternalError` - Server error
+- `ORPCBadRequestError` - Invalid input format or malformed request
+- `ORPCUnprocessableContentError` - Valid input but semantically invalid operation
+- `ORPCTooManyRequestsError` - Rate limit exceeded
+- `ORPCInternalServerError` - Server error
 
 **Example:**
 
 ```typescript
-import { ORPCNotFoundError } from "@~/lib/orpc-error-wrapper";
-import { characterErrorCodes } from "@startername/shared";
+import { errorCodes } from "@startername/common/generated/error-codes";
+
+import { ORPCNotFoundError } from "#~/lib/orpc-error-wrapper";
 
 if (!character || character.userId !== userId) {
-    throw ORPCNotFoundError(characterErrorCodes.CHARACTER_NOT_FOUND);
+    throw ORPCNotFoundError(errorCodes.CHARACTER_NOT_FOUND);
 }
 ```
 
@@ -951,10 +961,10 @@ if (!character || character.userId !== userId) {
 
 ## UI Components & Forms
 
-### Use `@~/components/ui` Generic Components
+### Use `#~/components/ui` Generic Components
 
-Never use native HTML elements or write custom generic components when `@~/components/ui` provides them.
-If a required component doesn't exist, create it in `@~/components/ui` instead of using native elements or creating feature-specific components.
+Never use native HTML elements or write custom generic components when `#~/components/ui` provides them.
+If a required component doesn't exist, create it in `#~/components/ui` instead of using native elements or creating feature-specific components.
 
 **Bad:**
 
@@ -967,9 +977,9 @@ If a required component doesn't exist, create it in `@~/components/ui` instead o
 **Good:**
 
 ```typescript
-import { Button } from '@~/components/ui/button';
-import { Input } from '@~/components/ui/input';
-import { Textarea } from '@~/components/ui/textarea';
+import { Button } from '#~/components/ui/button';
+import { Input } from '#~/components/ui/input';
+import { Textarea } from '#~/components/ui/textarea';
 
 <Button onClick={handleClick}>Submit</Button>
 <Input value={name} onChange={handleChange} />
@@ -1106,12 +1116,12 @@ Additionally, for React component props, use `i{ComponentName}Props`. For method
 
 ### Contract File Naming
 
-Contracts must be named `{feature}.contract.ts` in `packages/shared/src/contract/`.
+Contracts must be named `{feature}.contract.ts` in `packages/server-contract/src/contract/`.
 
 **Good:**
 
 ```
-packages/shared/src/contract/
+packages/server-contract/src/contract/
   ├── characters.contract.ts
   ├── chats.contract.ts
   └── worldinfo.contract.ts
@@ -1131,15 +1141,15 @@ worldinfo-scanner.service.ts
 
 ### Router File Naming
 
-Routers must be named `{feature}.router.ts`.
+Routers must be named `{feature}.router.ts` and live in their feature folder.
 
 **Good:**
 
 ```
-apps/server/src/routers/
-  ├── characters.router.ts
-  ├── chats.router.ts
-  └── worldinfo.router.ts
+packages/api/src/features/
+  ├── characters/characters.router.ts
+  ├── chats/chats.router.ts
+  └── worldinfo/worldinfo.router.ts
 ```
 
 ---

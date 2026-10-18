@@ -9,9 +9,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@~/components/ui/dropdown-menu';
-import { useMe } from '@~/features/user/hooks/use-me';
-import AuthService from '@~/services/auth.service';
+} from '#~/components/ui/dropdown-menu';
+import { useMe } from '#~/features/user/hooks/use-me';
+import AuthService from '#~/services/auth.service';
 
 import { Button } from './ui/button/button';
 import { Skeleton } from './ui/skeleton';

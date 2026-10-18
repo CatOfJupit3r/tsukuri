@@ -1,10 +1,10 @@
-import { createGeneratorContainer } from '@~/di/container';
-import { TemplateRenderer } from '@~/engine/template-renderer';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import { createGeneratorContainer } from '#~/di/container';
+import { TemplateRenderer } from '#~/engine/template-renderer';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 
 import { testModuleId } from '../helpers/manifests';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const renderer = createGeneratorContainer({ sourceRoot: '/unused', manifests: [] }).resolve(TemplateRenderer);
 const context = { installedModules: [testModuleId('base'), testModuleId('alpha')], projectName: 'acme' };

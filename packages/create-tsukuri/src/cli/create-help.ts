@@ -1,5 +1,5 @@
-import { presetIdsEnumwaii } from '@~/enums/preset-ids.enums';
-import { PROMPT_META, promptIdsEnumwaii } from '@~/enums/prompt-ids.enums';
+import { presetIdsEnumwaii } from '#~/enums/preset-ids.enums';
+import { PROMPT_META, promptIdsEnumwaii } from '#~/enums/prompt-ids.enums';
 
 import { CREATE_COMMAND } from './command-line';
 import { NONE_FLAG_VALUE } from './create-args';

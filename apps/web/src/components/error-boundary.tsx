@@ -1,7 +1,7 @@
 import { Link, useRouter } from '@tanstack/react-router';
 import { HiOutlineExclamationCircle, HiOutlineHome, HiOutlineRefresh } from 'react-icons/hi';
 
-import { IS_DEVELOPMENT } from '@~/constants/constants';
+import { IS_DEVELOPMENT } from '#~/constants/constants';
 
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Button } from './ui/button/button';

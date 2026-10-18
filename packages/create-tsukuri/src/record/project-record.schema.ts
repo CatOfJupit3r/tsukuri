@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { moduleIdSchema } from '@~/enums/module-ids.enums';
-import { skillIdSchema } from '@~/enums/skill-ids.enums';
+import { moduleIdSchema } from '#~/enums/module-ids.enums';
+import { skillIdSchema } from '#~/enums/skill-ids.enums';
 
 /** File at the project root that lists what the project was generated from. */
 export const PROJECT_RECORD_FILE = 'starter.json';

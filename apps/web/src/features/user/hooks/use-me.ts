@@ -1,9 +1,9 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
-import { INTERVALS } from '@~/constants/dates';
-import AuthService from '@~/services/auth.service';
-import type { InternalAuthSession } from '@~/services/auth.service';
-import { isOnClient } from '@~/utils/ssr-helpers';
+import { INTERVALS } from '#~/constants/dates';
+import AuthService from '#~/services/auth.service';
+import type { InternalAuthSession } from '#~/services/auth.service';
+import { isOnClient } from '#~/utils/ssr-helpers';
 
 const PLACEHOLDER_USER: InternalAuthSession = {
   user: {

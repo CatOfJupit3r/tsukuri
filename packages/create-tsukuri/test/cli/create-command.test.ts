@@ -2,19 +2,19 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { createCliContainer } from '@~/cli/cli-container';
-import { CreateCommand } from '@~/cli/create-command';
-import { CAPABILITIES } from '@~/enums/capabilities.enums';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { MODULE_CATEGORIES } from '@~/enums/module-categories.enums';
-import { baseModule } from '@~/modules/base.module';
-import type { iProjectRecord } from '@~/record/project-record.schema';
+import { createCliContainer } from '#~/cli/cli-container';
+import { CreateCommand } from '#~/cli/create-command';
+import { CAPABILITIES } from '#~/enums/capabilities.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
+import { baseModule } from '#~/modules/base.module';
+import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';
 import { CANCEL, RecordingRunner, ScriptedPrompter, optionValues } from '../helpers/scripted-prompter';
 import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const ALPHA = testModuleId('alpha');
 const BETA = testModuleId('beta');

@@ -1,7 +1,7 @@
 import { Switch as SwitchPrimitive } from '@base-ui/react/switch';
 import type { ComponentProps } from 'react';
 
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 function Switch({ className, ...props }: ComponentProps<typeof SwitchPrimitive.Root>) {
   return (

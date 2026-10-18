@@ -1,0 +1,14 @@
+// {{header}}
+{{#if imports.length}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+{{/if}}
+
+/** Request handlers the installed modules serve outside the API router, by path prefix. */
+export const generatedHttpHandlers = [
+{{#each handlers}}
+  { path: '{{path}}', methods: [{{methodList}}], handle: {{handler.name}} },
+{{/each}}
+] as const;

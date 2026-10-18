@@ -1,12 +1,12 @@
 import path from 'node:path';
 import { injectable } from 'tsyringe';
 
-import { skillPath } from '@~/constants/skill-path';
-import { FILE_KINDS } from '@~/enums/file-kinds.enums';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
-import type { iProjectRecord } from '@~/record/project-record.schema';
-import { PROJECT_RECORD_FILE } from '@~/record/project-record.schema';
+import { skillPath } from '#~/constants/skill-path';
+import { FILE_KINDS } from '#~/enums/file-kinds.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { iModuleManifest } from '#~/manifest/module-manifest.schema';
+import type { iProjectRecord } from '#~/record/project-record.schema';
+import { PROJECT_RECORD_FILE } from '#~/record/project-record.schema';
 
 import { ConnectionPointGenerator } from './connection-points/connection-point-generator';
 import { GeneratorError } from './generator-error';

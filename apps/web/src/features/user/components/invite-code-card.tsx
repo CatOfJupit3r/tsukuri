@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { LuRefreshCw } from 'react-icons/lu';
 
-import { CopyButton } from '@~/components/copy-button';
-import { Button } from '@~/components/ui/button/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@~/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@~/components/ui/dialog';
+import { CopyButton } from '#~/components/copy-button';
+import { Button } from '#~/components/ui/button/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '#~/components/ui/dialog';
 
 import { useRegeneratePublicCode } from '../hooks/use-regenerate-invite-code';
 

@@ -1,0 +1,68 @@
+{
+  "name": "@startername/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#~/*": "./src/*.js"
+  },
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
+    "db:push": "drizzle-kit push --config drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config drizzle.config.ts",
+    "check-types": "tsgo --noEmit",
+    "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
+    "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
+    "lint:eslint": "eslint . --fix",
+    "prettify": "prettier --write ./src/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "prettier": "@startername/prettier-config",
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "1.6.23",
+    "@orpc/openapi": "catalog:",
+    "@orpc/server": "catalog:",
+    "@orpc/zod": "catalog:",
+    "@startername/common": "workspace:*",
+    "@startername/server-contract": "workspace:*",
+    "better-auth": "catalog:",
+    "drizzle-orm": "^0.45.2",
+    "enumwaii": "1.2.0",
+    "ioredis": "5.11.1",
+    "pg": "^8.16.3",
+    "reflect-metadata": "0.2.2",
+    "safe-stable-stringify": "2.5.0",
+    "tsyringe": "4.10.0",
+    "winston": "3.19.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.4",
+    "@startername/lint-config": "workspace:*",
+    "@startername/prettier-config": "workspace:*",
+    "@startername/swc-config": "workspace:*",
+    "@startername/vitest-config": "workspace:*",
+    "@startername/workspace-source": "workspace:*",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "^8.15.5",
+    "@typescript/native-preview": "catalog:",
+    "dotenv": "catalog:",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:"
+  }
+}

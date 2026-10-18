@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { injectable } from 'tsyringe';
 
-import { PACK_ESCAPE_PREFIX, PACK_RESERVED_FILE_NAMES } from '@~/constants/bundled-sources';
+import { PACK_ESCAPE_PREFIX, PACK_RESERVED_FILE_NAMES } from '#~/constants/bundled-sources';
 
 const DOT_PREFIX = '.';
 

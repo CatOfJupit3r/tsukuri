@@ -2,11 +2,11 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'yaml';
 
-import { createGeneratorContainer } from '@~/di/container';
-import { ProjectGenerator } from '@~/engine/project-generator';
-import { PROJECT_NAME_TOKEN } from '@~/engine/project-identity';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { MODULE_MANIFESTS } from '@~/modules/module-manifests';
+import { createGeneratorContainer } from '#~/di/container';
+import { ProjectGenerator } from '#~/engine/project-generator';
+import { PROJECT_NAME_TOKEN } from '#~/engine/project-identity';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
 
 import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
 
@@ -45,7 +45,7 @@ describe('ProjectGenerator', () => {
         'scripts/verify.ts',
         'configs/lint-config/package.json',
         'packages/common/package.json',
-        'packages/common/src/enums/errors.enums.ts',
+        'packages/common/src/helpers/std-utils.ts',
         '.agents/skills/review-code/SKILL.md',
       ]),
     );

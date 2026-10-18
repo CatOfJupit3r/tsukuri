@@ -3,14 +3,21 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
-  "description": "Shared Vitest module cache settings",
+  "description": "Shared Vitest settings: module cache and the example test environment",
   "exports": {
     "./module-cache": {
       "types": "./src/module-cache.d.mts",
       "default": "./src/module-cache.mjs"
+    },
+    "./example-env": {
+      "types": "./src/example-env.d.mts",
+      "default": "./src/example-env.mjs"
     }
   },
   "peerDependencies": {
     "vitest": "catalog:"
+  },
+  "dependencies": {
+    "dotenv": "catalog:"
   }
 }

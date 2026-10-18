@@ -1,10 +1,10 @@
 import { inject, injectable } from 'tsyringe';
 
-import { MODULE_MANIFESTS_TOKEN } from '@~/di/tokens';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import type { iModuleManifest, iModuleManifestInput } from '@~/manifest/module-manifest.schema';
-import { moduleManifestSchema } from '@~/manifest/module-manifest.schema';
+import { MODULE_MANIFESTS_TOKEN } from '#~/di/tokens';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { iModuleManifest, iModuleManifestInput } from '#~/manifest/module-manifest.schema';
+import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 
 import { GeneratorError } from './generator-error';
 

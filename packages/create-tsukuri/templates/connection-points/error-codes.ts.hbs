@@ -1,0 +1,18 @@
+// {{header}}
+
+import { em } from 'enumwaii';
+
+const errorCodesEnumwaii = em([
+{{#each codes}}
+  '{{code}}',
+{{/each}}
+]);
+
+export const errorCodes = errorCodesEnumwaii.enum;
+export type ErrorCode = (typeof errorCodesEnumwaii)['~type'];
+
+export const errorMessages = errorCodesEnumwaii.derive(
+{{#each codes}}
+  [errorCodes.{{code}}, {{messageLiteral}}],
+{{/each}}
+);

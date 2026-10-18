@@ -2,12 +2,12 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { injectable } from 'tsyringe';
 
-import { skillPath } from '@~/constants/skill-path';
-import { TEMPLATES_DIR } from '@~/constants/template-path';
-import { BundledFileNames } from '@~/engine/bundled-file-names';
-import { ModuleRegistry } from '@~/engine/module-registry';
-import { ModuleSourceReader } from '@~/engine/module-source-reader';
-import type { iModuleFileEntry } from '@~/manifest/module-manifest.schema';
+import { skillPath } from '#~/constants/skill-path';
+import { TEMPLATES_DIR } from '#~/constants/template-path';
+import { BundledFileNames } from '#~/engine/bundled-file-names';
+import { ModuleRegistry } from '#~/engine/module-registry';
+import { ModuleSourceReader } from '#~/engine/module-source-reader';
+import type { iModuleFileEntry } from '#~/manifest/module-manifest.schema';
 
 /**
  * Copies every file the generator can read (module files, markdown fragments, skills and the

@@ -1,14 +1,14 @@
-import { createGeneratorContainer } from '@~/di/container';
-import { ModuleRegistry } from '@~/engine/module-registry';
-import { ModuleResolver } from '@~/engine/module-resolver';
-import { CAPABILITIES } from '@~/enums/capabilities.enums';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { MODULE_CATEGORIES } from '@~/enums/module-categories.enums';
-import type { iModuleManifestInput } from '@~/manifest/module-manifest.schema';
+import { createGeneratorContainer } from '#~/di/container';
+import { ModuleRegistry } from '#~/engine/module-registry';
+import { ModuleResolver } from '#~/engine/module-resolver';
+import { CAPABILITIES } from '#~/enums/capabilities.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
+import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const BASE = testModuleId('base');
 const ALPHA = testModuleId('alpha');
