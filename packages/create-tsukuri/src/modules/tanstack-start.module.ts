@@ -16,7 +16,7 @@ export const tanstackStartModule = defineModule({
   description: 'The Start app serves the shared API under /api, with no separate server app',
   category: MODULE_CATEGORIES.BACKEND,
   requires: [MODULE_IDS.WEB_SSR, MODULE_IDS.API],
-  provides: [CAPABILITIES.BACKEND_TARGET],
+  provides: [CAPABILITIES.BACKEND_TARGET, CAPABILITIES.NODE_RUNTIME],
   files: START_BACKEND_FILES.map((file) => ({
     source: `${START_VARIANT}/${file}`,
     target: `${WEB_WORKSPACE}/${file}`,

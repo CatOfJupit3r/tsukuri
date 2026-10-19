@@ -39,6 +39,22 @@ const PROJECT_CASES: iProjectCase[] = [
     modules: [MODULE_IDS.NODE_HONO, MODULE_IDS.SQLITE, ...SERVER_FEATURES],
     commands: ['pnpm run db:generate', 'pnpm run db:migrate', 'pnpm run build'],
   },
+  {
+    name: 'Cloudflare Worker on D1 and KV with the SPA',
+    modules: [
+      MODULE_IDS.CLOUDFLARE_WORKER,
+      MODULE_IDS.D1,
+      MODULE_IDS.CLOUDFLARE_KV,
+      MODULE_IDS.WEB_SPA,
+      ...SERVER_FEATURES,
+    ],
+    commands: ['pnpm run db:generate', 'pnpm run db:migrate', 'pnpm run build'],
+  },
+  {
+    name: 'Cloudflare Worker on Postgres through Hyperdrive',
+    modules: [MODULE_IDS.CLOUDFLARE_WORKER, MODULE_IDS.POSTGRES, ...SERVER_FEATURES],
+    commands: ['pnpm --filter=worker run build'],
+  },
 ];
 
 describe('generated projects', () => {

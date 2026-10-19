@@ -309,6 +309,65 @@ describe('ConnectionPointGenerator', () => {
     expect(slots).toContain('  HEADER_NAVIGATION: [],');
   });
 
+  it('registers each Worker binding under its token and declares it in wrangler.jsonc', async () => {
+    const result = await generate(
+      createManifest(ALPHA, {
+        contributions: [
+          {
+            kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
+            workspace: 'apps/worker',
+            binding: 'DB',
+            type: 'D1Database',
+            token: { name: 'D1_DATABASE_TOKEN', from: '@startername/api/features/database/d1-database.token' },
+            wrangler: { section: 'd1_databases', entry: { database_name: 'startername', database_id: 'local' } },
+          },
+        ],
+      }),
+      createManifest(BETA, {
+        contributions: [
+          {
+            kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
+            workspace: 'apps/worker',
+            binding: 'KV',
+            type: 'KVNamespace',
+            token: { name: 'KV_NAMESPACE_TOKEN', from: '@startername/api/features/cloudflare-kv/kv-namespace.token' },
+            wrangler: { section: 'kv_namespaces', entry: { id: 'local' } },
+          },
+        ],
+      }),
+    );
+
+    const bindings = fileContent(result, 'apps/worker/src/generated/worker-bindings.ts');
+    expect(bindings).toContain("import type { D1Database, KVNamespace } from '@cloudflare/workers-types';");
+    expect(bindings).toContain('  DB: D1Database;\n  KV: KVNamespace;');
+    expect(bindings).toContain("  [D1_DATABASE_TOKEN, 'DB'],\n  [KV_NAMESPACE_TOKEN, 'KV'],");
+
+    const wrangler = fileContent(result, 'apps/worker/wrangler.jsonc');
+    const config: unknown = JSON.parse(wrangler.slice(wrangler.indexOf('\n') + 1));
+    expect(config).toEqual(
+      expect.objectContaining({
+        main: 'dist/worker.mjs',
+        d1_databases: [{ binding: 'DB', database_name: 'startername', database_id: 'local' }],
+        kv_namespaces: [{ binding: 'KV', id: 'local' }],
+      }),
+    );
+  });
+
+  it('rejects two modules adding the same Worker binding', async () => {
+    const binding = {
+      kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
+      workspace: 'apps/worker',
+      binding: 'DB',
+      type: 'D1Database',
+      token: { name: 'D1_DATABASE_TOKEN', from: '#~/d1' },
+      wrangler: { section: 'd1_databases' },
+    } as const;
+
+    await expect(
+      generate(createManifest(ALPHA, { contributions: [binding] }), createManifest(BETA, { contributions: [binding] })),
+    ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
+  });
+
   it('generates nothing but a recursive build script when no module contributes', async () => {
     const result = await generate(createManifest(ALPHA));
 
