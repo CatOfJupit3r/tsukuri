@@ -1,11 +1,11 @@
-import { PackageJsonMerger } from '@~/engine/package-json-merger';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { packageJsonContributionSchema } from '@~/manifest/module-manifest.schema';
-import type { iPackageJsonContribution } from '@~/manifest/module-manifest.schema';
+import { PackageJsonMerger } from '#~/engine/package-json-merger';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { packageJsonContributionSchema } from '#~/manifest/module-manifest.schema';
+import type { iPackageJsonContribution } from '#~/manifest/module-manifest.schema';
 
 import { testModuleId } from '../helpers/manifests';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const ALPHA = testModuleId('alpha');
 const BETA = testModuleId('beta');

@@ -1,0 +1,8 @@
+## Server Architecture
+
+- `packages/api` holds every server feature: oRPC routers, services, repositories and DI registrations. It is runtime-agnostic; each backend target (for example `apps/server` on Node) is a thin adapter that forwards fetch `Request`s to `ApiRequestHandler` from `startApi()`.
+- `packages/server-contract` holds the oRPC contracts shared by the API and its clients. `app.contract.ts` combines the installed modules' contracts.
+- Files under `src/generated/` are connection points rebuilt from `starter.json` whenever modules are added or removed: the contract and router maps, DI bindings, startup tasks, HTTP handlers, API context providers, the database schema, error codes and env schemas. Never edit them; change the module instead.
+- A feature lives in `packages/api/src/features/<feature>/` with its router (`<feature>.router.ts`), service, repository and tokens. Startup work implements `iStartupTask`; request-scoped data is read through `context.resolve`.
+- Error codes are declared per module and generated into `@startername/common/generated/error-codes`.
+- Every app loads the root `.env`; `.env.example` lists the variables of the installed modules, and tests read it as their environment.

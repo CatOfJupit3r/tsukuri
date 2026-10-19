@@ -3,6 +3,7 @@ node_modules
 .alchemy
 .env
 postgres-data
+/data/
 # Legacy local MongoDB volume from the pre-migration template; do not commit it.
 mongo/data
 .github/skills/react-best-practices/

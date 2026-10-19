@@ -1,0 +1,6 @@
+## Web App
+
+- `apps/web` is a React app on TanStack Router{{#module "web-ssr"}} with server rendering by TanStack Start{{/module}}{{#module "web-spa"}} built as a Vite single-page app{{/module}}. Routes are files under `src/routes`; `src/routeTree.gen.ts` is generated (by `pnpm --filter=web run generate:routes`, `check-types`, `dev` and `build`) and not committed.
+- Compose pages from `#~/components/ui/*` primitives and design tokens; see the `react-component-patterns` skill.
+- Modules plug UI into the shell through generated slots in `src/generated/` (header navigation and actions, user menu items, home page sections, root preloads, devtools panels); read them through `#~/lib/web-slots` instead of importing module components into the shell.
+- The web app reads the root `.env`; only `VITE_*` variables reach the browser.

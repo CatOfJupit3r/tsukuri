@@ -1,0 +1,14 @@
+// {{header}}
+{{#if imports.length}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+{{/if}}
+
+/** Components the installed modules render in each slot of the web shell, in module order. */
+export const generatedSlots = {
+{{#each slots}}
+  {{slot}}: [{{componentList}}],
+{{/each}}
+};

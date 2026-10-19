@@ -1,9 +1,9 @@
 import { isDeepStrictEqual } from 'node:util';
 import { injectable } from 'tsyringe';
 
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import type { iPackageJsonContribution } from '@~/manifest/module-manifest.schema';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { iPackageJsonContribution } from '#~/manifest/module-manifest.schema';
 
 import { GeneratorError } from './generator-error';
 
@@ -27,6 +27,7 @@ const KEY_ORDER = [
   'private',
   'description',
   'type',
+  'imports',
   'main',
   'module',
   'types',

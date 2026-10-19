@@ -4,6 +4,8 @@ node_modules
 # output
 out
 dist
+# module sources bundled for the published package
+sources
 *.tgz
 
 # code coverage

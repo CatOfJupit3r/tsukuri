@@ -1,4 +1,4 @@
-import { getProjectNameProblem } from '@~/engine/project-identity';
+import { getProjectNameProblem } from '#~/engine/project-identity';
 
 describe('project names', () => {
   it.each(['acme', 'my-app', 'my.app_2', 'a1'])('accepts "%s"', (name) => {

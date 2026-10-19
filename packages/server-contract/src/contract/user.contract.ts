@@ -3,7 +3,7 @@ import z from 'zod';
 
 import { BadgeIdSchema } from '@startername/common/constants/badges';
 
-import { authProcedure } from './procedures';
+import { authProcedure } from './auth.procedures';
 
 const USER_PROFILE_SCHEMA = z.object({
   id: z.string(),
@@ -66,26 +66,9 @@ const regeneratePublicCode = authProcedure
   .input(z.object({}))
   .output(USER_PROFILE_SCHEMA);
 
-const devToolsListAllUsers = oc
-  .route({
-    method: 'GET',
-    path: '/dev-tools/users',
-  })
-  .output(
-    z.array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-      }),
-    ),
-  );
-
-const userContract = oc.prefix('/users').router({
+export const userContract = oc.prefix('/users').router({
   getUserProfile,
   updateUserProfile,
   updateUserBadge,
   regeneratePublicCode,
-  devToolsListAllUsers,
 });
-
-export default userContract;

@@ -1,13 +1,13 @@
 import { Link } from '@tanstack/react-router';
 import { LuCalendar, LuTrophy, LuSettings } from 'react-icons/lu';
 
-import Loader from '@~/components/loader';
-import { Button } from '@~/components/ui/button/button';
-import { Card, CardContent } from '@~/components/ui/card';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@~/components/ui/empty';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@~/components/ui/tabs';
+import Loader from '#~/components/loader';
+import { Button } from '#~/components/ui/button/button';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '#~/components/ui/feedback/empty';
+import { Card, CardContent } from '#~/components/ui/layout/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#~/components/ui/layout/tabs';
+import { useMe } from '#~/features/auth/hooks/use-me';
 
-import { useMe } from '../hooks/use-me';
 import { useUserProfile } from '../hooks/use-user-profile';
 import { AvatarWithBadge } from './avatar-with-badge';
 import { PublicCodeCard } from './invite-code-card';

@@ -1,10 +1,10 @@
-import { parseCreateArgs } from '@~/cli/create-args';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { PROMPT_IDS } from '@~/enums/prompt-ids.enums';
+import { parseCreateArgs } from '#~/cli/create-args';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { PROMPT_IDS } from '#~/enums/prompt-ids.enums';
 
 import { testModuleId } from '../helpers/manifests';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 describe('parseCreateArgs', () => {
   it('reads the directory, prompt answers, skills and step flags', () => {

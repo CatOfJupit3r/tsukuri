@@ -1,0 +1,11 @@
+// {{header}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+
+export const generatedContracts = {
+{{#each contracts}}
+  {{key}}: {{contract.name}},
+{{/each}}
+};

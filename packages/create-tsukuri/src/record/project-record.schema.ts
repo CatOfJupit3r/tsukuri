@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { moduleIdSchema } from '@~/enums/module-ids.enums';
-import { skillIdSchema } from '@~/enums/skill-ids.enums';
+import { moduleIdSchema } from '#~/enums/module-ids.enums';
+import { skillIdSchema } from '#~/enums/skill-ids.enums';
 
 /** File at the project root that lists what the project was generated from. */
 export const PROJECT_RECORD_FILE = 'starter.json';
@@ -28,7 +28,7 @@ export const projectRecordSchema = z.object({
     .default({ excluded: [] }),
   markdown: z
     .object({
-      /** Keeps the `<private>` blocks of markdown fragments in AGENTS.md, CLAUDE.md and README.md. */
+      /** Keeps the `<private>` blocks of markdown fragments in AGENTS.md and README.md. */
       includePrivate: z.boolean().default(false),
     })
     .default({ includePrivate: false }),

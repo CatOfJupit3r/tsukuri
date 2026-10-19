@@ -1,0 +1,4 @@
+## Node Server
+
+- `apps/server` runs the shared API on Node with Hono: it adds CORS and request logging, then hands every request to `ApiRequestHandler`. Add routes as API features in `packages/api`, not here.
+- `pnpm --filter=server run dev` starts it with the TypeScript sources of every workspace; `build` bundles them with tsdown.

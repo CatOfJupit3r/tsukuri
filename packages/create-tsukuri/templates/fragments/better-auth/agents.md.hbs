@@ -1,0 +1,8 @@
+## Auth
+
+- Better Auth runs inside the API under `/auth/*` (`packages/api/src/features/auth`). It stores users, sessions, accounts and verifications through `DatabaseService`{{#module "valkey"}}, keeps sessions in Valkey,{{/module}} and puts the signed-in session on the API context.
+- Guard procedures with `protectedProcedure` (`#~/features/auth/auth.procedures`): its handlers always see `context.session`; `publicProcedure` handlers get `context.session` or `null`.
+- Configure it with `BETTER_AUTH_SECRET` (32+ characters), `BETTER_AUTH_URL` (the public URL of the API), `AUTH_TRUSTED_ORIGINS` (comma-separated web origins that sign in from another origin), `AUTH_COOKIE_SECURE` and `AUTH_COOKIE_SAME_SITE` in the root `.env`. Cross-origin cookies need `AUTH_COOKIE_SECURE=true` with `AUTH_COOKIE_SAME_SITE=none` over HTTPS.
+{{#module "better-auth-web"}}
+- The web client lives in `apps/web/src/features/auth`: `auth-client.service.ts` for sign-in and sign-up, `useMe` for the current user, and the `_auth_only` route layout that sends signed-out visitors to `/auth`. In development the devtools panel can impersonate any user.
+{{/module}}

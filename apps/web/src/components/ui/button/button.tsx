@@ -2,10 +2,9 @@ import { Button as ButtonPrimitive } from '@base-ui/react/button';
 import type { VariantProps } from 'class-variance-authority';
 import type { ComponentProps, ReactElement } from 'react';
 
-import { cn } from '@~/lib/utils';
-
-import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
-import { buttonVariants } from './constants';
+import { buttonVariants } from '#~/components/ui/button/constants';
+import { Tooltip, TooltipContent, TooltipTrigger } from '#~/components/ui/overlay/tooltip';
+import { cn } from '#~/lib/utils';
 
 export interface iButtonProps extends ComponentProps<typeof ButtonPrimitive>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;

@@ -7,7 +7,7 @@ description: Create React components following project conventions for UI compos
 
 ## Core Principles
 
-- **Compose from UI primitives** - Use `@~/components/ui/*` instead of building from scratch
+- **Compose from UI primitives** - Use `#~/components/ui/*` instead of building from scratch
 - **Type safety** - Interface props with `i` prefix convention
 - **Design tokens** - Use Tailwind tokens (`bg-background`, `text-muted-foreground`) never hardcoded colors
 - **Accessibility first** - Semantic HTML, ARIA labels, keyboard navigation
@@ -153,21 +153,37 @@ If a component needs both heavy orchestration and a large render tree, that is t
 
 ### Available Primitives
 
-Common primitives from `@~/components/ui`:
+Primitives live in `apps/web/src/components/ui`, grouped by role. Import each one from its own file (`#~/components/ui/<group>/<file>`); there are no barrels.
 
-- **Layout**: `Card`, `CardHeader`, `CardTitle`, `CardContent`, `Separator`, `ScrollArea`
-- **Forms**: `Button`, `Input`, `Textarea`, `Label`, `Checkbox`, `Switch`, `Select`
-- **Feedback**: `Alert`, `Skeleton`, `Empty`, `Loader`, `Progress`
-- **Overlay**: `Dialog`, `Sheet`, `Drawer`, `Popover`, `Tooltip`, `DropdownMenu`
-- **Navigation**: `Tabs`, `Breadcrumb`, `NavigationMenu`
-- **Data**: `Avatar`, `Badge`, `Item` (list items)
+- **button/**: `button/button` (`Button`, `tooltip` prop), `button/constants` (`buttonVariants`)
+- **controls/**: `input`, `textarea`, `label`, `checkbox`, `switch`, `toggle`, `radio-group`, `ranger` (slider), `time-picker`, `calendar`, `editable`
+- **display/**: `avatar`, `avatar-group`, `badge-overflow`, `date-chip`, `logo`, `render-slot`, `timeline`, `visually-hidden`
+- **feedback/**: `alert`, `badge`, `empty`, `empty-state`, `progress`, `skeleton`
+- **layout/**: `accordion`, `breadcrumb`, `card`, `item`, `navigation-menu`, `scroll-area`, `separator`, `stepper`, `tabs`, `scroll-spy/*`
+- **overlay/**: `dialog`, `alert-dialog`, `sheet`, `drawer`, `popover`, `tooltip`, `dropdown-menu`, `portal-container.context`, `responsive-dialog/*` (dialog on wide screens, drawer on small ones; alert and confirm variants)
+- **select/**: `select` (`SingleSelect`, `MultiSelect`), `infinite-select` (paged option lists)
+- **form/**: `field` (`useAppForm`, `withForm`, `withFieldGroup`), `field-primitives`, `form`, `form-fields/*` (one file per field), `form-error-summary`, `form-draft-recovery`, `autosave-status`, `grapheme-counter`
+- **file-upload/**: `file-upload` (`FileUpload`, `FileUploadDropzone`, `FileUploadTrigger`) and its store, validation and handler hooks
+
+Overlay content that must render inside a full-screen element reads its portal target from `PortalContainerContext` (`overlay/portal-container.context`).
+
+### Hooks
+
+Generic hooks live in `apps/web/src/hooks`, grouped by concern:
+
+- **browser/**: `use-media-query`, `use-is-online`, `use-near-scroll-bottom`, `use-on-key-press`, `use-prefers-reduced-motion`, `use-image-load-state`
+- **data/**: `use-debounced-query-state`, `use-infinite-list`, `use-prefetch-query`
+- **forms/**: `use-cancellable-validation`, `use-form-loss-guard`, `use-form-wizard`, `use-loss-acknowledgement`
+- **form-autosave/**: `use-form-autosave` and its candidate, local draft, runner, scheduler and state parts
+- **react-utilities/**: `use-adjust-on-change`, `use-as-ref`, `use-lazy-ref`, `use-lazy-value`, `use-resettable-state`, `use-isomorphic-layout-effect`, `use-stable-callback`
+- **queries/**: data hooks backed by TanStack Query
 
 ### Composition Pattern
 
 ```typescript
-import { Card, CardHeader, CardTitle, CardContent } from '@~/components/ui/card';
-import { Button } from '@~/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@~/components/ui/avatar';
+import { Card, CardHeader, CardTitle, CardContent } from '#~/components/ui/layout/card';
+import { Button } from '#~/components/ui/button/button';
+import { Avatar, AvatarImage, AvatarFallback } from '#~/components/ui/display/avatar';
 
 interface iCharacterCardProps {
   character: {
@@ -208,7 +224,7 @@ Quick reference - use `useAppForm` with Zod validation:
 
 ```typescript
 import z from 'zod';
-import { useAppForm } from '@~/components/ui/field';
+import { useAppForm } from '#~/components/ui/form/field';
 import { useCreateCharacter } from '../hooks/use-create-character';
 
 const characterSchema = z.object({
@@ -246,7 +262,7 @@ export function CreateCharacterForm() {
 **Always import skeletons from dedicated shared files** - never declare them inline in the main component file:
 
 ```typescript
-import { Alert } from '@~/components/ui/alert';
+import { Alert } from '#~/components/ui/feedback/alert';
 import { useCharacter } from '../hooks/use-character';
 import { CharacterDetailNotFound, CharacterDetailQueryError } from './error-components';
 import { CharacterDetailSkeleton } from './skeleton-components';
@@ -275,8 +291,8 @@ Example dedicated state file:
 
 ```typescript
 // skeleton-components.tsx
-import { Card, CardContent, CardHeader } from '@~/components/ui/card';
-import { Skeleton } from '@~/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '#~/components/ui/layout/card';
+import { Skeleton } from '#~/components/ui/feedback/skeleton';
 
 export function CharacterDetailSkeleton() {
   return (
@@ -295,8 +311,8 @@ export function CharacterDetailSkeleton() {
 
 ```typescript
 // error-components.tsx
-import { Alert, AlertDescription, AlertTitle } from '@~/components/ui/alert';
-import { Empty } from '@~/components/ui/empty';
+import { Alert, AlertDescription, AlertTitle } from '#~/components/ui/feedback/alert';
+import { Empty } from '#~/components/ui/feedback/empty';
 
 export function CharacterDetailQueryError() {
   return (
@@ -318,7 +334,7 @@ export function CharacterDetailNotFound() {
 
 ```typescript
 // In router configuration
-import { ErrorBoundary } from '@~/components/error-boundary';
+import { ErrorBoundary } from '#~/components/error-boundary/error-boundary';
 
 export const router = createRouter({
   defaultErrorComponent: ErrorBoundary,
@@ -375,7 +391,7 @@ function handleDelete() {
 
 ```typescript
 // ✅ Appropriate: File upload (can't show inline easily)
-import { toastError, toastSuccess } from '@~/components/toastifications';
+import { toastError, toastSuccess } from '#~/components/toastifications';
 
 function handleUpload(file: File) {
   uploadFile(
@@ -471,7 +487,7 @@ import { NuqsAdapter } from 'nuqs/adapters/react';
 Dialogs should reset state when closing:
 
 ```typescript
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@~/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '#~/components/ui/overlay/dialog';
 import { useState } from 'react';
 
 interface iCreateDialogProps {
@@ -585,7 +601,7 @@ export function Navigation({ items, isMobile = false }: iNavigationProps) {
 Prefetch data before user clicks:
 
 ```typescript
-import { usePrefetchOnHover } from '@~/hooks/use-prefetch-query';
+import { usePrefetchOnHover } from '#~/hooks/data/use-prefetch-query';
 import { getCharacterQueryOptions } from '../hooks/use-character';
 
 export function CharacterLink({ characterId }: { characterId: string }) {
@@ -694,7 +710,7 @@ Common tokens:
 Use `cn()` utility for conditional styling:
 
 ```typescript
-import { cn } from '@~/lib/utils';
+import { cn } from '#~/lib/utils';
 
 <Button
   className={cn(

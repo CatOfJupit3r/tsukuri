@@ -1,7 +1,7 @@
-import { PRESETS } from '@~/cli/presets';
-import { createGeneratorContainer } from '@~/di/container';
-import { ModuleResolver } from '@~/engine/module-resolver';
-import { presetIdsEnumwaii } from '@~/enums/preset-ids.enums';
+import { PRESETS } from '#~/cli/presets';
+import { createGeneratorContainer } from '#~/di/container';
+import { ModuleResolver } from '#~/engine/module-resolver';
+import { presetIdsEnumwaii } from '#~/enums/preset-ids.enums';
 
 import { REPOSITORY_ROOT } from '../helpers/temp-dir';
 

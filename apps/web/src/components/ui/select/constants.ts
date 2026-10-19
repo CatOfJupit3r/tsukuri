@@ -1,8 +1,7 @@
 import type { ClassNamesConfig, GroupBase, StylesConfig } from 'react-select';
 
-import { cn } from '@~/lib/utils';
-
-import type { iOptionType } from './types';
+import type { iOptionType } from '#~/components/ui/select/types';
+import { cn } from '#~/lib/utils';
 
 /**
  * styles that aligns with shadcn/ui
@@ -22,7 +21,6 @@ const selectStyles = {
   indicatorSeparatorStyles: 'bg-muted',
   dropdownIndicatorStyles: 'p-1 rounded-md',
   menu: 'mt-1.5 p-1.5 border border-input bg-background text-sm rounded-lg higher-than-modal dark:bg-popover dark:border-popover-border shadow-md',
-  menuList: 'morel-scrollbar',
   groupHeadingStyles: 'py-2 px-1 text-secondary-foreground text-sm font-semibold',
   optionStyles: {
     base: 'hover:cursor-pointer hover:bg-accent hover:text-accent-foreground px-2 py-1.5 rounded-sm text-sm! cursor-default! select-none! outline-none! font-sans',
@@ -105,7 +103,7 @@ export const DEFAULT_SELECT_STYLES: StylesConfig<iOptionType, boolean, GroupBase
       background: 'transparent',
     },
     '::-webkit-scrollbar-thumb': {
-      background: 'hsl(var(--border))',
+      background: 'var(--border)',
     },
     '::-webkit-scrollbar-thumb:hover': {
       background: 'transparent',

@@ -1,0 +1,14 @@
+// {{header}}
+{{#if imports.length}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+{{/if}}
+
+/** Data the installed modules load before the first render, awaited by the root route. */
+export const generatedRootPreloads = [
+{{#each preloads}}
+  {{preload.name}},
+{{/each}}
+];

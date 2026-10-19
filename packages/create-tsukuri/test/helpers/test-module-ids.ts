@@ -2,9 +2,9 @@ import { em } from 'enumwaii';
 import { emToZodSchema } from 'enumwaii/zod';
 
 /**
- * Stand-in for `@~/enums/module-ids.enums` in engine unit tests, so resolution rules can be
+ * Stand-in for `#~/enums/module-ids.enums` in engine unit tests, so resolution rules can be
  * exercised on small synthetic module graphs:
- * `vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'))`.
+ * `vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'))`.
  */
 const testModuleIdsEnumwaii = em({
   BASE: 'base',

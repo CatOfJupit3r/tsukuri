@@ -1,5 +1,4 @@
 import react from '@vitejs/plugin-react';
-import path from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 import { MODULE_CACHE_TEST_OPTIONS, moduleCacheKeyPlugin } from '@startername/vitest-config/module-cache';
@@ -31,7 +30,5 @@ export default defineConfig({
       exclude: ['node_modules', 'dist', 'test', '**/*.{test,spec}.{ts,tsx}', '**/*.config.ts'],
     },
   },
-  ...withWorkspaceSourceResolve({
-    '@~': path.resolve(__dirname, './src'),
-  }),
+  ...withWorkspaceSourceResolve(),
 });

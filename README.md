@@ -11,7 +11,7 @@ so that agentic tools work efficiently.
 Both GitHub Copilot and Claude Code (or any AGENTS.md-aware agent) read from the same skill library under `.agents/skills/*/SKILL.md`:
 
 - `.github/copilot-instructions.md` and `.github/agents/*.md` (Copilot custom agents) point into `.agents/skills/`.
-- `AGENTS.md` (with `CLAUDE.md` symlinked to it) is the always-on guide for Claude Code and other AGENTS.md-aware tools, and points into the same `.agents/skills/` directory.
+- `AGENTS.md` is the always-on guide for Claude Code and other AGENTS.md-aware tools, and points into the same `.agents/skills/` directory.
 
 Update `.agents/skills/` once and both flows pick up the change.
 
@@ -31,7 +31,8 @@ Update `.agents/skills/` once and both flows pick up the change.
 
 ## Repository Structure
 
-- `apps/server` – Node.js + Hono API, oRPC routers, Drizzle schema, Better Auth setup
+- `packages/api` – runtime-agnostic server: oRPC routers, services, Drizzle schema, Better Auth setup
+- `apps/server` – Node.js + Hono backend serving `packages/api`
 - `apps/web` – React 19 client, TanStack Router tree, authentication flows, Tailwind config
 - `packages/server-contract` – API contract definitions and schema exports
 - `packages/common` – Shared utilities, types, constants, and helpers
@@ -79,7 +80,7 @@ cd startername
 pnpm install
 ```
 
-1. Copy environment templates: duplicate `.env.example` to `.env` in both `apps/server` and `apps/web`.
+1. Copy the root `.env.example` to `.env`; the server and the web app both read it.
 2. Start Docker Desktop so PostgreSQL can launch.
 3. Boot everything with `pnpm run dev`:
     - Web client: `http://localhost:3030`
@@ -123,4 +124,4 @@ pnpm install
 - Keep `pnpm run dev` active regularly to keep local PostgreSQL available.
 - Avoid rebasing on `main`; prefer merging.
 - Use the shared contract utilities (`tanstackRPC` helpers, shared schemas) instead of duplicating types or query keys.
-- When extending the API, register new routes in `apps/server/src/routers/index.ts` and add error codes to `apps/server/src/enums/errors.ts`.
+- When extending the API, add the feature under `packages/api/src/features/` and declare its router, contract and error codes in its module manifest; `pnpm run sync` regenerates the `src/generated/` connection points.

@@ -1,6 +1,7 @@
 {
   "name": "@startername/common",
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "exports": {
     "./globals": {
@@ -22,6 +23,11 @@
       "workspace-source": "./src/helpers/*.ts",
       "types": "./dist/helpers/*.d.mts",
       "default": "./dist/helpers/*.mjs"
+    },
+    "./generated/*": {
+      "workspace-source": "./src/generated/*.ts",
+      "types": "./dist/generated/*.d.mts",
+      "default": "./dist/generated/*.mjs"
     }
   },
   "files": [
@@ -33,7 +39,7 @@
     "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
     "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
     "lint:eslint": "eslint . --fix",
-    "prettify": "prettier --write ./src/",
+    "prettify": "prettier --write ./src/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
     "test": "echo 'No tests for common library yet'"
   },
   "prettier": "@startername/prettier-config",

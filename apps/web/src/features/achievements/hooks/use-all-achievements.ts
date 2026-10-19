@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { ORPCOutputs } from '@~/utils/orpc';
-import { tanstackRPC } from '@~/utils/tanstack-orpc';
+import type { ORPCOutputs } from '#~/utils/orpc';
+import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 export type AllAchievementsQueryReturnType = ORPCOutputs['achievements']['listAchievements'];
 

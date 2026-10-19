@@ -1,7 +1,7 @@
-import { MODULE_CATEGORIES } from '@~/enums/module-categories.enums';
-import { moduleIdSchema } from '@~/enums/module-ids.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import type { iModuleManifestInput } from '@~/manifest/module-manifest.schema';
+import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
+import { moduleIdSchema } from '#~/enums/module-ids.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
 
 /** Parses through the (mocked) module id schema, so synthetic ids keep the `ModuleId` type. */
 export function testModuleId(value: string) {

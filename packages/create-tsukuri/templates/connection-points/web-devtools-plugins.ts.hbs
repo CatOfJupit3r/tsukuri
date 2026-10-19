@@ -1,0 +1,14 @@
+// {{header}}
+{{#if imports.length}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+{{/if}}
+
+/** TanStack devtools panels the installed modules add in development. */
+export const generatedDevtoolsPlugins = [
+{{#each plugins}}
+  {{plugin.name}},
+{{/each}}
+];

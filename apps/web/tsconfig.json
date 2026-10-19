@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "target": "ESNext",
@@ -10,10 +12,7 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "types": ["vite/client", "node"],
-    "rootDirs": ["."],
-    "paths": {
-      "@~/*": ["./src/*"]
-    }
+    "rootDirs": ["."]
   },
   "exclude": ["./eslint.config.js"],
   "files": ["../../packages/common/src/globals.d.ts"],

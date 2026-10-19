@@ -1,6 +1,6 @@
 # Unit Tests
 
-Unit tests verify individual functions, utilities, and helpers in isolation. Use unit tests **only** for pure functions and utilities—not for services or routers.
+Unit tests verify individual functions, utilities, and helpers in isolation. Use unit tests **only** for pure functions, utilities, and thin adapters whose container lookups can be faked, not for services or routers. They live in `packages/api/test/unit/`.
 
 ## When to Write Unit Tests
 
@@ -22,7 +22,7 @@ Write unit tests for:
 ```typescript
 import { describe, it, expect } from 'vitest';
 
-import { myUtilityFunction } from '@~/utils/my-utility';
+import { myUtilityFunction } from '#~/lib/my-utility';
 
 describe('myUtilityFunction', () => {
   it('should transform input correctly', () => {
@@ -68,6 +68,33 @@ describe('Custom Matchers', () => {
   });
 });
 ```
+
+## Faking Container Lookups
+
+Code that resolves from the global container (for example `provideAuthSession`, which resolves `AuthService` and `RequestContextStorage`) can be tested without starting the API. `mockContainerResolve` (`test/helpers/unit-mocks.ts`) maps each token or class to a fake; resolving anything unmapped fails the test instead of building a real service:
+
+```typescript
+import { provideAuthSession } from '#~/features/auth/auth.context';
+import { AuthService } from '#~/features/auth/auth.service';
+import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
+
+import { mockContainerResolve } from '../helpers/unit-mocks';
+
+it('tags the request with the signed-in user', async () => {
+  const requestContext = { assignUserId: vi.fn() };
+  const authService = { getInstance: () => ({ api: { getSession: vi.fn(async () => ({ user: { id: 'user-1' } })) } }) };
+  mockContainerResolve([
+    [AuthService, authService],
+    [RequestContextStorage, requestContext],
+  ]);
+
+  await provideAuthSession(new Request('http://localhost/rpc'));
+
+  expect(requestContext.assignUserId).toHaveBeenCalledWith('user-1');
+});
+```
+
+Classes with constructor-injected dependencies (such as `EventBus`, which has none) can also be built directly with `new` and fakes. See `test/unit/auth-context.test.ts` and `test/unit/event-bus.test.ts`.
 
 ## File Naming and Location
 
@@ -254,20 +281,18 @@ describe('assertNonNull', () => {
 
 ## Vitest Configuration
 
-Unit tests use a separate Vitest project configuration:
+Unit tests use a separate Vitest project (`packages/api/vitest.config.ts`):
 
 ```typescript
-// From vitest.config.ts
 {
+  name: 'unit',
   include: ['test/unit/**/*.test.ts'],
-  exclude: ['test/integration/**'],
-  setupFiles: ['./test/helpers/matchers.ts'],
-  isolate: true, // Each test runs in isolation
+  setupFiles: ['reflect-metadata', './test/helpers/matchers.ts'],
 }
 ```
 
 This ensures unit tests:
-- Don't load database setup
+- Don't start the API, the module setup files, or the database
 - Run faster
-- Are truly isolated
-- Don't interfere with integration tests
+- Don't share the integration project's long-lived container and database
+- Get `describe`, `it`, `expect` and `vi` as globals, like every test in the package

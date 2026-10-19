@@ -3,7 +3,7 @@ import z from 'zod';
 
 import { UserAchievementIdSchema } from '@startername/common/constants/achievements';
 
-import { authProcedure } from './procedures';
+import { authProcedure } from './auth.procedures';
 
 const USER_ACHIEVEMENT_META_SCHEMA = z.object({
   id: UserAchievementIdSchema,
@@ -40,9 +40,7 @@ const getMyAchievements = authProcedure
   })
   .output(z.array(USER_ACHIEVEMENT_SCHEMA));
 
-const achievementsContract = oc.prefix('/achievements').router({
+export const achievementsContract = oc.prefix('/achievements').router({
   listAchievements,
   getMyAchievements,
 });
-
-export default achievementsContract;

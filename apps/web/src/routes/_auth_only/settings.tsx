@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { SettingsView } from '@~/features/user/components/settings-view';
-import { tanstackRPC } from '@~/utils/tanstack-orpc';
+import { SettingsView } from '#~/features/user/components/settings-view';
+import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 export const Route = createFileRoute('/_auth_only/settings')({
   component: RouteComponent,

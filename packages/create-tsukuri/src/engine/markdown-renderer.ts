@@ -1,9 +1,9 @@
 import { injectable } from 'tsyringe';
 
-import type { MarkdownDocument } from '@~/enums/markdown-documents.enums';
-import { MARKDOWN_DOCUMENT_OUTPUTS } from '@~/enums/markdown-documents.enums';
-import type { iModuleManifest } from '@~/manifest/module-manifest.schema';
-import type { iProjectRecord } from '@~/record/project-record.schema';
+import type { MarkdownDocument } from '#~/enums/markdown-documents.enums';
+import { MARKDOWN_DOCUMENT_OUTPUTS } from '#~/enums/markdown-documents.enums';
+import type { iModuleManifest } from '#~/manifest/module-manifest.schema';
+import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import type { iControlBlockOptions } from './control-block-renderer';
 import { ControlBlockRenderer } from './control-block-renderer';
@@ -32,22 +32,19 @@ export class MarkdownRenderer {
   ) {}
 
   /**
-   * Renders every module's fragments once per output file and joins them in module order. Control blocks
-   * are resolved first, so excluded blocks never reach Handlebars.
+   * Renders every module's fragments and joins them in module order. Control blocks are resolved first,
+   * so excluded blocks never reach Handlebars.
    */
   public async render(modules: iModuleManifest[], context: iTemplateContext, options: iMarkdownRenderOptions) {
     const documents: iRenderedDocument[] = [];
 
     for (const [document, fragments] of await this.readFragments(modules)) {
-      for (const output of MARKDOWN_DOCUMENT_OUTPUTS.get(document)) {
-        const parts = fragments
-          .map((fragment) =>
-            this.renderFragment(fragment, context, { ...options, harness: output.harness, source: fragment.source }),
-          )
-          .filter((part) => part.length > 0);
-        const body = `${parts.join('\n\n')}\n`;
-        documents.push({ path: output.path, content: output.frontmatter ? `${output.frontmatter}\n\n${body}` : body });
-      }
+      const output = MARKDOWN_DOCUMENT_OUTPUTS.get(document);
+      const parts = fragments
+        .map((fragment) => this.renderFragment(fragment, context, { ...options, source: fragment.source }))
+        .filter((part) => part.length > 0);
+      const body = `${parts.join('\n\n')}\n`;
+      documents.push({ path: output.path, content: output.frontmatter ? `${output.frontmatter}\n\n${body}` : body });
     }
 
     return documents;

@@ -2,7 +2,7 @@ import { mkdir, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { injectable } from 'tsyringe';
 
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 
 import { GeneratorError } from './generator-error';
 import type { VirtualProject } from './virtual-project';

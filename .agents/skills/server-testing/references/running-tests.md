@@ -1,23 +1,31 @@
 # Running Tests
 
-Commands and options for running tests locally and in different modes.
+Commands and options for running tests locally and in different modes. The server tests live in `packages/api` (`@startername/api`).
 
 ## Basic Commands
 
-All commands should be run from `apps/server/` or the monorepo root.
+Run commands from the repository root.
+
+### Verify (the handoff gate)
+
+```bash
+pnpm run verify --tests
+```
+
+Runs check-types, oxlint, ESLint and the test suite with honest exit codes. Scope it with `--filter @startername/api` (repeatable) or `--changed-since <ref>`. The full output of the last run is in `node_modules/.cache/verify/last-run.log`.
 
 ### Run All Tests Once
 
 ```bash
-pnpm run test
+pnpm --filter=@startername/api run test
 ```
 
-Runs all tests (both unit and integration) once and exits.
+Runs the unit and integration projects once and exits.
 
 ### Watch Mode
 
 ```bash
-pnpm run test:watch
+pnpm --filter=@startername/api run test:watch
 ```
 
 Watches for file changes and re-runs affected tests automatically. This is ideal for development.
@@ -34,47 +42,32 @@ Watches for file changes and re-runs affected tests automatically. This is ideal
 - `p` - Filter by file name pattern
 - `q` - Quit watch mode
 
-### UI Mode
-
-```bash
-pnpm run test:ui
-```
-
-Opens a browser-based UI for running and debugging tests.
-
-**Features**:
-- Visual test runner
-- Test file browser
-- Detailed test results
-- Re-run individual tests
-- Filter and search tests
-
-Access at: `http://localhost:51204/__vitest__/`
-
 ## Running Specific Tests
+
+Arguments after the script name go to Vitest.
 
 ### Run Tests in a Specific File
 
 ```bash
-pnpm run test user-profile.test.ts
+pnpm --filter=@startername/api run test user-profile.test.ts
 ```
 
-### Run Tests Matching a Pattern
+### Run Tests Matching a Name
 
 ```bash
-pnpm run test --grep "should update user profile"
+pnpm --filter=@startername/api run test -t "should update user profile"
 ```
 
 ### Run Only Integration Tests
 
 ```bash
-pnpm run test test/integration/
+pnpm --filter=@startername/api run test test/integration/
 ```
 
 ### Run Only Unit Tests
 
 ```bash
-pnpm run test test/unit/
+pnpm --filter=@startername/api run test test/unit/
 ```
 
 ## Vitest CLI Options
@@ -82,10 +75,10 @@ pnpm run test test/unit/
 ### Run Tests with Coverage
 
 ```bash
-pnpm run test --coverage
+pnpm --filter=@startername/api run test --coverage
 ```
 
-Generates a coverage report showing which lines are tested.
+Generates a coverage report showing which lines are tested (needs a Vitest coverage provider installed).
 
 ### Run a Single Test
 
@@ -109,43 +102,37 @@ it.skip('should skip this test', async () => {
 });
 ```
 
-### Run Failed Tests
-
-```bash
-pnpm run test --reporter=verbose --reporter=junit --outputFile=test-results.xml
-```
-
 ## Test Configuration
 
-The test configuration is defined in `apps/server/vitest.config.ts`.
+The test configuration is defined in `packages/api/vitest.config.ts`.
 
 ### Two Test Projects
 
 The config defines two separate projects:
 
-1. **Unit Tests**:
+1. **Unit Tests** (`unit`):
    - Runs tests in `test/unit/**/*.test.ts`
-   - Isolated test execution
-   - No database setup
+   - Loads only `reflect-metadata` and `test/helpers/matchers.ts`
+   - No API startup, no database
    - Faster execution
 
-2. **Integration Tests**:
-   - Runs tests in `test/integration/**/*.test.ts` and `test/**/*.test.ts`
-   - Shared database via PGlite with committed Drizzle migrations
-   - Single-threaded execution for stability
+2. **Integration Tests** (`integration`):
+   - Runs tests in `test/integration/**/*.test.ts`
+   - Loads every `test/helpers/setup/*.setup.ts` (one per installed module), then `test/helpers/setup.ts`, which calls `startApi()`
+   - Shared in-memory PGlite database built from the generated schema
+   - One shared container and sequential files (`isolate: false`, `fileParallelism: false`)
    - Longer timeout (10 seconds)
 
 ### Environment Variables
 
-Tests run with these environment variables (from `vitest.config.ts`):
+Tests run with the variables of the root `.env.example` (loaded by `loadExampleEnv` from `@startername/vitest-config/example-env`) plus:
 
 ```typescript
 NODE_ENV=test
-BETTER_AUTH_SECRET=test-secret
-BETTER_AUTH_URL=http://localhost:3000/auth
-POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/startername-test
 LOG_LEVEL=error
 ```
+
+Add a variable by declaring it in a module's `ENV_VARIABLE` contribution; `pnpm run sync` updates `.env.example`, and tests pick it up from there.
 
 ## Debugging Tests
 
@@ -169,74 +156,65 @@ Logs will appear in the terminal output.
 
 ### Inspect Test Database
 
-During test development, you can inspect the PGlite database through the Drizzle service:
+During test development, you can inspect the PGlite database through the repositories:
 
 ```typescript
 it('should check database state', async () => {
   const { ctx, user } = await createUser();
 
   // Add breakpoint here and inspect database
-  const profile = await UserProfileModel.findOne({ userId: user.id });
+  const profile = await getUserProfileRepository().findByUserId(user.id);
   console.log('Profile:', profile);
 });
 ```
 
 ## Performance Tips
 
-### Run Integration Tests Single-Threaded
+### Integration Tests Run Sequentially
 
-Integration tests already run single-threaded for stability. This is configured in `vitest.config.ts`:
+Integration tests share one container and one database, so they run in a single process one file at a time. This is configured in `vitest.config.ts`:
 
 ```typescript
-poolOptions: {
-  threads: {
-    singleThread: true,
-  },
-}
+isolate: false,
+fileParallelism: false,
 ```
 
 ### Fast Database Cleanup
 
-The test setup uses `deleteMany()` instead of `dropDatabase()` for faster cleanup:
+The test setup truncates every table after each test instead of recreating the database:
 
 ```typescript
-// test/helpers/setup.ts
+// test/helpers/setup/database.setup.ts
 afterEach(async () => {
-  await container.resolve(PostgresService).getDb().execute(sql.raw('TRUNCATE TABLE ... CASCADE'));
+  await container
+    .resolve(DatabaseService)
+    .getDb()
+    .execute(sql.raw(`TRUNCATE TABLE ${tableNames} RESTART IDENTITY CASCADE`));
 });
 ```
 
-### Isolate Unit Tests
+### Fast Password Hashing
 
-Unit tests run in isolation by default, which makes them faster:
-
-```typescript
-// vitest.config.ts (unit test project)
-isolate: true,
-```
+`test/helpers/setup/auth.setup.ts` replaces the password hasher with a plaintext one, so signing up a user costs a few milliseconds.
 
 ## Continuous Integration
 
-Tests run automatically in CI/CD pipelines. The monorepo uses quality gates:
+Tests run automatically in CI/CD pipelines. Run the same gate locally before pushing:
 
 ```bash
-pnpm run check-types  # Type checking
-pnpm run lint         # Linting
-pnpm run test         # All tests
+pnpm run verify --tests
 ```
-
-Run these locally before pushing to catch issues early.
 
 ## Common Test Commands Summary
 
 | Command | Description |
 |---------|-------------|
-| `pnpm run test` | Run all tests once |
-| `pnpm run test:watch` | Watch mode (re-run on changes) |
-| `pnpm run test:ui` | Visual test runner in browser |
-| `pnpm run test <file>` | Run specific test file |
-| `pnpm run test --grep <pattern>` | Run tests matching pattern |
-| `pnpm run test --coverage` | Run with coverage report |
+| `pnpm run verify --tests` | Check types, lint and run all tests |
+| `pnpm run verify --tests --filter @startername/api` | The same, scoped to the API package |
+| `pnpm --filter=@startername/api run test` | Run the API tests once |
+| `pnpm --filter=@startername/api run test:watch` | Watch mode (re-run on changes) |
+| `pnpm --filter=@startername/api run test <file>` | Run specific test file |
+| `pnpm --filter=@startername/api run test -t <pattern>` | Run tests matching a name |
 
 ## Troubleshooting Test Runs
 
@@ -256,15 +234,15 @@ Run these locally before pushing to catch issues early.
 
 ### Database Connection Issues
 
-**Symptoms**: migration or PGlite initialization errors
+**Symptoms**: PGlite initialization or schema push errors
 
 **Common causes**:
-1. The committed Drizzle migration is missing or invalid
+1. A schema file is not registered with a `DATABASE_SCHEMA` contribution, or `src/generated/database-schema.ts` is out of date (`pnpm run sync`)
 2. The test setup did not initialize PGlite
 
 **Solution**:
-- Check `test/global-setup.ts` is running
-- Verify `test/helpers/postgres-memory.ts` can apply all migrations
+- Check `test/helpers/setup/database.setup.ts` is picked up (it must match `test/helpers/setup/*.setup.ts`)
+- Verify `test/helpers/postgres-memory.ts` can push the generated schema
 - Restart test runner
 
 ### Import Errors
@@ -272,12 +250,12 @@ Run these locally before pushing to catch issues early.
 **Symptoms**: `Cannot find module`, import errors
 
 **Common causes**:
-1. Incorrect path alias
+1. Incorrect `#~/` import (it resolves against `packages/api/package.json` `imports`, not a tsconfig `paths` alias)
 2. Missing dependency
 3. Circular dependency
 
 **Solution**:
-- Verify `@~/` alias resolves correctly
+- Verify `#~/` paths point at files under `packages/api/src`
 - Check imports match exports
 - See [common-issues.md](common-issues.md) for "accessed before declaration"
 
@@ -300,7 +278,7 @@ Run these locally before pushing to catch issues early.
 
 1. **Run tests before committing** - Catch issues early
 2. **Use watch mode during development** - Fast feedback
-3. **Run full suite before pushing** - Ensure nothing broke
+3. **Run `pnpm run verify --tests` before pushing** - Ensure nothing broke
 4. **Check coverage occasionally** - Identify untested code
 5. **Keep tests fast** - Slow tests discourage running them
 6. **Fix flaky tests immediately** - They erode confidence

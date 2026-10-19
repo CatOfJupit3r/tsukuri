@@ -110,7 +110,9 @@ const getBaseConfig = (options) => {
         'error',
         {
           ignore: [
-            '^@~/',
+            '^#~/',
+            // Builtins newer than the resolver's list.
+            '^node:sqlite$',
             // Workspace packages (prevent false positives)
             createWorkspaceIgnorePattern('startername'),
             createWorkspaceIgnorePattern('shared'),
@@ -197,6 +199,8 @@ const getBaseConfig = (options) => {
           'dist/**',
           'build/**',
           '.lintstagedrc.{js,cjs,mjs}',
+          // Connection points, rewritten by create-tsukuri on every add/remove.
+          'src/generated/**',
         ],
       },
       ...(gitignorePath ? [includeIgnoreFile(gitignorePath)] : []),
@@ -258,7 +262,8 @@ const buildBackendConfig = (options = {}) => {
 
   const nodeSpecificRules = {
     rules: {
-      'n/no-unsupported-features/node-builtins': ['error', { version: '>=26.0.0' }],
+      // node:sqlite is a release candidate in Node 26 and ships without a flag.
+      'n/no-unsupported-features/node-builtins': ['error', { version: '>=26.0.0', ignores: ['sqlite'] }],
     },
   };
 
@@ -369,7 +374,7 @@ const buildWebConfig = async (options = {}) => {
     ...(reactRefreshPlugin ? [
       {
         // disable for route files since they often export non-component values (like route metadata)
-        files: ['src/routes/**/*.{jsx,tsx}'],
+        files: ['src/routes/**/*.{jsx,tsx}', 'variants/*/src/routes/**/*.{jsx,tsx}'],
         rules: {
           'react-refresh/only-export-components': 'off',
         },

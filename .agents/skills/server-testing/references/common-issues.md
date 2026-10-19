@@ -184,28 +184,28 @@ export class AchievementService {
 ```typescript
 // user.service.ts
 import { injectable, inject } from 'tsyringe';
-import { TOKENS } from './tokens';
+
+import type { iUserAchievementRepository } from '#~/features/achievements/user-achievement.repository';
+import { USER_ACHIEVEMENT_REPOSITORY_TOKEN } from '#~/features/achievements/achievements.tokens';
 
 @injectable()
 export class UserService {
   constructor(
-    @inject(TOKENS.AchievementService)
-    private achievementService: IAchievementService
+    @inject(USER_ACHIEVEMENT_REPOSITORY_TOKEN)
+    private readonly userAchievementRepository: iUserAchievementRepository
   ) {}
 
   async createUser() {
-    // uses this.achievementService
+    // uses this.userAchievementRepository
   }
 }
 
-// achievement.service.ts
-import { injectable } from 'tsyringe';
+// drizzle-user-achievement.repository.ts
+import { singleton } from 'tsyringe';
 
-@injectable()
-export class AchievementService implements IAchievementService {
-  async grantAchievement() {
-    // no direct import of UserService
-  }
+@singleton()
+export class DrizzleUserAchievementRepository implements iUserAchievementRepository {
+  // no direct import of UserService
 }
 ```
 
@@ -285,24 +285,24 @@ it('should test external API', async () => {
 ### The Error
 
 ```
-Cannot find module '@~/some/module'
+Cannot find module '#~/some/module'
 ```
 
 ### Solutions
 
-#### 1. Check Path Alias
+#### 1. Check the Subpath Import
 
-Ensure the `@~/` alias is correctly configured in `tsconfig.json`:
+`#~/` is a Node subpath import declared in `packages/api/package.json`, not a tsconfig `paths` alias:
 
 ```json
 {
-  "compilerOptions": {
-    "paths": {
-      "@~/*": ["./src/*"]
-    }
+  "imports": {
+    "#~/*": "./src/*.js"
   }
 }
 ```
+
+It resolves against the package that contains the importing file, so `#~/features/user/user.service` points at `packages/api/src/features/user/user.service.ts`. The `.js` target is mapped to the `.ts` source by TypeScript, Vite and the Node dev loader. Never add `paths` entries or `@~/` aliases.
 
 #### 2. Verify File Extension
 
@@ -310,10 +310,10 @@ TypeScript files should omit the `.ts` extension:
 
 ```typescript
 // ✅ GOOD
-import { User } from '@~/db/models/user.model';
+import { UserService } from '#~/features/user/user.service';
 
 // ❌ BAD
-import { User } from '@~/db/models/user.model.ts';
+import { UserService } from '#~/features/user/user.service.ts';
 ```
 
 #### 3. Check File Exists
@@ -321,7 +321,7 @@ import { User } from '@~/db/models/user.model.ts';
 Verify the file actually exists at the path:
 
 ```bash
-ls apps/server/src/db/models/user.model.ts
+ls packages/api/src/features/user/user.service.ts
 ```
 
 ## Database Connection Errors
@@ -329,31 +329,22 @@ ls apps/server/src/db/models/user.model.ts
 ### The Error
 
 ```
-PGlite could not apply the test migration
+relation "..." does not exist
 ```
 
 ### Cause
 
-The integration setup did not initialize PGlite or a Drizzle migration failed.
+The in-memory PGlite database is built from `generatedDatabaseSchema` with drizzle-kit `pushSchema` (`test/helpers/postgres-memory.ts`). The error means the table is missing from that schema, or the Postgres setup file did not run.
 
 ### Solutions
 
-1. **Verify global setup is configured**:
-   ```typescript
-   // vitest.config.ts
-   globalSetup: ['./test/global-setup.ts'],
-   ```
+1. **Verify the schema file is registered**: the module that owns the table must declare a `DATABASE_SCHEMA` contribution, and `src/generated/database-schema.ts` must list the file (`pnpm run sync` regenerates it). Never edit the generated file.
 
-2. **Check the PostgreSQL migration setup**:
-   ```bash
-   pnpm run test
-   ```
+2. **Verify the setup file is picked up**: `test/helpers/setup/database.setup.ts` has to match `test/helpers/setup/*.setup.ts`, which `vitest.config.ts` loads for the integration project.
 
-3. **Restart test runner**:
+3. **Re-run the suite**:
    ```bash
-   # Kill and restart
-   pkill -f vitest
-   pnpm run test
+   pnpm run verify --tests --filter @startername/api
    ```
 
 ## Type Errors in Tests
@@ -387,7 +378,7 @@ declare module 'vitest' {
 ```typescript
 // ❌ BAD: Wrong context structure
 const result = await call(
-  appRouter.user.getProfile,
+  appRouter.user.getUserProfile,
   null,
   { session: { user } }  // Incorrect structure!
 );
@@ -507,9 +498,9 @@ If you encounter an error not covered here:
 1. **Check the stack trace** - Identifies where the error occurs
 2. **Read the error message carefully** - Often contains the solution
 3. **Search the codebase** - Look for similar patterns
-4. **Check test setup files** - `test/helpers/setup.ts`, `test/global-setup.ts`
+4. **Check test setup files** - `test/helpers/setup.ts`, `test/helpers/setup/*.setup.ts`
 5. **Verify environment** - Node version, dependencies installed
-6. **Run type checking** - `pnpm run check-types`
+6. **Run verification** - `pnpm run verify`
 
 ## Prevention Checklist
 

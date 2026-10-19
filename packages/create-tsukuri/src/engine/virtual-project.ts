@@ -1,6 +1,6 @@
-import type { FileKind } from '@~/enums/file-kinds.enums';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
+import type { FileKind } from '#~/enums/file-kinds.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
 
 import { GeneratorError } from './generator-error';
 

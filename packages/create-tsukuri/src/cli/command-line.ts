@@ -1,5 +1,5 @@
-import { promptIdsEnumwaii } from '@~/enums/prompt-ids.enums';
-import type { SkillId } from '@~/enums/skill-ids.enums';
+import { promptIdsEnumwaii } from '#~/enums/prompt-ids.enums';
+import type { SkillId } from '#~/enums/skill-ids.enums';
 
 import { NONE_FLAG_VALUE } from './create-args';
 import type { iPromptAnswers } from './presets';

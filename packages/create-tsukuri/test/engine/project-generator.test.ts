@@ -2,11 +2,11 @@ import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'yaml';
 
-import { createGeneratorContainer } from '@~/di/container';
-import { ProjectGenerator } from '@~/engine/project-generator';
-import { PROJECT_NAME_TOKEN } from '@~/engine/project-identity';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { MODULE_MANIFESTS } from '@~/modules/module-manifests';
+import { createGeneratorContainer } from '#~/di/container';
+import { ProjectGenerator } from '#~/engine/project-generator';
+import { PROJECT_NAME_TOKEN } from '#~/engine/project-identity';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
 
 import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
 
@@ -40,12 +40,11 @@ describe('ProjectGenerator', () => {
         'package.json',
         'pnpm-workspace.yaml',
         'AGENTS.md',
-        'CLAUDE.md',
         'README.md',
         'scripts/verify.ts',
         'configs/lint-config/package.json',
         'packages/common/package.json',
-        'packages/common/src/enums/errors.enums.ts',
+        'packages/common/src/helpers/std-utils.ts',
         '.agents/skills/review-code/SKILL.md',
       ]),
     );
@@ -70,7 +69,6 @@ describe('ProjectGenerator', () => {
     expect(workspace.catalog).toEqual(expect.objectContaining({ zod: '4.4.3', typescript: '6.0.3' }));
 
     expect(await readFile(path.join(targetDir, 'AGENTS.md'), 'utf8')).toMatch(/^---\napplyTo/);
-    expect(await readFile(path.join(targetDir, 'CLAUDE.md'), 'utf8')).not.toMatch(/^---/);
 
     for (const file of files) {
       const content = await readFile(path.join(targetDir, file));

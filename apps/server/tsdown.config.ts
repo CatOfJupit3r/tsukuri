@@ -8,7 +8,7 @@ export default defineConfig({
   platform: 'node',
   sourcemap: true,
   dts: false,
-  noExternal: ['@startername/common/**', '@startername/server-contract/**'],
+  noExternal: ['@startername/**'],
   inputOptions: {
     resolve: {
       conditionNames: withWorkspaceSourceCondition(['import', 'node', 'default']),

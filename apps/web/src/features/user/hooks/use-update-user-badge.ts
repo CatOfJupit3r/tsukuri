@@ -2,9 +2,9 @@ import { useMutation } from '@tanstack/react-query';
 
 import { BadgeIdSchema } from '@startername/common/constants/badges';
 
-import { toastError, toastSuccess } from '@~/components/toastifications/create-jsx-toasts';
-import type { ORPCOutputs } from '@~/utils/orpc';
-import { tanstackRPC } from '@~/utils/tanstack-orpc';
+import { toastError, toastSuccess } from '#~/components/toastifications/create-jsx-toasts';
+import type { ORPCOutputs } from '#~/utils/orpc';
+import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 export type UserProfileQueryReturnType = ORPCOutputs['user']['getUserProfile'];
 

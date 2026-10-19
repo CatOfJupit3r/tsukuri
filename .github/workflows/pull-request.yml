@@ -37,6 +37,9 @@ jobs:
       - name: Verify (check-types, oxlint, eslint, tests)
         run: pnpm run verify --tests
 
+      - name: Verify styles (tokens, raw colors, stylesheet allowlist)
+        run: pnpm run verify:styles
+
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -61,7 +64,7 @@ jobs:
   generated-projects:
     name: Generated projects install and verify
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 

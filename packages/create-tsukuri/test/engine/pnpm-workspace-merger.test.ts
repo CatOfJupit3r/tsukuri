@@ -1,13 +1,13 @@
 import { parse } from 'yaml';
 
-import { PnpmWorkspaceMerger } from '@~/engine/pnpm-workspace-merger';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { pnpmWorkspaceContributionSchema } from '@~/manifest/module-manifest.schema';
-import type { iPnpmWorkspaceContribution } from '@~/manifest/module-manifest.schema';
+import { PnpmWorkspaceMerger } from '#~/engine/pnpm-workspace-merger';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { pnpmWorkspaceContributionSchema } from '#~/manifest/module-manifest.schema';
+import type { iPnpmWorkspaceContribution } from '#~/manifest/module-manifest.schema';
 
 import { testModuleId } from '../helpers/manifests';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const ALPHA = testModuleId('alpha');
 const BETA = testModuleId('beta');

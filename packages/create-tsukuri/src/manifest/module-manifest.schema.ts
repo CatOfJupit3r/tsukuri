@@ -1,12 +1,12 @@
 import z from 'zod';
 
-import { capabilitySchema } from '@~/enums/capabilities.enums';
-import { markdownDocumentSchema } from '@~/enums/markdown-documents.enums';
-import { moduleCategorySchema } from '@~/enums/module-categories.enums';
-import { moduleIdSchema } from '@~/enums/module-ids.enums';
-import { skillIdSchema } from '@~/enums/skill-ids.enums';
+import { capabilitySchema } from '#~/enums/capabilities.enums';
+import { markdownDocumentSchema } from '#~/enums/markdown-documents.enums';
+import { moduleCategorySchema } from '#~/enums/module-categories.enums';
+import { moduleIdSchema } from '#~/enums/module-ids.enums';
+import { skillIdSchema } from '#~/enums/skill-ids.enums';
 
-import { connectionPointContributionSchema } from './connection-point.schema';
+import { connectionPointContributionSchema, connectionPointHostSchema } from './connection-point.schema';
 import type { iConnectionPointContributionInput } from './connection-point.schema';
 
 const relativePathSchema = z
@@ -61,6 +61,17 @@ export const moduleManifestSchema = z.object({
   /** Installed in every project. */
   isAlwaysIncluded: z.boolean().default(false),
   requires: z.array(moduleIdSchema).default([]),
+  /**
+   * Makes this a glue module: never chosen directly, it is installed exactly while every listed module is
+   * installed and every listed capability is provided (for example a backend's web client).
+   */
+  autoInclude: z
+    .object({
+      modules: z.array(moduleIdSchema).default([]),
+      capabilities: z.array(capabilitySchema).default([]),
+    })
+    .nullable()
+    .default(null),
   requiresCapabilities: z.array(capabilitySchema).default([]),
   conflicts: z.array(moduleIdSchema).default([]),
   provides: z.array(capabilitySchema).default([]),
@@ -76,6 +87,7 @@ export const moduleManifestSchema = z.object({
   skills: z.array(skillIdSchema).default([]),
   markdown: z.array(markdownFragmentSchema).default([]),
   contributions: z.array(connectionPointContributionSchema).default([]),
+  hosts: z.array(connectionPointHostSchema).default([]),
 });
 
 export type iModuleManifest = z.output<typeof moduleManifestSchema>;
@@ -91,8 +103,8 @@ type iWithDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  * Written out instead of `z.input` so enum-backed fields keep their enumwaii types.
  */
 export type iModuleManifestInput = iWithDefaults<
-  Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions'>,
-  'isAlwaysIncluded' | 'requires' | 'requiresCapabilities' | 'conflicts' | 'provides' | 'skills' | 'markdown'
+  Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions' | 'autoInclude'>,
+  'isAlwaysIncluded' | 'requires' | 'requiresCapabilities' | 'conflicts' | 'provides' | 'skills' | 'markdown' | 'hosts'
 > & {
   files?: iWithDefaults<iModuleFileEntry, 'exclude'>[];
   packageJson?: iWithDefaults<
@@ -101,4 +113,5 @@ export type iModuleManifestInput = iWithDefaults<
   >[];
   pnpmWorkspace?: Partial<iPnpmWorkspaceContribution>;
   contributions?: iConnectionPointContributionInput[];
+  autoInclude?: Partial<NonNullable<iModuleManifest['autoInclude']>>;
 };

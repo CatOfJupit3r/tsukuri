@@ -1,5 +1,5 @@
-import type { iGeneratorContainerOptions } from '@~/di/container';
-import { createGeneratorContainer } from '@~/di/container';
+import type { iGeneratorContainerOptions } from '#~/di/container';
+import { createGeneratorContainer } from '#~/di/container';
 
 import { COMMAND_RUNNER_TOKEN } from './command-runner';
 import type { iCommandRunner } from './command-runner';

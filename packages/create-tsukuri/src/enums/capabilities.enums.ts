@@ -6,6 +6,8 @@ const capabilitiesEnumwaii = em({
   WEB_RENDERING: 'web-rendering',
   DATABASE: 'database',
   LOCAL_STORAGE_ENGINE: 'local-storage-engine',
+  /** The API runs as its own server that clients reach over HTTP (not inside the web app or desktop process). */
+  REMOTE_BACKEND: 'remote-backend',
 });
 
 export const CAPABILITIES = capabilitiesEnumwaii.enum;
@@ -22,4 +24,5 @@ export const CAPABILITY_META = capabilitiesEnumwaii.derive<iCapabilityMeta>()(
   [CAPABILITIES.WEB_RENDERING, { isExclusive: true }],
   [CAPABILITIES.DATABASE, { isExclusive: true }],
   [CAPABILITIES.LOCAL_STORAGE_ENGINE, { isExclusive: true }],
+  [CAPABILITIES.REMOTE_BACKEND, { isExclusive: false }],
 );

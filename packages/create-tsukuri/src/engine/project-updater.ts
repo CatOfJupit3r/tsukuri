@@ -3,11 +3,11 @@ import path from 'node:path';
 import { injectable } from 'tsyringe';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 
-import type { FileChangeKind } from '@~/enums/file-change-kinds.enums';
-import { FILE_CHANGE_KINDS } from '@~/enums/file-change-kinds.enums';
-import { FILE_KINDS } from '@~/enums/file-kinds.enums';
-import type { FileKind } from '@~/enums/file-kinds.enums';
-import type { iProjectRecord } from '@~/record/project-record.schema';
+import type { FileChangeKind } from '#~/enums/file-change-kinds.enums';
+import { FILE_CHANGE_KINDS } from '#~/enums/file-change-kinds.enums';
+import { FILE_KINDS } from '#~/enums/file-kinds.enums';
+import type { FileKind } from '#~/enums/file-kinds.enums';
+import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { DEPENDENCY_FIELDS, PackageJsonMerger } from './package-json-merger';
 import type { iPackageJson } from './package-json-merger';

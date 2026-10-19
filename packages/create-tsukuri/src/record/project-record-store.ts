@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { injectable } from 'tsyringe';
 
-import { GeneratorError } from '@~/engine/generator-error';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
+import { GeneratorError } from '#~/engine/generator-error';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 
 import { PROJECT_RECORD_FILE, projectRecordSchema } from './project-record.schema';
 

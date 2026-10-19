@@ -7,7 +7,7 @@ Critical best practices for TanStack Query with oRPC.
 ❌ **Don't**: Import queryClient directly in mutation callbacks
 
 ```typescript
-import { queryClient } from '@~/utils/query-client';
+import { queryClient } from '#~/utils/query-client';
 
 mutationOptions({
   onSuccess: () => {
@@ -35,7 +35,7 @@ mutationOptions({
 Export return types so mutations can type-check cache updates:
 
 ```typescript
-import type { ORPCOutputs } from "@~/utils/orpc";
+import type { ORPCOutputs } from "#~/utils/orpc";
 
 export type UserProfileQueryReturnType = ORPCOutputs["user"]["getUserProfile"];
 
@@ -227,7 +227,7 @@ function ProfilePage() {
 Use the generated types from contracts:
 
 ```typescript
-import type { ORPCInputs, ORPCOutputs } from "@~/utils/orpc";
+import type { ORPCInputs, ORPCOutputs } from "#~/utils/orpc";
 
 // Input types
 type GetUserInput = ORPCInputs["user"]["getUserProfile"];

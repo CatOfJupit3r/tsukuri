@@ -101,7 +101,8 @@ Examples:
 
 ## Environment and Configuration
 
-- Aliases: `@~/` resolves to the `src` folder of the package it is used in; `@startername/common` surfaces shared utilities and types.
+- Imports inside a package use `#~/` (Node subpath imports: `"imports": { "#~/*": "./src/*.js" }` in its package.json), never tsconfig `paths`. Every tool resolves `#~/` against the package that contains the importing file, so shared packages such as `packages/api` can be type-checked, bundled and run from source by any app; a `paths` alias would resolve against whichever app is compiling and break across packages. The `.js` target is mapped to `.ts`/`.tsx` sources by TypeScript, Vite and the Node dev loader.
+- `@startername/common` surfaces shared utilities and types.
 - Workspace packages export a `workspace-source` condition pointing at their TypeScript source; TypeScript, Vite/Vitest and Node dev servers resolve it, so nothing has to be built before `dev`, `test` or `check-types`. Add the condition to every new export (see `configs/workspace-source`).
 - Node.js v26 is required; use nvm or similar to manage Node versions.
 - pnpm ≥12.14.0 is the package manager; use `corepack enable` to activate it.
@@ -136,7 +137,7 @@ Do not duplicate code blocks and prefer to extract shared code into utility func
 
 Our repository is organized to promote clarity, maintainability, and scalability. We use a feature-based structure, ensuring that related files are grouped together.
 
-- Shared error codes live in `packages/common/src/enums/errors.enums.ts`.
+- Error codes are declared by each module and generated into `packages/common/src/generated/error-codes.ts`.
 - Tests should mirror the feature structure inside each app or package.
 
 ```

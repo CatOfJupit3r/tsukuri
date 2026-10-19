@@ -39,7 +39,7 @@ const config = {
     // Workspace library imports
     createWorkspacePattern('startername'),
     // Project-specific path aliases
-    '^@~/(.*)$',
+    '^#~/(.*)$',
     // Relative imports
     '^[./]',
   ],

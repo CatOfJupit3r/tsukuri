@@ -21,7 +21,7 @@ Type-safe data fetching with TanStack Query + oRPC integration.
 
 ## oRPC Integration
 
-The project uses `tanstackRPC` from `@~/utils/tanstack-orpc.ts`, applying `createTanstackQuery Utils` to the client.
+The project uses `tanstackRPC` from `#~/utils/tanstack-orpc.ts`, applying `createTanstackQuery Utils` to the client.
 
 Every contract procedure provides:
 - `.queryOptions()` - For `useQuery()`, generates key + fetcher
@@ -34,8 +34,8 @@ Every contract procedure provides:
 ```typescript
 // features/characters/hooks/use-character.ts
 import { useQuery } from '@tanstack/react-query';
-import type { ORPCOutputs } from '@~/utils/orpc';
-import { tanstackRPC } from '@~/utils/tanstack-orpc';
+import type { ORPCOutputs } from '#~/utils/orpc';
+import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 // 1. Export query options as constant (for loaders, mutations, tests)
 export const CHARACTER_QUERY_OPTIONS = (characterId: string) =>
@@ -74,7 +74,7 @@ export function useCharacter(characterId: string | undefined) {
 ```typescript
 // features/characters/hooks/use-update-character.ts
 import { useMutation } from '@tanstack/react-query';
-import { tanstackRPC } from '@~/utils/tanstack-orpc';
+import { tanstackRPC } from '#~/utils/tanstack-orpc';
 import { CHARACTER_QUERY_KEY, type CharacterQuery } from './use-character';
 
 // 1. Define mutation options as top-level constant
@@ -264,7 +264,7 @@ Prefetch data in route loaders for SSR-like experience:
 
 ```typescript
 // routes/__root.tsx or specific route
-import { CHARACTER_QUERY_OPTIONS } from '@~/features/characters/hooks/use-character';
+import { CHARACTER_QUERY_OPTIONS } from '#~/features/characters/hooks/use-character';
 
 export const Route = createFileRoute('/characters/$characterId')({
   async loader({ context, params }) {
@@ -300,7 +300,7 @@ const isDisabled = isPending || isUpdating;
 
 ❌ **Don't import queryClient:**
 ```typescript
-import { queryClient } from '@~/utils/query-client';
+import { queryClient } from '#~/utils/query-client';
 mutationOptions({
   onSuccess: () => queryClient.invalidateQueries({ ... }), // WRONG
 });

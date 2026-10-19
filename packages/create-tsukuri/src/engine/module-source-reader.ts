@@ -2,10 +2,14 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { inject, injectable } from 'tsyringe';
 
-import { SOURCE_ROOT_TOKEN } from '@~/di/tokens';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import type { iModuleFileEntry } from '@~/manifest/module-manifest.schema';
+import { SOURCE_LAYOUT_TOKEN, SOURCE_ROOT_TOKEN } from '#~/di/tokens';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { SourceLayout } from '#~/enums/source-layouts.enums';
+import { SOURCE_LAYOUTS } from '#~/enums/source-layouts.enums';
+import type { iModuleFileEntry } from '#~/manifest/module-manifest.schema';
 
+import { BundledFileNames } from './bundled-file-names';
+import { GENERATED_SOURCE_DIR } from './connection-points/generated-header';
 import { GeneratorError } from './generator-error';
 
 export interface iSourceFile {
@@ -26,11 +30,15 @@ function toPosix(value: string) {
   return value.split(path.sep).join('/');
 }
 
-function isIgnored(relativePath: string) {
-  const segments = relativePath.split('/');
+/** Connection points are generated per project, so the copies this repository keeps are never module files. */
+const GENERATED_SOURCE_SEGMENT = `/${GENERATED_SOURCE_DIR}/`;
+
+function isIgnored(sourcePath: string) {
+  const segments = sourcePath.split('/');
   return (
     segments.some((segment) => IGNORED_SEGMENTS.has(segment)) ||
-    IGNORED_SUFFIXES.some((suffix) => relativePath.endsWith(suffix))
+    IGNORED_SUFFIXES.some((suffix) => sourcePath.endsWith(suffix)) ||
+    `/${sourcePath}`.includes(GENERATED_SOURCE_SEGMENT)
   );
 }
 
@@ -40,7 +48,11 @@ function isExcluded(relativePath: string, exclude: string[]) {
 
 @injectable()
 export class ModuleSourceReader {
-  constructor(@inject(SOURCE_ROOT_TOKEN) private readonly sourceRoot: string) {}
+  constructor(
+    @inject(SOURCE_ROOT_TOKEN) private readonly sourceRoot: string,
+    @inject(SOURCE_LAYOUT_TOKEN) private readonly sourceLayout: SourceLayout,
+    private readonly bundledFileNames: BundledFileNames,
+  ) {}
 
   /** Lists the files of a manifest file entry, mapped to their target paths. */
   public async listEntry(entry: iModuleFileEntry): Promise<iSourceFile[]> {
@@ -59,8 +71,8 @@ export class ModuleSourceReader {
     const entries = await readdir(absolute, { recursive: true, withFileTypes: true });
     return entries
       .filter((dirent) => dirent.isFile())
-      .map((dirent) => toPosix(path.relative(absolute, path.join(dirent.parentPath, dirent.name))))
-      .filter((relative) => !isIgnored(relative) && !isExcluded(relative, entry.exclude))
+      .map((dirent) => this.toSourcePath(toPosix(path.relative(absolute, path.join(dirent.parentPath, dirent.name)))))
+      .filter((relative) => !isIgnored(`${entry.source}/${relative}`) && !isExcluded(relative, entry.exclude))
       .toSorted()
       .map((relative) => ({
         sourcePath: `${entry.source}/${relative}`,
@@ -79,7 +91,14 @@ export class ModuleSourceReader {
     });
   }
 
-  private resolve(relativePath: string) {
-    return path.join(this.sourceRoot, ...relativePath.split('/'));
+  private resolve(sourcePath: string) {
+    const storedPath =
+      this.sourceLayout === SOURCE_LAYOUTS.BUNDLE ? this.bundledFileNames.escape(sourcePath) : sourcePath;
+    return path.join(this.sourceRoot, ...storedPath.split('/'));
+  }
+
+  /** Repository path of a file as it is stored under the source root. */
+  private toSourcePath(storedPath: string) {
+    return this.sourceLayout === SOURCE_LAYOUTS.BUNDLE ? this.bundledFileNames.unescape(storedPath) : storedPath;
   }
 }

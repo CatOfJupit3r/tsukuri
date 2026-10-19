@@ -2,23 +2,23 @@ import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { createCliContainer } from '@~/cli/cli-container';
-import { ModifyCommand } from '@~/cli/modify-command';
-import { ProjectGenerator } from '@~/engine/project-generator';
-import { CONNECTION_POINT_KINDS } from '@~/enums/connection-point-kinds.enums';
-import { FILE_CHANGE_KINDS } from '@~/enums/file-change-kinds.enums';
-import { GENERATOR_ERROR_CODES } from '@~/enums/generator-error-codes.enums';
-import { MODIFY_ACTIONS } from '@~/enums/modify-actions.enums';
-import type { ModuleId } from '@~/enums/module-ids.enums';
-import { baseModule } from '@~/modules/base.module';
-import type { iProjectRecord } from '@~/record/project-record.schema';
+import { createCliContainer } from '#~/cli/cli-container';
+import { ModifyCommand } from '#~/cli/modify-command';
+import { ProjectGenerator } from '#~/engine/project-generator';
+import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
+import { FILE_CHANGE_KINDS } from '#~/enums/file-change-kinds.enums';
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import { MODIFY_ACTIONS } from '#~/enums/modify-actions.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
+import { baseModule } from '#~/modules/base.module';
+import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';
 import { RecordingRunner, ScriptedPrompter, optionValues } from '../helpers/scripted-prompter';
 import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
 import { readTree } from '../helpers/tree';
 
-vi.mock('@~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
+vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
 
 const ALPHA = testModuleId('alpha');
 const BETA = testModuleId('beta');

@@ -1,9 +1,9 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { ProjectWriter } from '@~/engine/project-writer';
-import { VirtualProject } from '@~/engine/virtual-project';
-import { FILE_KINDS } from '@~/enums/file-kinds.enums';
+import { ProjectWriter } from '#~/engine/project-writer';
+import { VirtualProject } from '#~/engine/virtual-project';
+import { FILE_KINDS } from '#~/enums/file-kinds.enums';
 
 import { useTempDir } from '../helpers/temp-dir';
 
