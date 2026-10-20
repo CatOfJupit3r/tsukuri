@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { createGeneratorContainer } from '#~/di/container';
 import { ModuleSourceReader } from '#~/engine/module-source-reader';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
+import type { ModuleId } from '#~/enums/module-ids.enums';
 import type { iEnvShapeContribution, iEnvVariableContribution } from '#~/manifest/connection-point.schema';
 import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
@@ -24,9 +25,22 @@ const workspaceByPackageName = new Map(
   ),
 );
 
-/** Repository source of every file a module writes, by its path in a generated project. */
-async function listSourcesByTarget() {
-  const entries = manifests.flatMap((manifest) => manifest.files);
+const manifestsById = new Map(manifests.map((manifest) => [manifest.id, manifest]));
+
+/** The module and every module it needs installed beside it: its requirements and its glue targets. */
+function withDependencies(moduleId: ModuleId, seen = new Set<ModuleId>()) {
+  if (seen.has(moduleId)) return seen;
+  seen.add(moduleId);
+  const manifest = manifestsById.get(moduleId);
+  for (const dependency of [...(manifest?.requires ?? []), ...(manifest?.autoInclude?.modules ?? [])]) {
+    withDependencies(dependency, seen);
+  }
+  return seen;
+}
+
+/** Repository source of every file the module and its dependencies write, by its path in a generated project. */
+async function listSourcesByTarget(moduleId: ModuleId) {
+  const entries = [...withDependencies(moduleId)].flatMap((id) => manifestsById.get(id)?.files ?? []);
   const files = (await Promise.all(entries.map((entry) => reader.listEntry(entry)))).flat();
   return new Map(files.map((file) => [file.targetPath, file.sourcePath]));
 }
@@ -44,13 +58,10 @@ function targetPathOf({ workspace, shape }: iEnvShapeContribution) {
 async function loadShapeKeys(contribution: iEnvShapeContribution, sourcesByTarget: Map<string, string>) {
   const targetPath = targetPathOf(contribution);
   const sourcePath = sourcesByTarget.get(targetPath);
-  if (!sourcePath) throw new Error(`No module writes ${targetPath}`);
-  const exports = (await import(pathToFileURL(path.join(REPOSITORY_ROOT, sourcePath)).href)) as Record<
-    string,
-    object | undefined
-  >;
-  const shape = exports[contribution.shape.name];
-  if (!shape) throw new Error(`${sourcePath} does not export ${contribution.shape.name}`);
+  if (!sourcePath) throw new Error(`Neither the module nor its dependencies write ${targetPath}`);
+  const exports: unknown = await import(pathToFileURL(path.join(REPOSITORY_ROOT, sourcePath)).href);
+  const shape: unknown = typeof exports === 'object' && exports ? Reflect.get(exports, contribution.shape.name) : null;
+  if (typeof shape !== 'object' || !shape) throw new Error(`${sourcePath} does not export ${contribution.shape.name}`);
   return Object.keys(shape);
 }
 
@@ -74,16 +85,12 @@ const cases = manifests.flatMap((manifest) => {
 
 /**
  * `.env.example` lists the variables a manifest declares, and the generated env schema validates the keys
- * of the shapes it imports, so each module's two lists must be the same.
+ * of the shapes it imports, so each module's two lists must be the same, and the module (or one it needs)
+ * must ship the file each shape is imported from.
  */
 describe('module env shapes', () => {
-  let sourcesByTarget = new Map<string, string>();
-
-  beforeAll(async () => {
-    sourcesByTarget = await listSourcesByTarget();
-  });
-
   it.each(cases)('$moduleId validates exactly the variables it declares in $workspace', async (testCase) => {
+    const sourcesByTarget = await listSourcesByTarget(testCase.moduleId);
     const keys = (await Promise.all(testCase.shapes.map((shape) => loadShapeKeys(shape, sourcesByTarget)))).flat();
 
     expect(keys.toSorted()).toEqual(testCase.variables.toSorted());

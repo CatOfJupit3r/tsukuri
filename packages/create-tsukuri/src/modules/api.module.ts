@@ -77,7 +77,9 @@ export const apiModule = defineModule({
         lint: 'pnpm run lint:oxlint && pnpm run lint:eslint',
         'lint:oxlint': 'oxlint -c oxlint.config.mjs --fix',
         'lint:eslint': 'eslint . --fix',
-        prettify: 'prettier --write ./src/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore',
+        // Variants only exist in the generator's repository, where their env shapes are formatted with the package.
+        prettify:
+          'prettier --write ./src/ ./test/ "./variants/*/src/**/*.env.ts" --no-error-on-unmatched-pattern --ignore-path ../../.gitignore --ignore-path ../../.prettierignore',
         test: 'vitest run',
         'test:watch': 'vitest',
       },
@@ -227,7 +229,12 @@ export const apiModule = defineModule({
       workspace: API_WORKSPACE,
       shape: { name: 'apiEnvShape', from: '#~/constants/api.env' },
     },
-    { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: API_WORKSPACE, name: 'NODE_ENV', example: 'development' },
+    {
+      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
+      workspace: API_WORKSPACE,
+      name: 'NODE_ENV',
+      example: 'development',
+    },
     {
       kind: CONNECTION_POINT_KINDS.ERROR_CODE,
       workspace: COMMON_WORKSPACE,

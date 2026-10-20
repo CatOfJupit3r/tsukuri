@@ -20,6 +20,12 @@ const WEB_ROOT_FILES = [
   'vitest.config.ts',
 ];
 
+/** Names and `.env.example` values of the variables `web.env.ts` validates. */
+const ENV_VARIABLES = [
+  ['VITE_HOST', 'localhost'],
+  ['VITE_PORT', '3030'],
+] as const;
+
 /** Shell, UI primitives and helpers shared by both renderings; the rest of `src` belongs to other modules. */
 const WEB_SOURCE_FILES = [
   'components/app-devtools.tsx',
@@ -185,8 +191,12 @@ export const webModule = defineModule({
       workspace: WEB_WORKSPACE,
       shape: { name: 'webEnvShape', from: '#~/env/web.env' },
     },
-    { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: WEB_WORKSPACE, name: 'VITE_HOST', example: 'localhost' },
-    { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: WEB_WORKSPACE, name: 'VITE_PORT', example: '3030' },
+    ...ENV_VARIABLES.map(([name, example]) => ({
+      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
+      workspace: WEB_WORKSPACE,
+      name,
+      example,
+    })),
     {
       kind: CONNECTION_POINT_KINDS.CI_STEP,
       name: 'Verify styles (tokens, raw colors, stylesheet allowlist)',

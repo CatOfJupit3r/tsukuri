@@ -115,8 +115,10 @@ export class ConnectionPointGenerator {
         this.hostsOf(modules, CONNECTION_POINT_KINDS.WEB_DEVTOOLS_PLUGIN),
       )),
       ...(await this.envRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.ENV_SHAPE),
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.ENV_VARIABLE),
+        [
+          ...this.ofKind(contributions, CONNECTION_POINT_KINDS.ENV_SHAPE),
+          ...this.ofKind(contributions, CONNECTION_POINT_KINDS.ENV_VARIABLE),
+        ],
         templateContext,
         this.hostsOf(modules, CONNECTION_POINT_KINDS.ENV_SHAPE),
       )),

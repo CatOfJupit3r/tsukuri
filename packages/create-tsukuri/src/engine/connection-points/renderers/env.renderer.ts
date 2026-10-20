@@ -1,11 +1,22 @@
 import { injectable } from 'tsyringe';
 
+import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import type { iEnvShapeContribution, iEnvVariableContribution } from '#~/manifest/connection-point.schema';
 
 import type { iTemplateContext } from '../../template-renderer';
 import { CONNECTION_POINT_TEMPLATES, ENV_EXAMPLE_FILE } from '../connection-point.constants';
-import type { iOwnedContribution } from '../connection-point.types';
+import type { iConnectionPointRenderer, iOwnedContribution } from '../connection-point.types';
 import { GeneratedSourceFiles } from '../generated-source-files';
+
+type iEnvContribution = iEnvShapeContribution | iEnvVariableContribution;
+
+function isShape(item: iOwnedContribution<iEnvContribution>): item is iOwnedContribution<iEnvShapeContribution> {
+  return item.contribution.kind === CONNECTION_POINT_KINDS.ENV_SHAPE;
+}
+
+function isVariable(item: iOwnedContribution<iEnvContribution>): item is iOwnedContribution<iEnvVariableContribution> {
+  return item.contribution.kind === CONNECTION_POINT_KINDS.ENV_VARIABLE;
+}
 
 /**
  * One env shape per workspace that spreads the shapes its modules export, and one root `.env.example`
@@ -13,15 +24,16 @@ import { GeneratedSourceFiles } from '../generated-source-files';
  * are read by whichever app runs them.
  */
 @injectable()
-export class EnvRenderer {
+export class EnvRenderer implements iConnectionPointRenderer<iEnvContribution> {
   constructor(private readonly sourceFiles: GeneratedSourceFiles) {}
 
   public async render(
-    shapes: iOwnedContribution<iEnvShapeContribution>[],
-    variables: iOwnedContribution<iEnvVariableContribution>[],
+    items: iOwnedContribution<iEnvContribution>[],
     context: iTemplateContext,
     hostedWorkspaces: readonly string[],
   ) {
+    const shapes = items.filter(isShape);
+    const variables = items.filter(isVariable);
     const files = await this.sourceFiles.renderPerWorkspace(
       shapes,
       {
