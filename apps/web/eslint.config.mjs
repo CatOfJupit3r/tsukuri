@@ -18,6 +18,13 @@ export const LINT_OPTIONS = {
     '**/*.css',
     'variants/tanstack-start/**',
   ],
+  enumwaiiWireExceptions: [
+    {
+      name: { regex: '^logLevelsEnumwaii$' },
+      reason: 'external-contract',
+      justification: 'Log record levels keep the spelling log collectors and the server logger use.',
+    },
+  ],
 };
 
 export default createWebConfig(LINT_OPTIONS);

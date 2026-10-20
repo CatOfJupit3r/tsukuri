@@ -110,6 +110,16 @@ Examples:
 - All boolean values have to have `is`, `should`, `will`, `has`, or `does` prefixes. For example, `isActive`, `shouldShow`, `hasPermission`, or `doesSupportStreaming`.
 - Use conventional commit messages.
 
+## Lint Conventions
+
+Every convention below is a lint error in every workspace. The rules live in `configs/lint-config/src/convention-rules.mjs` and `configs/lint-config/src/eslint.mjs`; the limits are named constants in `configs/lint-config/src/lint-limits.mjs`.
+
+- `eslint-plugin-enumwaii` (type-checked preset) owns every closed set of string values: values are `UPPER_SNAKE_CASE` identities passed as an array to `em([...])`, with display labels kept in a separate map.
+- Class members declare an accessibility modifier (`public constructor(...)`), `'key' in value` narrowing is forbidden, `export default` is forbidden, `index.ts` files are forbidden, import cycles are forbidden, and conditional JSX renders with a ternary and `null` instead of `&&`.
+- Code stays small: cognitive complexity at most 15, functions at most 80 lines, nesting depth at most 3, JSX depth at most 5, at most 10 source files per folder (group the rest into subfolders by domain or purpose), and the React compiler rules (`set-state-in-effect`, `refs`, `immutability`, `preserve-manual-memoization`, `static-components`).
+- A file a tool loads through its default export (for example a Worker's `fetch` entry) is listed in its workspace's `defaultExportFiles` lint option instead of disabling the rule inline.
+- When a discriminant genuinely cannot exist (for example, an untyped third-party object), the only escape hatch for `in` narrowing is a line disable with a reason: `// eslint-disable-next-line startername/no-in-narrowing -- <reason>`.
+
 ## Environment and Configuration
 
 - Copy the root `.env.example` (generated from the installed modules' variables, `pnpm run sync` keeps it current) to `.env`; every server workspace validates its variables with `zod` in `src/constants/env.ts`, and `apps/web/vite.config.ts` reads the same root `.env` (`envDir`).
