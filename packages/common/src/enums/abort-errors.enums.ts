@@ -12,9 +12,7 @@ export type AbortErrorName = (typeof abortErrorNamesEnumwaii)['~type'];
 export const abortErrorNameSchema = emToZodSchema(abortErrorNamesEnumwaii);
 
 /** Machine-readable reason carried by results of work that stopped because its signal aborted. */
-const abortCodesEnumwaii = em({
-  ABORTED: 'aborted',
-});
+const abortCodesEnumwaii = em(['ABORTED']);
 
 export const ABORT_CODES = abortCodesEnumwaii.enum;
 export type AbortCode = (typeof abortCodesEnumwaii)['~type'];
