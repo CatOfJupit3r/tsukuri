@@ -14,7 +14,7 @@ import { UserAchievementResolver } from './user-achievement.resolver';
 
 @singleton()
 export class DrizzleUserAchievementRepository implements iUserAchievementRepository {
-  constructor(
+  public constructor(
     private readonly databaseService: DatabaseService,
     private readonly userAchievementResolver: UserAchievementResolver,
   ) {}

@@ -8,7 +8,7 @@ import { DatabaseService } from './database.service';
 export class ConnectDatabaseTask implements iStartupTask {
   public readonly name = 'Connect to the database';
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  public constructor(private readonly databaseService: DatabaseService) {}
 
   public async run() {
     await this.databaseService.connect();

@@ -15,7 +15,7 @@ import { AuthUserResolver } from './auth-user.resolver';
 
 @singleton()
 export class DrizzleAuthUserRepository implements iAuthUserRepository {
-  constructor(
+  public constructor(
     private readonly databaseService: DatabaseService,
     private readonly authUserResolver: AuthUserResolver,
   ) {}

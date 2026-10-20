@@ -23,7 +23,7 @@ import {
   usersRelations,
   verifications,
 } from './auth.schema';
-import { devImpersonatePlugin } from './better-auth-plugins/dev-impersonate.plugin';
+import { devImpersonatePlugin } from './dev-impersonate/dev-impersonate.plugin';
 
 const AUTH_BASE_PATH = '/auth';
 
@@ -33,7 +33,7 @@ export class AuthService implements iWithLogger {
 
   private instance: ReturnType<AuthService['createInstance']> | null = null;
 
-  constructor(
+  public constructor(
     loggerFactory: LoggerFactory,
     private readonly databaseService: DatabaseService,
     private readonly eventBus: EventBus,

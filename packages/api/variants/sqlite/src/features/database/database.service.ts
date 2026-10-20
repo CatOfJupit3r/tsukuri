@@ -24,7 +24,7 @@ export class DatabaseService {
 
   private db: SqliteDatabase | null = null;
 
-  constructor(private readonly sqliteConnectionFactory: SqliteConnectionFactory) {}
+  public constructor(private readonly sqliteConnectionFactory: SqliteConnectionFactory) {}
 
   /** Opens `SQLITE_PATH`; runs as a startup task before anything queries. */
   public async connect() {

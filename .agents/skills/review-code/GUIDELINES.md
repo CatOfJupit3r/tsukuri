@@ -541,7 +541,7 @@ class MyService {
 
 ```typescript
 class MyService {
-    constructor(private cacheService: CacheService) {}
+    public constructor(private cacheService: CacheService) {}
 
     async getData(userId: string) {
         return this.cacheService.cached(buildMyFeatureCacheKey.ofUser(userId), CACHE_TTL.USER_DATA, async () => {
@@ -590,7 +590,7 @@ Feature event registration must be done in a separate `${Feature}EventsService` 
 // characters.service.ts
 @injectable()
 export class CharactersService {
-  constructor(private eventBus: EventBus) {
+  public constructor(private eventBus: EventBus) {
     this.eventBus.on(UserCreated, ...); // Event registration in main service
   }
 }
@@ -602,7 +602,7 @@ export class CharactersService {
 // characters-events.service.ts
 @singleton()
 export class CharactersEventsService {
-    constructor(
+    public constructor(
         private eventBus: EventBus,
         loggerFactory: LoggerFactory,
     ) {
@@ -621,7 +621,7 @@ export class CharactersEventsService {
 export class SubscribeCharactersEventsTask implements iStartupTask {
     public readonly name = "Subscribe character event handlers";
 
-    constructor(private readonly charactersEventsService: CharactersEventsService) {}
+    public constructor(private readonly charactersEventsService: CharactersEventsService) {}
 
     public async run() {
         this.charactersEventsService.initialize();

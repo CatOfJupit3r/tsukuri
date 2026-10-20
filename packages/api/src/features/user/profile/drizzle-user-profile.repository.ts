@@ -8,9 +8,9 @@ import { generatePublicCode } from '#~/features/user/public-code';
 import { userProfiles } from '#~/features/user/user-profile.schema';
 import { expectDefined } from '#~/lib/orpc-error-wrapper';
 
+import type { iUpsertUserProfileInput } from '../user.types';
 import type { iUserProfileRepository } from './user-profile.repository';
 import { UserProfileResolver } from './user-profile.resolver';
-import type { iUpsertUserProfileInput } from './user.types';
 
 function getDefaultValues(userId: string) {
   const values: typeof userProfiles.$inferInsert = {
@@ -25,7 +25,7 @@ function getDefaultValues(userId: string) {
 
 @singleton()
 export class DrizzleUserProfileRepository implements iUserProfileRepository {
-  constructor(
+  public constructor(
     private readonly databaseService: DatabaseService,
     private readonly userProfileResolver: UserProfileResolver,
   ) {}

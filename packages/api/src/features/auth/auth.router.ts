@@ -1,6 +1,6 @@
 import { base, publicProcedure } from '#~/lib/orpc';
 
-import { AuthStatisticsService } from './auth-statistics.service';
+import { AuthStatisticsService } from './users/auth-statistics.service';
 
 export const authRouter = base.auth.router({
   metrics: publicProcedure.auth.metrics.handler(async ({ context }) =>

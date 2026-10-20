@@ -8,7 +8,7 @@ import { ValkeyService } from './valkey.service';
 export class ConnectValkeyTask implements iStartupTask {
   public readonly name = 'Connect to Valkey';
 
-  constructor(private readonly valkeyService: ValkeyService) {}
+  public constructor(private readonly valkeyService: ValkeyService) {}
 
   public async run() {
     await this.valkeyService.connect();

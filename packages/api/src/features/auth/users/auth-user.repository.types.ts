@@ -9,10 +9,10 @@ export type iAuthUserRecordResponse = Omit<UserRow, 'username' | 'displayUsernam
   image?: string;
 };
 
-type OptionalAuthAccountRecordFields =
-  'accessToken' | 'refreshToken' | 'idToken' | 'accessTokenExpiresAt' | 'refreshTokenExpiresAt' | 'scope' | 'password';
-
-export type iAuthAccountRecordResponse = Omit<AccountRow, OptionalAuthAccountRecordFields> & {
+export type iAuthAccountRecordResponse = Omit<
+  AccountRow,
+  'accessToken' | 'refreshToken' | 'idToken' | 'accessTokenExpiresAt' | 'refreshTokenExpiresAt' | 'scope' | 'password'
+> & {
   accessToken?: string;
   refreshToken?: string;
   idToken?: string;

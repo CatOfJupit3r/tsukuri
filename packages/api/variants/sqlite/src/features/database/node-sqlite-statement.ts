@@ -2,7 +2,7 @@ import type { SQLInputValue, StatementSync } from 'node:sqlite';
 
 /** A `node:sqlite` statement shaped like the better-sqlite3 statement Drizzle's session expects. */
 export class NodeSqliteStatement {
-  constructor(
+  public constructor(
     private readonly statement: StatementSync,
     private readonly shouldReturnArrays = false,
   ) {}

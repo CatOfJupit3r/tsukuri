@@ -10,7 +10,7 @@ function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
 
 /** A `node:sqlite` database shaped like the better-sqlite3 client Drizzle's session expects. */
 export class NodeSqliteClient {
-  constructor(private readonly database: DatabaseSync) {}
+  public constructor(private readonly database: DatabaseSync) {}
 
   public prepare(sql: string) {
     return new NodeSqliteStatement(this.database.prepare(sql));

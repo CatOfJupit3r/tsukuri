@@ -9,6 +9,33 @@ import { errorCodes, errorMessages } from '@startername/common/generated/error-c
 import { env } from '#~/constants/env';
 import { NODE_ENVIRONMENTS } from '#~/constants/node-environments.enums';
 
+/** OpenAPI description of the endpoint, as Better Auth's own routes declare it. */
+const DEV_IMPERSONATE_OPENAPI = {
+  operationId: 'devImpersonateUser',
+  summary: 'Impersonate a user (dev only)',
+  description: 'Create an impersonation session for development purposes',
+  responses: {
+    200: {
+      description: 'Impersonation session created',
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              session: {
+                $ref: '#/components/schemas/Session',
+              },
+              user: {
+                $ref: '#/components/schemas/User',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
 const getDate = (seconds: number) => new Date(Date.now() + seconds * 1000);
 
 /**
@@ -26,33 +53,7 @@ export const devImpersonatePlugin = () =>
           body: z.object({
             userId: z.string().min(1).describe('The user id to impersonate'),
           }),
-          metadata: {
-            openapi: {
-              operationId: 'devImpersonateUser',
-              summary: 'Impersonate a user (dev only)',
-              description: 'Create an impersonation session for development purposes',
-              responses: {
-                200: {
-                  description: 'Impersonation session created',
-                  content: {
-                    'application/json': {
-                      schema: {
-                        type: 'object',
-                        properties: {
-                          session: {
-                            $ref: '#/components/schemas/Session',
-                          },
-                          user: {
-                            $ref: '#/components/schemas/User',
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+          metadata: { openapi: DEV_IMPERSONATE_OPENAPI },
         },
         async (ctx) => {
           if (env.NODE_ENV === NODE_ENVIRONMENTS.PRODUCTION) {

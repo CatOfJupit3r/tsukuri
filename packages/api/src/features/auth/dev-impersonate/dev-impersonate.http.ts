@@ -6,7 +6,7 @@ import { errorCodes, errorMessages } from '@startername/common/generated/error-c
 import { env } from '#~/constants/env';
 import { NODE_ENVIRONMENTS } from '#~/constants/node-environments.enums';
 
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service';
 
 export const DEV_IMPERSONATE_PATH = '/dev-tools/impersonate';
 

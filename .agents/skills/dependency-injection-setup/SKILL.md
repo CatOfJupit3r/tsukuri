@@ -21,7 +21,7 @@ import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
 export class MyFeatureService implements iWithLogger {
   public readonly logger: LoggerType;
 
-  constructor(loggerFactory: LoggerFactory) {
+  public constructor(loggerFactory: LoggerFactory) {
     this.logger = loggerFactory.create('my-feature-service');
   }
 
@@ -83,7 +83,7 @@ import { UserService } from '#~/features/user/user.service';
 export class NotificationService implements iWithLogger {
   public readonly logger: LoggerType;
 
-  constructor(
+  public constructor(
     loggerFactory: LoggerFactory,
     private readonly userService: UserService,
   ) {
@@ -103,7 +103,7 @@ export class NotificationService implements iWithLogger {
 Always inject `LoggerFactory` and create a contextual logger:
 
 ```typescript
-constructor(loggerFactory: LoggerFactory) {
+public constructor(loggerFactory: LoggerFactory) {
   this.logger = loggerFactory.create('service-name');
 }
 ```
@@ -123,7 +123,7 @@ import { AchievementsService } from './achievements.service';
 export class InitializeAchievementsTask implements iStartupTask {
   public readonly name = 'Subscribe achievements to their events';
 
-  constructor(private readonly achievementsService: AchievementsService) {}
+  public constructor(private readonly achievementsService: AchievementsService) {}
 
   public async run() {
     this.achievementsService.initialize();
@@ -140,8 +140,8 @@ When injecting **interfaces** instead of concrete classes, use tokens. A feature
 ### 1. Define the interface and token
 
 ```typescript
-// packages/api/src/features/user/user-profile.repository.ts
-import type { iUserProfileResponse } from './user.types';
+// packages/api/src/features/user/profile/user-profile.repository.ts
+import type { iUserProfileResponse } from '../user.types';
 
 export interface iUserProfileRepository {
   findByUserId: (userId: string) => Promise<iUserProfileResponse | null>;
@@ -164,7 +164,7 @@ Bindings are not written in a container file. A module declares a `DI_REGISTRATI
       token: { name: 'USER_PROFILE_REPOSITORY_TOKEN', from: '#~/features/user/user.tokens' },
       implementation: {
         name: 'DrizzleUserProfileRepository',
-        from: '#~/features/user/drizzle-user-profile.repository',
+        from: '#~/features/user/profile/drizzle-user-profile.repository',
       },
     },
   ],
@@ -178,12 +178,12 @@ Never edit `src/generated/`. In a generated project the file is rebuilt from `st
 ```typescript
 import { inject, injectable } from 'tsyringe';
 
-import type { iUserProfileRepository } from './user-profile.repository';
+import type { iUserProfileRepository } from './profile/user-profile.repository';
 import { USER_PROFILE_REPOSITORY_TOKEN } from './user.tokens';
 
 @injectable()
 export class UserService {
-  constructor(
+  public constructor(
     @inject(USER_PROFILE_REPOSITORY_TOKEN)
     private readonly userProfileRepository: iUserProfileRepository,
   ) {}

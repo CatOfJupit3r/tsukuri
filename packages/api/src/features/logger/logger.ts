@@ -7,13 +7,11 @@ import type { RequestContextStorage } from '#~/features/request-context/request-
 import { WINSTON_LOGGER_FORMAT } from './logger.helpers';
 
 interface iLoggerConfig {
-  colorize?: boolean;
   requestContext: RequestContextStorage;
-}
-
-interface iChildLoggerConfig {
-  namespace: string;
-  parent: Logger;
+  colorize?: boolean;
+  /** Child loggers share their parent's Winston instance under their own namespace. */
+  namespace?: string;
+  winstonLogger?: winston.Logger;
 }
 
 /**
@@ -63,19 +61,11 @@ export class Logger {
 
   private readonly requestContext: RequestContextStorage;
 
-  constructor(config: iLoggerConfig | iChildLoggerConfig) {
-    if ('parent' in config) {
-      // Child logger - inherit parent's Winston instance
-      this.namespace = config.namespace;
-      this.winstonLogger = config.parent.getWinstonLogger();
-      this.requestContext = config.parent.requestContext;
-    } else {
-      // Root logger - create or get global Winston instance
-      const shouldColorize = config.colorize ?? env.NODE_ENV !== NODE_ENVIRONMENTS.PRODUCTION;
-      this.winstonLogger = getOrCreateGlobalLogger(shouldColorize);
-      this.namespace = 'global';
-      this.requestContext = config.requestContext;
-    }
+  public constructor(config: iLoggerConfig) {
+    this.namespace = config.namespace ?? 'global';
+    this.winstonLogger =
+      config.winstonLogger ?? getOrCreateGlobalLogger(config.colorize ?? env.NODE_ENV !== NODE_ENVIRONMENTS.PRODUCTION);
+    this.requestContext = config.requestContext;
   }
 
   /**
@@ -99,7 +89,6 @@ export class Logger {
 
   /**
    * Get the underlying Winston logger instance.
-   * Used internally for creating child loggers.
    */
   public getWinstonLogger(): winston.Logger {
     return this.winstonLogger;
@@ -131,6 +120,10 @@ export class Logger {
    */
   public child(subNamespace: string): Logger {
     const newNamespace = this.namespace === 'global' ? subNamespace : `${this.namespace}:${subNamespace}`;
-    return new Logger({ namespace: newNamespace, parent: this });
+    return new Logger({
+      namespace: newNamespace,
+      winstonLogger: this.winstonLogger,
+      requestContext: this.requestContext,
+    });
   }
 }

@@ -93,7 +93,7 @@ export const betterAuthModule = defineModule({
       workspace: API_WORKSPACE,
       path: '/dev-tools/impersonate',
       methods: [HTTP_METHODS.GET],
-      handler: { name: 'handleDevImpersonateRequest', from: `${AUTH_FEATURE}/dev-impersonate.http` },
+      handler: { name: 'handleDevImpersonateRequest', from: `${AUTH_FEATURE}/dev-impersonate/dev-impersonate.http` },
     },
     {
       kind: CONNECTION_POINT_KINDS.DATABASE_SCHEMA,
@@ -107,7 +107,10 @@ export const betterAuthModule = defineModule({
       bindings: [
         {
           token: { name: 'AUTH_USER_REPOSITORY_TOKEN', from: `${AUTH_FEATURE}/auth.tokens` },
-          implementation: { name: 'DrizzleAuthUserRepository', from: `${AUTH_FEATURE}/drizzle-auth-user.repository` },
+          implementation: {
+            name: 'DrizzleAuthUserRepository',
+            from: `${AUTH_FEATURE}/users/drizzle-auth-user.repository`,
+          },
         },
       ],
     },

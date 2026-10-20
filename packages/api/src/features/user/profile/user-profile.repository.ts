@@ -1,4 +1,4 @@
-import type { iUserProfileResponse, iUpsertUserProfileInput } from './user.types';
+import type { iUserProfileResponse, iUpsertUserProfileInput } from '../user.types';
 
 export interface iUserProfileRepository {
   findByUserId: (userId: string) => Promise<iUserProfileResponse | null>;

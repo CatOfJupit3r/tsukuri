@@ -11,7 +11,7 @@ import { SqliteConnectionFactory } from './sqlite-connection.factory';
 /** Applies the drizzle-kit migrations that have not run against `SQLITE_PATH` yet. */
 @injectable()
 export class DatabaseMigrator {
-  constructor(private readonly sqliteConnectionFactory: SqliteConnectionFactory) {}
+  public constructor(private readonly sqliteConnectionFactory: SqliteConnectionFactory) {}
 
   public async migrate(packageDirectory: string) {
     const database = await this.sqliteConnectionFactory.open(env.SQLITE_PATH);

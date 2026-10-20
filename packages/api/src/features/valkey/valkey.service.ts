@@ -15,7 +15,7 @@ export class ValkeyService implements iWithLogger {
 
   private client: Redis | Nil = null;
 
-  constructor(loggerFactory: LoggerFactory) {
+  public constructor(loggerFactory: LoggerFactory) {
     this.logger = loggerFactory.create('valkey');
   }
 

@@ -83,14 +83,14 @@ export const exampleDomainModule = defineModule({
           token: { name: 'USER_PROFILE_REPOSITORY_TOKEN', from: `${FEATURES}/user/user.tokens` },
           implementation: {
             name: 'DrizzleUserProfileRepository',
-            from: `${FEATURES}/user/drizzle-user-profile.repository`,
+            from: `${FEATURES}/user/profile/drizzle-user-profile.repository`,
           },
         },
         {
           token: { name: 'USER_ACHIEVEMENT_REPOSITORY_TOKEN', from: `${FEATURES}/achievements/achievements.tokens` },
           implementation: {
             name: 'DrizzleUserAchievementRepository',
-            from: `${FEATURES}/achievements/drizzle-user-achievement.repository`,
+            from: `${FEATURES}/achievements/user-achievements/drizzle-user-achievement.repository`,
           },
         },
       ],

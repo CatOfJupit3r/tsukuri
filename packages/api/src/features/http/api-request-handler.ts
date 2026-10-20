@@ -46,7 +46,7 @@ export class ApiRequestHandler implements iWithLogger {
 
   private readonly rpcHandler: RPCHandler<object>;
 
-  constructor(
+  public constructor(
     loggerFactory: LoggerFactory,
     private readonly requestContext: RequestContextStorage,
   ) {

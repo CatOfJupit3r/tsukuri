@@ -3,13 +3,13 @@
 import type { DependencyContainer, InjectionToken } from 'tsyringe';
 
 import { AUTH_USER_REPOSITORY_TOKEN } from '#~/features/auth/auth.tokens';
-import { DrizzleAuthUserRepository } from '#~/features/auth/drizzle-auth-user.repository';
+import { DrizzleAuthUserRepository } from '#~/features/auth/users/drizzle-auth-user.repository';
 import { KEY_VALUE_STORE_TOKEN } from '#~/features/cache/key-value-store';
 import { ValkeyKeyValueStore } from '#~/features/valkey/valkey-key-value-store';
 import { USER_PROFILE_REPOSITORY_TOKEN } from '#~/features/user/user.tokens';
-import { DrizzleUserProfileRepository } from '#~/features/user/drizzle-user-profile.repository';
+import { DrizzleUserProfileRepository } from '#~/features/user/profile/drizzle-user-profile.repository';
 import { USER_ACHIEVEMENT_REPOSITORY_TOKEN } from '#~/features/achievements/achievements.tokens';
-import { DrizzleUserAchievementRepository } from '#~/features/achievements/drizzle-user-achievement.repository';
+import { DrizzleUserAchievementRepository } from '#~/features/achievements/user-achievements/drizzle-user-achievement.repository';
 
 const GENERATED_BINDINGS: [InjectionToken<unknown>, InjectionToken<unknown>][] = [
   [AUTH_USER_REPOSITORY_TOKEN, DrizzleAuthUserRepository],

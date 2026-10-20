@@ -33,7 +33,7 @@ export class DatabaseService {
 
   private readonly db: PostgresDatabase;
 
-  constructor(
+  public constructor(
     @inject(HYPERDRIVE_TOKEN) private readonly hyperdrive: Hyperdrive,
     private readonly requestContextStorage: RequestContextStorage,
   ) {

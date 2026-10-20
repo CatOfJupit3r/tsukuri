@@ -12,7 +12,7 @@ import { BADGES_META } from './badges.constants';
 export class BadgesService implements iWithLogger {
   public readonly logger: iWithLogger['logger'];
 
-  constructor(
+  public constructor(
     private readonly cacheService: CacheService,
     loggerFactory: LoggerFactory,
   ) {
