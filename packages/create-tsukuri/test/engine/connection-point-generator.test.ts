@@ -112,33 +112,60 @@ describe('ConnectionPointGenerator', () => {
     expect(content).toContain("  await import('#~/db/postgres.service');");
   });
 
-  it('generates an env schema per workspace and one root .env.example', async () => {
+  it('spreads the env shapes of every module into one shape per workspace, and lists their variables in .env.example', async () => {
     const result = await generate(
       createManifest(ALPHA, {
         contributions: [
           {
-            kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
+            kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
             workspace: 'apps/server',
-            name: 'POSTGRES_URL',
-            schema: 'z.string().url()',
-            example: 'postgresql://localhost/app',
+            shape: { name: 'alphaEnvShape', from: '#~/constants/alpha.env' },
           },
           {
             kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-            workspace: 'apps/web',
-            name: 'VITE_SERVER_URL',
-            schema: 'z.string()',
+            workspace: 'apps/server',
+            name: 'POSTGRES_URL',
+            example: 'postgresql://localhost/app',
+          },
+          { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: 'apps/web', name: 'VITE_SERVER_URL' },
+        ],
+      }),
+      createManifest(BETA, {
+        contributions: [
+          {
+            kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+            workspace: 'apps/server',
+            shape: { name: 'betaEnvShape', from: '#~/constants/beta.env' },
           },
         ],
       }),
     );
 
     expect(fileContent(result, 'apps/server/src/generated/env.schema.ts')).toContain(
-      '  POSTGRES_URL: z.string().url(),',
+      [
+        "import { alphaEnvShape } from '#~/constants/alpha.env';",
+        "import { betaEnvShape } from '#~/constants/beta.env';",
+        '',
+        'export const generatedEnvShape = {',
+        '  ...alphaEnvShape,',
+        '  ...betaEnvShape,',
+        '};',
+      ].join('\n'),
     );
     expect(fileContent(result, '.env.example')).toContain(
       '\n# apps/server\nPOSTGRES_URL=postgresql://localhost/app\n\n# apps/web\nVITE_SERVER_URL=\n',
     );
+  });
+
+  it('rejects two modules declaring the same env variable in one workspace', async () => {
+    const variable = { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: 'apps/server', name: 'PORT' } as const;
+
+    await expect(
+      generate(
+        createManifest(ALPHA, { contributions: [variable] }),
+        createManifest(BETA, { contributions: [variable] }),
+      ),
+    ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
   });
 
   it('builds the compose file, CI workflow and root scripts', async () => {

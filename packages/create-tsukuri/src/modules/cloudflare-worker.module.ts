@@ -6,7 +6,7 @@ import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
-import { API_WORKSPACE } from './api.module';
+import { API_WORKSPACE, CORS_ENV_SHAPE } from './api.module';
 
 export const WORKER_WORKSPACE = 'apps/worker';
 const WORKER_PACKAGE_NAME = 'worker';
@@ -103,11 +103,11 @@ export const cloudflareWorkerModule = defineModule({
     { document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/cloudflare-worker/agents.md.hbs') },
   ],
   contributions: [
+    { kind: CONNECTION_POINT_KINDS.ENV_SHAPE, workspace: WORKER_WORKSPACE, shape: CORS_ENV_SHAPE },
     {
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: WORKER_WORKSPACE,
       name: 'CORS_ORIGIN',
-      schema: "z.url().or(z.literal('')).default('')",
       example: 'http://localhost:3030',
     },
     { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: WORKER_PACKAGE_NAME },
@@ -115,6 +115,6 @@ export const cloudflareWorkerModule = defineModule({
   ],
   hosts: [
     { kind: CONNECTION_POINT_KINDS.WORKER_BINDING, workspace: WORKER_WORKSPACE },
-    { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: WORKER_WORKSPACE },
+    { kind: CONNECTION_POINT_KINDS.ENV_SHAPE, workspace: WORKER_WORKSPACE },
   ],
 });

@@ -67,10 +67,14 @@ export const postgresModule = defineModule({
   skills: [SKILL_IDS.DRIZZLE_ORM],
   contributions: [
     {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: API_WORKSPACE,
+      shape: { name: 'postgresEnvShape', from: '#~/features/database/postgres.env' },
+    },
+    {
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: API_WORKSPACE,
       name: 'POSTGRES_URL',
-      schema: "z.string().default('postgresql://postgres:postgres@localhost:5432/startername')",
       example: 'postgresql://postgres:postgres@localhost:5432/startername',
     },
     {

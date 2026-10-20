@@ -10,6 +10,9 @@ export const API_WORKSPACE = 'packages/api';
 const CONTRACT_WORKSPACE = 'packages/server-contract';
 const COMMON_WORKSPACE = 'packages/common';
 
+/** The `CORS_ORIGIN` shape every HTTP backend target spreads into its own env. */
+export const CORS_ENV_SHAPE = { name: 'corsEnvShape', from: '@startername/api/features/http/cors.env' };
+
 /** Workspace-level files every package of this module ships. */
 const WORKSPACE_TOOLING_FILES = [
   '.gitignore',
@@ -220,16 +223,11 @@ export const apiModule = defineModule({
       router: { name: 'healthRouter', from: '#~/features/health/health.router' },
     },
     {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
       workspace: API_WORKSPACE,
-      name: 'NODE_ENV',
-      schema: `nodeEnvironmentSchema.default(NODE_ENVIRONMENTS.DEVELOPMENT)`,
-      imports: [
-        { name: 'nodeEnvironmentSchema', from: '#~/constants/node-environments.enums' },
-        { name: 'NODE_ENVIRONMENTS', from: '#~/constants/node-environments.enums' },
-      ],
-      example: 'development',
+      shape: { name: 'apiEnvShape', from: '#~/constants/api.env' },
     },
+    { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: API_WORKSPACE, name: 'NODE_ENV', example: 'development' },
     {
       kind: CONNECTION_POINT_KINDS.ERROR_CODE,
       workspace: COMMON_WORKSPACE,

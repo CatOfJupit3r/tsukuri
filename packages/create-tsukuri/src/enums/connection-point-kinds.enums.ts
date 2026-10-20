@@ -14,6 +14,7 @@ const connectionPointKindsEnumwaii = em([
   'WEB_ROOT_PRELOAD',
   'WEB_DEVTOOLS_PLUGIN',
   'ENV_VARIABLE',
+  'ENV_SHAPE',
   'WORKER_BINDING',
   'COMPOSE_SERVICE',
   'CI_STEP',

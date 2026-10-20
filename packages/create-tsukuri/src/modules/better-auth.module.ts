@@ -19,6 +19,15 @@ const ERROR_CODES = [
   ['IMPERSONATION_SESSION_CREATION_FAILED', 'Failed to create impersonation session'],
 ] as const;
 
+/** Names and `.env.example` values of the variables `better-auth.env.ts` validates. */
+const ENV_VARIABLES = [
+  ['BETTER_AUTH_SECRET', 'replace-with-a-random-secret-of-32-chars'],
+  ['BETTER_AUTH_URL', 'http://localhost:5050'],
+  ['AUTH_TRUSTED_ORIGINS', 'http://localhost:3030'],
+  ['AUTH_COOKIE_SECURE', 'false'],
+  ['AUTH_COOKIE_SAME_SITE', 'lax'],
+] as const;
+
 export const betterAuthModule = defineModule({
   id: MODULE_IDS.BETTER_AUTH,
   version: '1.0.0',
@@ -103,46 +112,16 @@ export const betterAuthModule = defineModule({
       ],
     },
     {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: API_WORKSPACE,
+      shape: { name: 'betterAuthEnvShape', from: `${AUTH_FEATURE}/better-auth.env` },
+    },
+    ...ENV_VARIABLES.map(([name, example]) => ({
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: API_WORKSPACE,
-      name: 'BETTER_AUTH_SECRET',
-      schema: 'z.string().min(32)',
-      example: 'replace-with-a-random-secret-of-32-chars',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'BETTER_AUTH_URL',
-      schema: 'z.url()',
-      example: 'http://localhost:5050',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'AUTH_TRUSTED_ORIGINS',
-      // Comma-separated origins of the web apps that sign in through this API; empty for same-origin apps.
-      schema:
-        "z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean))",
-      example: 'http://localhost:3030',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'AUTH_COOKIE_SECURE',
-      schema: 'z.stringbool().default(false)',
-      example: 'false',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'AUTH_COOKIE_SAME_SITE',
-      schema: 'authCookieSameSiteSchema.default(AUTH_COOKIE_SAME_SITES.LAX)',
-      imports: [
-        { name: 'authCookieSameSiteSchema', from: `${AUTH_FEATURE}/auth-cookie-same-site.enums` },
-        { name: 'AUTH_COOKIE_SAME_SITES', from: `${AUTH_FEATURE}/auth-cookie-same-site.enums` },
-      ],
-      example: 'lax',
-    },
+      name,
+      example,
+    })),
     ...ERROR_CODES.map(([code, message]) => ({
       kind: CONNECTION_POINT_KINDS.ERROR_CODE,
       workspace: COMMON_WORKSPACE,

@@ -6,8 +6,17 @@ import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
+import { CORS_ENV_SHAPE } from './api.module';
+
 const SERVER_WORKSPACE = 'apps/server';
 const SERVER_PACKAGE_NAME = 'server';
+
+/** Names and `.env.example` values of the variables `node-hono.env.ts` and the API's CORS shape validate. */
+const ENV_VARIABLES = [
+  ['SERVER_PORT', '5050'],
+  ['SERVER_HOST', 'localhost'],
+  ['CORS_ORIGIN', 'http://localhost:3030'],
+] as const;
 
 export const nodeHonoModule = defineModule({
   id: MODULE_IDS.NODE_HONO,
@@ -93,26 +102,17 @@ export const nodeHonoModule = defineModule({
   markdown: [{ document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/node-hono/agents.md.hbs') }],
   contributions: [
     {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: SERVER_WORKSPACE,
+      shape: { name: 'nodeHonoEnvShape', from: '#~/constants/node-hono.env' },
+    },
+    { kind: CONNECTION_POINT_KINDS.ENV_SHAPE, workspace: SERVER_WORKSPACE, shape: CORS_ENV_SHAPE },
+    ...ENV_VARIABLES.map(([name, example]) => ({
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: SERVER_WORKSPACE,
-      name: 'SERVER_PORT',
-      schema: 'z.coerce.number().int().min(1).max(65535).default(5050)',
-      example: '5050',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: SERVER_WORKSPACE,
-      name: 'SERVER_HOST',
-      schema: "z.string().default('localhost')",
-      example: 'localhost',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: SERVER_WORKSPACE,
-      name: 'CORS_ORIGIN',
-      schema: "z.url().or(z.literal('')).default('')",
-      example: 'http://localhost:3030',
-    },
+      name,
+      example,
+    })),
     { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: SERVER_PACKAGE_NAME },
     { kind: CONNECTION_POINT_KINDS.BUILD_TASK, filter: SERVER_PACKAGE_NAME },
   ],

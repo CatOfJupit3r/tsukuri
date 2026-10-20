@@ -7,6 +7,15 @@ import { defineModule } from '#~/manifest/define-module';
 const API_WORKSPACE = 'packages/api';
 const VALKEY_VOLUME = 'valkey-data';
 
+/** Names and `.env.example` values of the variables `valkey.env.ts` validates. */
+const ENV_VARIABLES = [
+  ['VALKEY_HOST', 'localhost'],
+  ['VALKEY_PORT', '6379'],
+  ['VALKEY_USERNAME', ''],
+  ['VALKEY_PASSWORD', ''],
+  ['VALKEY_DB', '0'],
+] as const;
+
 export const valkeyModule = defineModule({
   id: MODULE_IDS.VALKEY,
   version: '1.0.0',
@@ -27,38 +36,16 @@ export const valkeyModule = defineModule({
   ],
   contributions: [
     {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: API_WORKSPACE,
+      shape: { name: 'valkeyEnvShape', from: '#~/features/valkey/valkey.env' },
+    },
+    ...ENV_VARIABLES.map(([name, example]) => ({
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: API_WORKSPACE,
-      name: 'VALKEY_HOST',
-      schema: "z.string().default('localhost')",
-      example: 'localhost',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'VALKEY_PORT',
-      schema: 'z.coerce.number().default(6379)',
-      example: '6379',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'VALKEY_USERNAME',
-      schema: 'z.string().optional()',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'VALKEY_PASSWORD',
-      schema: 'z.string().optional()',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'VALKEY_DB',
-      schema: 'z.coerce.number().int().default(0)',
-      example: '0',
-    },
+      name,
+      example,
+    })),
     {
       kind: CONNECTION_POINT_KINDS.DI_REGISTRATION,
       workspace: API_WORKSPACE,
