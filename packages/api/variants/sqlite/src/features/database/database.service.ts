@@ -5,8 +5,8 @@ import { env } from '#~/constants/env';
 import { generatedDatabaseSchema } from '#~/generated/database-schema';
 import { UnexpectedServerError } from '#~/lib/orpc-error-wrapper';
 
-import { drizzleNodeSqlite } from './node-sqlite.driver';
-import type { NodeSqliteDatabase } from './node-sqlite.driver';
+import { drizzleNodeSqlite } from './node-sqlite/node-sqlite.driver';
+import type { NodeSqliteDatabase } from './node-sqlite/node-sqlite.driver';
 import { SqliteConnectionFactory } from './sqlite-connection.factory';
 
 const testSqliteDbKey = Symbol.for('startername.test.sqlite.db');

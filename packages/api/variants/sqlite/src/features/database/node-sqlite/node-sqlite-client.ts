@@ -1,10 +1,17 @@
+import { em } from 'enumwaii';
 import type { DatabaseSync } from 'node:sqlite';
 
 import { NodeSqliteStatement } from './node-sqlite-statement';
 
 type TransactionBody<T> = (...args: unknown[]) => T;
 
+/** `BEGIN` modes of a SQLite transaction. */
+const transactionModesEnumwaii = em(['DEFERRED', 'IMMEDIATE', 'EXCLUSIVE']);
+const TRANSACTION_MODES = transactionModesEnumwaii.enum;
+type TransactionMode = (typeof transactionModesEnumwaii)['~type'];
+
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  // eslint-disable-next-line startername/no-in-narrowing -- the transaction body may return any value; only a thenable is rejected
   return typeof value === 'object' && value !== null && 'then' in value && typeof value.then === 'function';
 }
 
@@ -18,7 +25,7 @@ export class NodeSqliteClient {
 
   public transaction<T>(body: TransactionBody<T>) {
     const runIn =
-      (mode: 'DEFERRED' | 'IMMEDIATE' | 'EXCLUSIVE') =>
+      (mode: TransactionMode) =>
       (...args: unknown[]) => {
         this.database.exec(`BEGIN ${mode}`);
         try {
@@ -34,10 +41,10 @@ export class NodeSqliteClient {
         }
       };
 
-    return Object.assign(runIn('DEFERRED'), {
-      deferred: runIn('DEFERRED'),
-      immediate: runIn('IMMEDIATE'),
-      exclusive: runIn('EXCLUSIVE'),
+    return Object.assign(runIn(TRANSACTION_MODES.DEFERRED), {
+      deferred: runIn(TRANSACTION_MODES.DEFERRED),
+      immediate: runIn(TRANSACTION_MODES.IMMEDIATE),
+      exclusive: runIn(TRANSACTION_MODES.EXCLUSIVE),
     });
   }
 }

@@ -5,7 +5,7 @@ import { env } from '#~/constants/env';
 import { generatedDatabaseSchema } from '#~/generated/database-schema';
 
 import { MIGRATIONS_FOLDER } from './database.constants';
-import { drizzleNodeSqlite } from './node-sqlite.driver';
+import { drizzleNodeSqlite } from './node-sqlite/node-sqlite.driver';
 import { SqliteConnectionFactory } from './sqlite-connection.factory';
 
 /** Applies the drizzle-kit migrations that have not run against `SQLITE_PATH` yet. */
