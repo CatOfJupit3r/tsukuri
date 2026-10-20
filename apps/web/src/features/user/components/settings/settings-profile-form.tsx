@@ -1,43 +1,19 @@
 import { Link } from '@tanstack/react-router';
-import { useEffect } from 'react';
-import z from 'zod';
 
 import { Button } from '#~/components/ui/button/button';
-import { useAppForm } from '#~/components/ui/form/field';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/layout/card';
 
-import { useUpdateUserProfile } from '../../hooks/use-update-user-profile';
 import type { UserProfileQueryReturnType } from '../../hooks/use-user-profile';
 import { BadgePicker } from '../badge-picker';
 import { AccountInformationCard, ProfilePictureCard } from './account-cards';
+import type { useSettingsProfileForm } from './use-settings-profile-form';
 
 interface iSettingsProfileFormProps {
   profile?: UserProfileQueryReturnType;
+  settingsForm: ReturnType<typeof useSettingsProfileForm>;
 }
 
-export function SettingsProfileForm({ profile }: iSettingsProfileFormProps) {
-  const { updateUserProfile, isPending } = useUpdateUserProfile();
-
-  const form = useAppForm({
-    defaultValues: {
-      bio: profile?.bio ?? '',
-    },
-    onSubmit: async ({ value }) => {
-      updateUserProfile({ bio: value.bio });
-    },
-    validators: {
-      onSubmit: z.object({
-        bio: z.string().max(500, 'Bio must be 500 characters or less'),
-      }),
-    },
-  });
-
-  useEffect(() => {
-    if (profile?.bio) {
-      form.setFieldValue('bio', profile.bio);
-    }
-  }, [profile?.bio, form]);
-
+export function SettingsProfileForm({ profile, settingsForm: { form, isPending } }: iSettingsProfileFormProps) {
   return (
     <form.AppForm>
       <form.Form className="space-y-4 p-0 md:p-0">

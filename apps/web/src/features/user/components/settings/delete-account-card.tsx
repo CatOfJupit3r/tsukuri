@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { LuTriangleAlert } from 'react-icons/lu';
 
 import { Button } from '#~/components/ui/button/button';
@@ -30,9 +29,12 @@ function DeleteAccountConfirmation({ onCancel }: iDeleteAccountConfirmationProps
   );
 }
 
-export function DeleteAccountCard() {
-  const [isDeleteConfirmShown, setIsDeleteConfirmShown] = useState(false);
+interface iDeleteAccountCardProps {
+  isDeleteConfirmShown: boolean;
+  onDeleteConfirmShownChange: (isShown: boolean) => void;
+}
 
+export function DeleteAccountCard({ isDeleteConfirmShown, onDeleteConfirmShownChange }: iDeleteAccountCardProps) {
   return (
     <Card className="border-destructive/30 bg-danger-surface">
       <CardHeader className="pb-3">
@@ -54,9 +56,9 @@ export function DeleteAccountCard() {
         </Alert>
 
         {isDeleteConfirmShown ? (
-          <DeleteAccountConfirmation onCancel={() => setIsDeleteConfirmShown(false)} />
+          <DeleteAccountConfirmation onCancel={() => onDeleteConfirmShownChange(false)} />
         ) : (
-          <Button variant="destructive" onClick={() => setIsDeleteConfirmShown(true)} className="w-full">
+          <Button variant="destructive" onClick={() => onDeleteConfirmShownChange(true)} className="w-full">
             Delete My Account
           </Button>
         )}
