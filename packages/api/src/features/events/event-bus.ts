@@ -30,7 +30,7 @@ export class EventBus {
   }
 
   /** Calls every handler synchronously and returns whether any was registered; async handlers are not awaited. */
-  public emit<T>(token: PayloadToken<T>, payload: T) {
+  public emit<T>(token: PayloadToken<T>, payload: NoInfer<T>) {
     return this.emitter.emit(token.name, payload);
   }
 
@@ -38,7 +38,7 @@ export class EventBus {
    * Calls every handler in parallel and waits for all of them. Best-effort, like `emit`: a failing
    * handler neither stops the others nor rejects.
    */
-  public async emitAsync<T>(token: PayloadToken<T>, payload: T) {
+  public async emitAsync<T>(token: PayloadToken<T>, payload: NoInfer<T>) {
     const rawHandlers = this.emitter.rawListeners(token.name) as (iHandler<T> | iOnceWrapper<T>)[];
     if (rawHandlers.length === 0) return false;
 

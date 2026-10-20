@@ -38,7 +38,10 @@ export function definePayloadTokens<
   TIdentity extends string,
   TKeys extends Readonly<Record<string, string>>,
   const TSpecs extends Record<keyof TKeys, iPayloadSpec>,
->(names: Enumwaii<TRaw, TIdentity, TKeys>, specs: TSpecs) {
+>(
+  names: Enumwaii<TRaw, TIdentity, TKeys>,
+  specs: TSpecs & Readonly<Record<Exclude<keyof TSpecs, keyof TKeys>, never>>,
+) {
   const specsByKey: Readonly<Record<string, iPayloadSpec>> = specs;
   const tokens = Object.fromEntries(
     Object.entries<PayloadTokenName>(names.enum).map(([key, name]) => {

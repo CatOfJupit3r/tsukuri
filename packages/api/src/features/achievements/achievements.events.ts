@@ -5,12 +5,12 @@ import { definePayloadTokens, payloadOf } from '@startername/common/helpers/payl
 
 const achievementEventNamesEnumwaii = em({
   BETA_EVENT: 'achievements.beta-event',
+  /** A user unlocked an achievement. */
   ACHIEVEMENT_UNLOCKED: 'achievements.achievement-unlocked',
 });
 
 /** Events the achievements feature emits on the event bus. */
 export const ACHIEVEMENT_EVENTS = definePayloadTokens(achievementEventNamesEnumwaii, {
   BETA_EVENT: payloadOf<{ userId: string }>(),
-  /** A user unlocked an achievement. */
   ACHIEVEMENT_UNLOCKED: payloadOf<{ userId: string; achievementId: UserAchievementId }>(),
 });

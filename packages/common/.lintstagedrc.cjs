@@ -3,4 +3,4 @@
  * Extends the shared configuration from the root
  */
 
-module.exports = require('../../lint-staged.shared.cjs')('shared');
+module.exports = require('../../lint-staged.shared.cjs')('@startername/common');

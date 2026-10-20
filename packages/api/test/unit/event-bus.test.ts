@@ -35,6 +35,11 @@ describe('EventBus', () => {
   it('checks emitted and handled payloads against the token', () => {
     // @ts-expect-error the payload does not match the token
     expect(eventBus.emit(testEvent, { value: 'one' })).toBe(false);
+    const unchecked: unknown = { value: 1 };
+    // @ts-expect-error an unvalidated payload is not the token's payload
+    expect(eventBus.emit(testEvent, unchecked)).toBe(false);
+    // @ts-expect-error an unvalidated payload is not the token's payload
+    void eventBus.emitAsync(testEvent, unchecked);
     // @ts-expect-error the handler expects another payload
     eventBus.on(testEvent, ({ value }: { value: string }) => value);
   });

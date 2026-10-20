@@ -30,18 +30,11 @@ function receiveOverWire(message: unknown): unknown {
 }
 
 /** A minimal typed sender, as an event bus or channel would declare it. */
-function send<TPayload>(token: PayloadToken<TPayload>, payload: TPayload) {
+function send<TPayload>(token: PayloadToken<TPayload>, payload: NoInfer<TPayload>) {
   return token.message(payload);
 }
 
 describe('definePayloadTokens', () => {
-  it('names every token by its enum member, so the name on the wire is the declared value', () => {
-    expect(CART_EVENTS.ITEM_ADDED.name).toBe(CART_EVENT_NAMES.ITEM_ADDED);
-    expect(cartEventNamesEnumwaii.parse(receiveOverWire(CART_EVENTS.CHECKED_OUT.name))).toBe(
-      CART_EVENT_NAMES.CHECKED_OUT,
-    );
-  });
-
   it('validates boundary payloads only for members declared with a schema', () => {
     expect(SESSION_EVENTS.STARTED).not.toBeInstanceOf(ValidatedPayloadToken);
     expect(SESSION_EVENTS.ENDED.parse(receiveOverWire({ userId: 'u1', durationMs: 30 }))).toEqual({
@@ -55,6 +48,17 @@ describe('definePayloadTokens', () => {
       // @ts-expect-error CHECKED_OUT has no payload
       definePayloadTokens(cartEventNamesEnumwaii, { ITEM_ADDED: payloadOf<{ sku: string }>() }),
     ).toThrow(CART_EVENT_NAMES.CHECKED_OUT);
+  });
+
+  it('rejects payloads for keys the enum does not declare', () => {
+    expectTypeOf(
+      definePayloadTokens(sessionEventNamesEnumwaii, {
+        STARTED: payloadOf<{ userId: string }>(),
+        ENDED: payloadOf<{ userId: string }>(),
+        // @ts-expect-error misspelled member
+        STOPED: payloadOf<{ userId: string }>(),
+      }),
+    ).toBeObject();
   });
 
   it('types each token by its spec and name', () => {
@@ -76,6 +80,9 @@ describe('PayloadToken', () => {
 
     // @ts-expect-error the payload does not match the token
     expectTypeOf(send(SESSION_EVENTS.STARTED, { userId: 1 })).toBeObject();
+    const unchecked: unknown = receiveOverWire({ userId: 'u1' });
+    // @ts-expect-error unvalidated input is not a payload
+    expectTypeOf(send(SESSION_EVENTS.STARTED, unchecked)).toBeObject();
   });
 
   it('takes its name from an enumwaii member, never a raw string', () => {
@@ -101,6 +108,13 @@ describe('PayloadToken', () => {
     expect(SESSION_EVENTS.STARTED.matches(message)).toBe(false);
     if (!SESSION_EVENTS.ENDED.matches(message)) throw new Error('Expected a session end message');
     expectTypeOf(message.payload).toEqualTypeOf<{ userId: string; durationMs: number }>();
+  });
+
+  it('does not vouch for a message that was never parsed', () => {
+    const raw = { name: 'session.ended', payload: receiveOverWire({ userId: 'u1' }) };
+
+    expect(SESSION_EVENTS.ENDED.matches(raw)).toBe(true);
+    if (SESSION_EVENTS.ENDED.matches(raw)) expectTypeOf(raw).toBeNever();
   });
 });
 

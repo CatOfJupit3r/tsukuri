@@ -20,8 +20,10 @@ export class PayloadToken<TPayload = never, TName extends PayloadTokenName = Pay
     return { name: this.name, payload };
   }
 
-  /** Narrows a message of a token set to this token's payload. */
-  public matches(message: iPayloadMessage<unknown>): message is iPayloadMessage<TPayload, TName> {
+  /** Narrows an already validated message union to this token's message; parse raw input first. */
+  public matches<TMessage extends iPayloadMessage<unknown>>(
+    message: TMessage,
+  ): message is Extract<TMessage, { name: TName }> {
     return message.name === this.name;
   }
 }
