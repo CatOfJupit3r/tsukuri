@@ -91,7 +91,7 @@ describe('create command', () => {
     const record = readRecord(targetDir);
     expect(record.projectName).toBe('acme');
     expect(record.modules.map((module) => module.id)).toEqual(['base', ALPHA, DELTA]);
-    expect(record.skills.excluded).toEqual(['review-code']);
+    expect(record.skills.excluded).toEqual(['review-code', 'payload-tokens']);
     expect(existsSync(path.join(targetDir, 'apps/api/src/clean.ts'))).toBe(true);
     expect(existsSync(path.join(targetDir, '.agents/skills'))).toBe(false);
     expect(runner.commands).toEqual([]);

@@ -169,14 +169,14 @@ describe('add / remove', () => {
     const projectDir = await create('project', [ALPHA]);
     const skillFile = path.join(projectDir, '.agents/skills/review-code/SKILL.md');
 
-    await modify(MODIFY_ACTIONS.REMOVE, projectDir, ['skill', 'review-code', '--yes']);
+    await modify(MODIFY_ACTIONS.REMOVE, projectDir, ['skill', 'review-code', 'payload-tokens', '--yes']);
     expect(existsSync(skillFile)).toBe(false);
     expect(existsSync(path.join(projectDir, '.agents'))).toBe(false);
-    expect(readRecord(projectDir).skills.excluded).toEqual(['review-code']);
+    expect(readRecord(projectDir).skills.excluded).toEqual(['review-code', 'payload-tokens']);
 
     await modify(MODIFY_ACTIONS.ADD, projectDir, ['skill', 'review-code', '--yes']);
     expect(existsSync(skillFile)).toBe(true);
-    expect(readRecord(projectDir).skills.excluded).toEqual([]);
+    expect(readRecord(projectDir).skills.excluded).toEqual(['payload-tokens']);
   });
 
   it('explains when the folder is not a generated project', async () => {

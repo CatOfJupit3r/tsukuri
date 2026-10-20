@@ -4,6 +4,7 @@ import { emToZodSchema } from 'enumwaii/zod';
 /** Values are the folder names under `.agents/skills/`. */
 const skillIdsEnumwaii = em({
   REVIEW_CODE: 'review-code',
+  PAYLOAD_TOKENS: 'payload-tokens',
   SERVER_MODULE: 'server-module',
   DEPENDENCY_INJECTION_SETUP: 'dependency-injection-setup',
   SERVER_ERROR_HANDLING: 'server-error-handling',

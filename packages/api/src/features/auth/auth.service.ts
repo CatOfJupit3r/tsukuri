@@ -13,7 +13,7 @@ import { LoggerFactory } from '#~/features/logger/logger.factory';
 import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
 
 import { AuthPasswordHasher } from './auth-password-hasher';
-import { UserAfterRegisteredListener } from './auth.listeners';
+import { AUTH_EVENTS } from './auth.events';
 import {
   accounts,
   accountsRelations,
@@ -88,7 +88,7 @@ export class AuthService implements iWithLogger {
         user: {
           create: {
             after: async (user) => {
-              await this.eventBus.emitAsync(UserAfterRegisteredListener, { userId: user.id });
+              await this.eventBus.emitAsync(AUTH_EVENTS.USER_AFTER_REGISTERED, { userId: user.id });
             },
           },
         },

@@ -1,6 +1,6 @@
 import { inject, singleton } from 'tsyringe';
 
-import { UserAfterRegisteredListener } from '#~/features/auth/auth.listeners';
+import { AUTH_EVENTS } from '#~/features/auth/auth.events';
 import { EventBus } from '#~/features/events/event-bus';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
 import type { iWithLogger } from '#~/features/logger/logger.types';
@@ -22,7 +22,7 @@ export class UserEventsService implements iWithLogger {
   }
 
   public initialize() {
-    this.eventBus.on(UserAfterRegisteredListener, async ({ userId }) => {
+    this.eventBus.on(AUTH_EVENTS.USER_AFTER_REGISTERED, async ({ userId }) => {
       try {
         await this.userProfileRepository.ensureExists(userId);
         this.logger.info('User profile created successfully', { userId });

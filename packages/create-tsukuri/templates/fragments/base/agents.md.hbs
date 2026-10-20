@@ -86,6 +86,7 @@ Examples:
   export interface iUserProfileResponse { ... }
   export type UserProfileResponse = iUserProfileResponse; // redundant alias, delete it
   ```
+- Anything that passes a named payload around (events, channel or worker messages, drag-and-drop kinds, stored preferences) declares a typed payload token with `definePayloadTokens` from `@startername/common/helpers/payload-token-set.helper`, named by an enumwaii member and validated with its zod schema where it crosses a runtime boundary. Requests to the API stay oRPC procedures. See the **payload-tokens** skill.
 - If your variable is reused across server and client, define it in `packages/common/src/constants` and import it from `@startername/common/constants`. Only do this for non-sensitive data.
 - When resolving warnings or errors, prefer addressing the root cause instead of using `// @ts-ignore` or `as unknown as <Type>`. Use these only as a last resort with a comment explaining why.
 - If you encounter eslint warnings, run `pnpm run lint` to fix them in the file.
@@ -175,5 +176,7 @@ skills:
 
 - task: "Reviewing code changes with a bug-finding mindset before handoff"
   load: ".agents/skills/review-code/SKILL.md"
+- task: "Declaring typed payload tokens for events and messages, or choosing between a token and an oRPC procedure"
+  load: ".agents/skills/payload-tokens/SKILL.md"
 
 <!-- intent-skills:end -->

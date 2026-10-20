@@ -5,8 +5,9 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "dist",
-    "composite": true
+    "composite": true,
+    "types": ["node", "vitest/globals"]
   },
   "files": ["./src/globals.d.ts"],
-  "include": ["src/**/*.ts", "src/**/*.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "test/**/*.ts", "*.config.ts"]
 }

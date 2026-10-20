@@ -1,7 +1,7 @@
 import { EventEmitter, on } from 'node:events';
 import { singleton } from 'tsyringe';
 
-import type { Listener } from './listener.class';
+import type { PayloadToken } from '@startername/common/helpers/payload-token.helper';
 
 type iHandler<T> = (payload: T) => unknown;
 
@@ -14,51 +14,51 @@ interface iOnceWrapper<T> {
 export class EventBus {
   private readonly emitter = new EventEmitter();
 
-  public on<T>(listener: Listener<T>, handler: iHandler<T>) {
-    this.emitter.on(listener.name, handler);
+  public on<T>(token: PayloadToken<T>, handler: iHandler<T>) {
+    this.emitter.on(token.name, handler);
     return this;
   }
 
-  public off<T>(listener: Listener<T>, handler: iHandler<T>) {
-    this.emitter.off(listener.name, handler);
+  public off<T>(token: PayloadToken<T>, handler: iHandler<T>) {
+    this.emitter.off(token.name, handler);
     return this;
   }
 
-  public once<T>(listener: Listener<T>, handler: iHandler<T>) {
-    this.emitter.once(listener.name, handler);
+  public once<T>(token: PayloadToken<T>, handler: iHandler<T>) {
+    this.emitter.once(token.name, handler);
     return this;
   }
 
   /** Calls every handler synchronously and returns whether any was registered; async handlers are not awaited. */
-  public emit<T>(listener: Listener<T>, payload: T) {
-    return this.emitter.emit(listener.name, payload);
+  public emit<T>(token: PayloadToken<T>, payload: T) {
+    return this.emitter.emit(token.name, payload);
   }
 
   /**
    * Calls every handler in parallel and waits for all of them. Best-effort, like `emit`: a failing
    * handler neither stops the others nor rejects.
    */
-  public async emitAsync<T>(listener: Listener<T>, payload: T) {
-    const rawHandlers = this.emitter.rawListeners(listener.name) as (iHandler<T> | iOnceWrapper<T>)[];
+  public async emitAsync<T>(token: PayloadToken<T>, payload: T) {
+    const rawHandlers = this.emitter.rawListeners(token.name) as (iHandler<T> | iOnceWrapper<T>)[];
     if (rawHandlers.length === 0) return false;
 
-    const handlers = rawHandlers.map((rawHandler) => this.consumeOnce(listener, rawHandler));
+    const handlers = rawHandlers.map((rawHandler) => this.consumeOnce(token, rawHandler));
     await Promise.allSettled(handlers.map(async (handler) => handler(payload)));
     return true;
   }
 
   /**
-   * Every payload emitted for the listener from this call until the signal aborts, in order. The subscription
+   * Every payload emitted for the token from this call until the signal aborts, in order. The subscription
    * starts now, not at the first read, and ends cleanly when the signal aborts.
    */
-  public stream<T>(listener: Listener<T>, signal?: AbortSignal): AsyncGenerator<T> {
-    return this.unwrapPayloads<T>(on(this.emitter, listener.name, { signal }) as AsyncIterable<[T]>, signal);
+  public stream<T>(token: PayloadToken<T>, signal?: AbortSignal): AsyncGenerator<T> {
+    return this.unwrapPayloads<T>(on(this.emitter, token.name, { signal }) as AsyncIterable<[T]>, signal);
   }
 
   /** A `once` handler is unregistered before it runs, as `emit` does. */
-  private consumeOnce<T>(listener: Listener<T>, rawHandler: iHandler<T> | iOnceWrapper<T>) {
+  private consumeOnce<T>(token: PayloadToken<T>, rawHandler: iHandler<T> | iOnceWrapper<T>) {
     if (!('listener' in rawHandler)) return rawHandler;
-    this.emitter.removeListener(listener.name, rawHandler.listener);
+    this.emitter.removeListener(token.name, rawHandler.listener);
     return rawHandler.listener;
   }
 

@@ -2,7 +2,7 @@ import { inject, singleton } from 'tsyringe';
 
 import type { UserAchievementId } from '@startername/common/constants/achievements';
 
-import { AchievementUnlockedListener } from '#~/features/achievements/achievements.listeners';
+import { ACHIEVEMENT_EVENTS } from '#~/features/achievements/achievements.events';
 import type { iAchievementContext, iAchievementDefinition } from '#~/features/achievements/achievements.types';
 import type { iUserAchievementRepository } from '#~/features/achievements/user-achievement.repository';
 import { CACHE_TTL } from '#~/features/cache/cache.constants';
@@ -25,7 +25,7 @@ export class AchievementsService implements iWithLogger {
   private readonly context: iAchievementContext = {
     unlock: async (userId: string, achievementId: UserAchievementId, data?: Record<string, unknown>) => {
       await this.userAchievementRepository.ensureUnlocked(userId, achievementId, data);
-      await this.eventBus.emitAsync(AchievementUnlockedListener, { userId, achievementId });
+      await this.eventBus.emitAsync(ACHIEVEMENT_EVENTS.ACHIEVEMENT_UNLOCKED, { userId, achievementId });
     },
   };
 
@@ -41,18 +41,18 @@ export class AchievementsService implements iWithLogger {
 
   public initialize() {
     for (const achievement of this.achievements) {
-      for (const listener of achievement.listensTo) {
-        this.eventBus.on(listener, async (payload) => {
+      for (const event of achievement.listensTo) {
+        this.eventBus.on(event, async (payload) => {
           try {
             await achievement.handle(payload, this.context);
           } catch (error) {
-            this.logger.error(`Error handling achievement ${achievement.id} for event ${listener.name}:`, { error });
+            this.logger.error(`Error handling achievement ${achievement.id} for event ${event.name}:`, { error });
           }
         });
       }
     }
 
-    this.eventBus.on(AchievementUnlockedListener, async ({ userId, achievementId }) => {
+    this.eventBus.on(ACHIEVEMENT_EVENTS.ACHIEVEMENT_UNLOCKED, async ({ userId, achievementId }) => {
       await this.cacheService.delete(buildAchievementsCacheKey.ofUser(userId));
       this.logger.debug('Achievement unlocked, invalidated user achievements cache', { userId, achievementId });
     });
