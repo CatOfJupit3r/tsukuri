@@ -98,6 +98,9 @@ export const baseModule = defineModule({
           node: '26.12.0',
         },
       },
+      scripts: {
+        test: 'vitest run',
+      },
       dependencies: {
         '@eslint/compat': '^2.1.0',
         '@eslint/js': '^9.39.2',
@@ -123,6 +126,9 @@ export const baseModule = defineModule({
         'eslint-plugin-sonarjs': '4.2.2',
         globals: '^17.7.0',
         'typescript-eslint': '^8.63.0',
+      },
+      devDependencies: {
+        vitest: 'catalog:',
       },
       peerDependencies: {
         eslint: 'catalog:',
