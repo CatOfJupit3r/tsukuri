@@ -96,6 +96,7 @@ Examples:
   ```
 - Repository response types should be derived from the Drizzle schema (`typeof table.$inferSelect`) with `Omit`/`Pick`/intersections rather than hand-duplicating every column. See the **drizzle-orm** skill.
 - Don't hand-write a field-by-field `toResponse(row)` mapper in a repository. Build it with `createRowResolver` (`#~/lib/row-resolver`) and group a feature's mappers on a `<feature>.resolver.ts` resolver class. Resolvers are `@singleton()` and constructor-injected into repositories like any other dependency (e.g. `DatabaseService`) — never static classes/methods. See the **drizzle-orm** skill.
+- Anything that passes a named payload around (events, channel or worker messages, drag-and-drop kinds, stored preferences) declares a typed payload token with `definePayloadTokens` from `@startername/common/helpers/payload-token-set.helper`, named by an enumwaii member and validated with its zod schema where it crosses a runtime boundary. Requests to the API stay oRPC procedures. See the **payload-tokens** skill.
 - If your variable is reused across server and client, define it in `packages/common/src/constants` and import it from `@startername/common/constants`. Only do this for non-sensitive data.
 - When resolving warnings or errors, prefer addressing the root cause instead of using `// @ts-ignore` or `as unknown as <Type>`. Use these only as a last resort with a comment explaining why.
 - If you encounter eslint warnings, run `pnpm run lint` to fix them in the file.
@@ -213,4 +214,6 @@ skills:
     load: ".agents/skills/tiptap-editor-architecture/SKILL.md"
   - task: "Reviewing code changes with a bug-finding mindset before handoff"
     load: ".agents/skills/review-code/SKILL.md"
+  - task: "Declaring typed payload tokens for events and messages, or choosing between a token and an oRPC procedure"
+    load: ".agents/skills/payload-tokens/SKILL.md"
 <!-- intent-skills:end -->

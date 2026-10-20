@@ -46,6 +46,7 @@ describe('ProjectGenerator', () => {
         'packages/common/package.json',
         'packages/common/src/helpers/std-utils.ts',
         '.agents/skills/review-code/SKILL.md',
+        '.agents/skills/payload-tokens/SKILL.md',
       ]),
     );
     expect(files).not.toContain('packages/common/src/constants/achievements.ts');

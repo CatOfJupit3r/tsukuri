@@ -610,7 +610,7 @@ export class CharactersEventsService {
     }
 
     public initialize() {
-        this.eventBus.on(UserAfterRegisteredListener, async ({ userId }) => {
+        this.eventBus.on(AUTH_EVENTS.USER_AFTER_REGISTERED, async ({ userId }) => {
             // Handle event
         });
     }

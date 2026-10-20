@@ -52,8 +52,9 @@ Inside the package, import with Node subpath imports (`#~/features/...`,
 - `*.task.ts` is a startup task implementing `iStartupTask` from
   `#~/features/startup/startup-task.types`: work done once before the API
   serves requests, such as connecting to a database or subscribing to events.
-- `*.listeners.ts` declares the typed `Listener` instances for events the
-  feature emits; `*.cache-keys.ts` holds the feature's cache key builders.
+- `*.events.ts` declares the payload tokens of the events the feature emits
+  (`definePayloadTokens`, see the `payload-tokens` skill); `*.cache-keys.ts`
+  holds the feature's cache key builders.
 
 The normal dependency direction is:
 
@@ -77,7 +78,7 @@ packages/api/src/features/achievements/
   achievements.tokens.ts
   achievements.constants.ts
   achievements.cache-keys.ts
-  achievements.listeners.ts
+  achievements.events.ts
   achievements.types.ts
   initialize-achievements.task.ts
   user-achievement.schema.ts
@@ -124,12 +125,14 @@ from `enumwaii`; `eslint-plugin-enumwaii` enforces it.
   store module installed nothing is cached, and the valkey module binds the real
   store. TTLs come from `CACHE_TTL` (`cache.constants.ts`); the feature's own keys
   live in `<feature>.cache-keys.ts`. Never build a custom in-memory cache.
-- **Events**: inject `EventBus` (`#~/features/events/event-bus`) and use typed
-  `Listener` instances (`#~/features/events/listener.class`). `emit` calls handlers
-  synchronously; `emitAsync` awaits every handler and never rejects, so a failing
-  handler cannot fail the emitting workflow. Declare listeners with the feature
-  that emits them (`auth.listeners.ts`, `achievements.listeners.ts`) and register
-  handlers from a startup task, not from a service constructor.
+- **Events**: inject `EventBus` (`#~/features/events/event-bus`) and pass it
+  payload tokens (`@startername/common/helpers/payload-token.helper`, see the
+  `payload-tokens` skill). `emit` calls handlers synchronously; `emitAsync` awaits
+  every handler and never rejects, so a failing handler cannot fail the emitting
+  workflow. Declare event tokens with the feature that emits them
+  (`AUTH_EVENTS` in `auth.events.ts`, `ACHIEVEMENT_EVENTS` in
+  `achievements.events.ts`) and register handlers from a startup task, not from a
+  service constructor.
 - **Request context**: in handlers use `context.resolve(Service)` (a container
   created for the request) and, when better-auth is installed, `context.session`.
   Loggers read the request id and user id from `RequestContextStorage`.

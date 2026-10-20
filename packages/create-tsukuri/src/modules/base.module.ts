@@ -248,8 +248,8 @@ export const baseModule = defineModule({
         lint: 'pnpm run lint:oxlint && pnpm run lint:eslint',
         'lint:oxlint': 'oxlint -c oxlint.config.mjs --fix',
         'lint:eslint': 'eslint . --fix',
-        prettify: 'prettier --write ./src/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore',
-        test: "echo 'No tests for common library yet'",
+        prettify: 'prettier --write ./src/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore',
+        test: 'vitest run',
       },
       dependencies: {
         enumwaii: '1.2.0',
@@ -266,6 +266,7 @@ export const baseModule = defineModule({
         prettier: 'catalog:',
         tsdown: 'catalog:',
         typescript: 'catalog:',
+        vitest: 'catalog:',
       },
       peerDependencies: {
         typescript: 'catalog:',
@@ -294,7 +295,7 @@ export const baseModule = defineModule({
     },
     minimumReleaseAgeExclude: ['eslint-plugin-n@18.2.2'],
   },
-  skills: [SKILL_IDS.REVIEW_CODE],
+  skills: [SKILL_IDS.REVIEW_CODE, SKILL_IDS.PAYLOAD_TOKENS],
   markdown: [
     { document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/base/agents.md.hbs') },
     { document: MARKDOWN_DOCUMENTS.README, source: templatePath('fragments/base/readme.md.hbs') },

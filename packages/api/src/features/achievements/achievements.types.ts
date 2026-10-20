@@ -1,6 +1,5 @@
 import type { UserAchievementId } from '@startername/common/constants/achievements';
-
-import type { Listener, ListenerPayload } from '../events/listener.class';
+import type { PayloadToken, TokenPayload } from '@startername/common/helpers/payload-token.helper';
 
 export interface iAchievementContext {
   unlock: <T extends UserAchievementId>(
@@ -10,8 +9,8 @@ export interface iAchievementContext {
   ) => Promise<unknown>;
 }
 
-export interface iAchievementDefinition<TListener extends Listener<unknown> = Listener<unknown>> {
+export interface iAchievementDefinition<TEvent extends PayloadToken<unknown> = PayloadToken<unknown>> {
   id: UserAchievementId;
-  listensTo: TListener[];
-  handle: (payload: ListenerPayload<TListener>, context: iAchievementContext) => Promise<unknown>;
+  listensTo: TEvent[];
+  handle: (payload: TokenPayload<TEvent>, context: iAchievementContext) => Promise<unknown>;
 }

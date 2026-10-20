@@ -39,8 +39,8 @@
     "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
     "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
     "lint:eslint": "eslint . --fix",
-    "prettify": "prettier --write ./src/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
-    "test": "echo 'No tests for common library yet'"
+    "prettify": "prettier --write ./src/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "test": "vitest run"
   },
   "prettier": "@startername/prettier-config",
   "devDependencies": {
@@ -53,7 +53,8 @@
     "oxlint-tsgolint": "catalog:",
     "prettier": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "typescript": "catalog:"
