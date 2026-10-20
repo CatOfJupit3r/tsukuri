@@ -3,12 +3,12 @@ import { createGeneratorContainer } from '#~/di/container';
 
 import { COMMAND_RUNNER_TOKEN } from './command-runner';
 import type { iCommandRunner } from './command-runner';
-import { CreateCommand } from './create-command';
+import { CreateCommand } from './create/create-command';
+import { SelectionPlanner } from './create/selection-planner';
 import { CWD_TOKEN } from './cwd';
 import { ModifyCommand } from './modify-command';
-import { PROMPTER_TOKEN } from './prompter';
-import type { iPrompter } from './prompter';
-import { SelectionPlanner } from './selection-planner';
+import { PROMPTER_TOKEN } from './prompts/prompter';
+import type { iPrompter } from './prompts/prompter';
 
 export interface iCliContainerOptions extends iGeneratorContainerOptions {
   cwd: string;

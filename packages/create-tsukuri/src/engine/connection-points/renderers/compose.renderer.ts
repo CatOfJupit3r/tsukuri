@@ -11,7 +11,7 @@ import { GeneratedSourceFiles } from '../generated-source-files';
 /** The dev docker-compose file with every module's services and volumes. */
 @injectable()
 export class ComposeRenderer implements iConnectionPointRenderer<iComposeServiceContribution> {
-  constructor(private readonly sourceFiles: GeneratedSourceFiles) {}
+  public constructor(private readonly sourceFiles: GeneratedSourceFiles) {}
 
   public async render(items: iOwnedContribution<iComposeServiceContribution>[]) {
     if (items.length === 0) return [];

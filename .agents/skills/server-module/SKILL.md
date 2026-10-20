@@ -145,7 +145,7 @@ from `enumwaii`; `eslint-plugin-enumwaii` enforces it.
 
 Feature files are written by hand; the maps that connect them are not.
 Modules declare what they contribute to the API in their manifest
-(`packages/create-tsukuri/src/modules/*.module.ts`; `example-domain.module.ts` is
+(`packages/create-tsukuri/src/modules/<category>/*.module.ts`; `example-domain.module.ts` is
 the worked example for a feature and `better-auth.module.ts` shows context
 providers and HTTP handlers), and the generator rebuilds these files from
 `starter.json` plus the manifests:

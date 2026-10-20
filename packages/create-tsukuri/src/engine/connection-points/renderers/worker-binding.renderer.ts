@@ -3,7 +3,7 @@ import { injectable } from 'tsyringe';
 
 import type { iWorkerBindingContribution } from '#~/manifest/connection-point.schema';
 
-import type { iTemplateContext } from '../../template-renderer';
+import type { iTemplateContext } from '../../render/template-renderer';
 import { CONNECTION_POINT_TEMPLATES, WRANGLER_CONFIG, WRANGLER_CONFIG_FILE } from '../connection-point.constants';
 import type { iConnectionPointRenderer, iGeneratedFile, iOwnedContribution } from '../connection-point.types';
 import { GENERATED_HEADER } from '../generated-header';
@@ -15,7 +15,7 @@ import { GeneratedSourceFiles } from '../generated-source-files';
  */
 @injectable()
 export class WorkerBindingRenderer implements iConnectionPointRenderer<iWorkerBindingContribution> {
-  constructor(private readonly sourceFiles: GeneratedSourceFiles) {}
+  public constructor(private readonly sourceFiles: GeneratedSourceFiles) {}
 
   public async render(
     items: iOwnedContribution<iWorkerBindingContribution>[],

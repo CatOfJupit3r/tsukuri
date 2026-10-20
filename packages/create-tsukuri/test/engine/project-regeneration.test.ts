@@ -2,9 +2,9 @@ import { createGeneratorContainer } from '#~/di/container';
 import { ProjectGenerator } from '#~/engine/project-generator';
 import type { VirtualProject } from '#~/engine/virtual-project';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
-import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
+import { MARKDOWN_DOCUMENTS } from '#~/enums/files/markdown-documents.enums';
 import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
-import { baseModule } from '#~/modules/base.module';
+import { baseModule } from '#~/modules/base/base.module';
 import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';

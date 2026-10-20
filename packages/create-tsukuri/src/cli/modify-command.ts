@@ -5,10 +5,10 @@ import { inject, injectable } from 'tsyringe';
 import { GeneratorError } from '#~/engine/generator-error';
 import { ProjectUpdater } from '#~/engine/project-updater';
 import type { iUpdatePlan } from '#~/engine/project-updater';
-import { FILE_CHANGE_KINDS, FILE_CHANGE_MARKERS } from '#~/enums/file-change-kinds.enums';
+import type { ModifyAction } from '#~/enums/cli/modify-actions.enums';
+import { MODIFY_ACTIONS } from '#~/enums/cli/modify-actions.enums';
+import { FILE_CHANGE_KINDS, FILE_CHANGE_MARKERS } from '#~/enums/files/file-change-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
-import type { ModifyAction } from '#~/enums/modify-actions.enums';
-import { MODIFY_ACTIONS } from '#~/enums/modify-actions.enums';
 import { moduleIdSchema } from '#~/enums/module-ids.enums';
 import type { ModuleId } from '#~/enums/module-ids.enums';
 import { skillIdSchema } from '#~/enums/skill-ids.enums';
@@ -17,8 +17,8 @@ import { ProjectRecordStore } from '#~/record/project-record-store';
 import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { CWD_TOKEN } from './cwd';
-import { PROMPTER_TOKEN } from './prompter';
-import type { iPrompter } from './prompter';
+import { PROMPTER_TOKEN } from './prompts/prompter';
+import type { iPrompter } from './prompts/prompter';
 
 const SKILL_TARGET = 'skill';
 const PACKAGE_MANIFESTS = new Set(['package.json', 'pnpm-workspace.yaml']);
@@ -57,7 +57,7 @@ export function renderPlan(plan: iUpdatePlan) {
  */
 @injectable()
 export class ModifyCommand {
-  constructor(
+  public constructor(
     private readonly store: ProjectRecordStore,
     private readonly editor: ProjectRecordEditor,
     private readonly updater: ProjectUpdater,

@@ -1,20 +1,20 @@
 import { em } from 'enumwaii';
 import { emToZodSchema } from 'enumwaii/zod';
 
-const capabilitiesEnumwaii = em({
-  BACKEND_TARGET: 'backend-target',
-  WEB_RENDERING: 'web-rendering',
-  DATABASE: 'database',
-  LOCAL_STORAGE_ENGINE: 'local-storage-engine',
+const capabilitiesEnumwaii = em([
+  'BACKEND_TARGET',
+  'WEB_RENDERING',
+  'DATABASE',
+  'LOCAL_STORAGE_ENGINE',
   /** The API runs as its own server that clients reach over HTTP (not inside the web app or desktop process). */
-  REMOTE_BACKEND: 'remote-backend',
+  'REMOTE_BACKEND',
   /** The API runs on Node: TCP databases, node:sqlite and Valkey are available. */
-  NODE_RUNTIME: 'node-runtime',
+  'NODE_RUNTIME',
   /** The API runs in a Cloudflare Worker and reaches storage through bindings. */
-  WORKER_RUNTIME: 'worker-runtime',
+  'WORKER_RUNTIME',
   /** The installed database speaks SQLite, so modules install their SQLite tables. */
-  SQLITE_DIALECT: 'sqlite-dialect',
-});
+  'SQLITE_DIALECT',
+]);
 
 export const CAPABILITIES = capabilitiesEnumwaii.enum;
 export type Capability = (typeof capabilitiesEnumwaii)['~type'];

@@ -259,7 +259,7 @@ z.object({
 
 ### Error Codes Must Be Registered
 
-All error codes must be declared by a module as an `ERROR_CODE` contribution in its manifest (`packages/create-tsukuri/src/modules/*.module.ts`) and used with proper error wrappers. They are generated into `packages/common/src/generated/error-codes.ts`, which is never edited by hand.
+All error codes must be declared by a module as an `ERROR_CODE` contribution in its manifest (`packages/create-tsukuri/src/modules/<category>/*.module.ts`) and used with proper error wrappers. They are generated into `packages/common/src/generated/error-codes.ts`, which is never edited by hand.
 
 **Good:**
 

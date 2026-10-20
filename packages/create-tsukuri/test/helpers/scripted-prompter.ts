@@ -1,5 +1,5 @@
 import type { iCommandRunner } from '#~/cli/command-runner';
-import type { iPrompter, iPromptOption } from '#~/cli/prompter';
+import type { iPrompter, iPromptOption } from '#~/cli/prompts/prompter';
 import { GeneratorError } from '#~/engine/generator-error';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 

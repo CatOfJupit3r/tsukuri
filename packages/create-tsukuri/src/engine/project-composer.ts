@@ -2,20 +2,22 @@ import path from 'node:path';
 import { injectable } from 'tsyringe';
 
 import { skillPath } from '#~/constants/skill-path';
-import { FILE_KINDS } from '#~/enums/file-kinds.enums';
+import { FILE_KINDS } from '#~/enums/files/file-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
+import type { SkillId } from '#~/enums/skill-ids.enums';
 import type { iModuleManifest } from '#~/manifest/module-manifest.schema';
 import type { iProjectRecord } from '#~/record/project-record.schema';
 import { PROJECT_RECORD_FILE } from '#~/record/project-record.schema';
 
 import { ConnectionPointGenerator } from './connection-points/connection-point-generator';
 import { GeneratorError } from './generator-error';
-import { MarkdownRenderer } from './markdown-renderer';
-import { COMPOSED_FILE_NAME, ModuleSourceReader } from './module-source-reader';
-import { PackageJsonMerger } from './package-json-merger';
-import { PnpmWorkspaceMerger } from './pnpm-workspace-merger';
+import type { iPackageJson } from './merge/package-json-merger';
+import { PackageJsonMerger } from './merge/package-json-merger';
+import { PnpmWorkspaceMerger } from './merge/pnpm-workspace-merger';
+import { COMPOSED_FILE_NAME, ModuleSourceReader } from './modules/module-source-reader';
 import { applyProjectName } from './project-identity';
-import type { iTemplateContext } from './template-renderer';
+import { MarkdownRenderer } from './render/markdown-renderer';
+import type { iTemplateContext } from './render/template-renderer';
 import { VirtualProject } from './virtual-project';
 
 export interface iComposeOptions {
@@ -33,13 +35,15 @@ function isBinary(content: Buffer) {
   return content.subarray(0, BINARY_SNIFF_LENGTH).includes(0);
 }
 
+type RenameContent = (content: string) => string;
+
 function workspaceFile(workspace: string, fileName: string) {
   return workspace === ROOT_WORKSPACE ? fileName : path.posix.join(workspace, fileName);
 }
 
 @injectable()
 export class ProjectComposer {
-  constructor(
+  public constructor(
     private readonly reader: ModuleSourceReader,
     private readonly packageJsonMerger: PackageJsonMerger,
     private readonly pnpmWorkspaceMerger: PnpmWorkspaceMerger,
@@ -70,30 +74,8 @@ export class ProjectComposer {
     ]);
 
     for (const manifest of modules) {
-      for (const entry of manifest.files) {
-        for (const file of await this.reader.listEntry(entry)) {
-          if (path.posix.basename(file.targetPath) === COMPOSED_FILE_NAME) {
-            this.assertComposedPackage(file.targetPath, packageJsons, manifest.id);
-            continue;
-          }
-
-          const content = await this.reader.read(file.sourcePath);
-          project.write(file.targetPath, isBinary(content) ? content : rename(content.toString('utf8')), {
-            kind: FILE_KINDS.MODULE_FILE,
-            moduleId: manifest.id,
-          });
-        }
-      }
-
-      for (const skill of new Set(manifest.skills.filter((id) => !excludedSkills.has(id)))) {
-        for (const file of await this.reader.listEntry({ source: skillPath(skill), exclude: [] })) {
-          if (project.has(file.targetPath)) continue;
-          project.write(file.targetPath, rename(await this.reader.readText(file.sourcePath)), {
-            kind: FILE_KINDS.SKILL,
-            moduleId: manifest.id,
-          });
-        }
-      }
+      await this.writeModuleFiles(project, manifest, packageJsons, rename);
+      await this.writeSkills(project, manifest, excludedSkills, rename);
     }
 
     for (const file of connectionPoints.files) {
@@ -108,13 +90,7 @@ export class ProjectComposer {
       );
     }
 
-    const pnpmWorkspace = this.pnpmWorkspaceMerger.merge(
-      modules.map((manifest) => ({ moduleId: manifest.id, contribution: manifest.pnpmWorkspace })),
-    );
-    this.pnpmWorkspaceMerger.assertCatalogCoverage(pnpmWorkspace, packageJsons);
-    project.write(PNPM_WORKSPACE_FILE, rename(this.pnpmWorkspaceMerger.serialize(pnpmWorkspace)), {
-      kind: FILE_KINDS.PNPM_WORKSPACE,
-    });
+    this.writePnpmWorkspace(project, modules, packageJsons, rename);
 
     for (const document of await this.markdownRenderer.render(modules, context, record.markdown)) {
       project.write(document.path, rename(document.content), { kind: FILE_KINDS.MARKDOWN });
@@ -123,6 +99,60 @@ export class ProjectComposer {
     project.write(PROJECT_RECORD_FILE, `${JSON.stringify(record, null, 2)}\n`, { kind: FILE_KINDS.MODULE_RECORD });
 
     return project;
+  }
+
+  private async writeModuleFiles(
+    project: VirtualProject,
+    manifest: iModuleManifest,
+    packageJsons: Map<string, iPackageJson>,
+    rename: RenameContent,
+  ) {
+    for (const entry of manifest.files) {
+      for (const file of await this.reader.listEntry(entry)) {
+        if (path.posix.basename(file.targetPath) === COMPOSED_FILE_NAME) {
+          this.assertComposedPackage(file.targetPath, packageJsons, manifest.id);
+          continue;
+        }
+
+        const content = await this.reader.read(file.sourcePath);
+        project.write(file.targetPath, isBinary(content) ? content : rename(content.toString('utf8')), {
+          kind: FILE_KINDS.MODULE_FILE,
+          moduleId: manifest.id,
+        });
+      }
+    }
+  }
+
+  private async writeSkills(
+    project: VirtualProject,
+    manifest: iModuleManifest,
+    excludedSkills: Set<SkillId>,
+    rename: RenameContent,
+  ) {
+    for (const skill of new Set(manifest.skills.filter((id) => !excludedSkills.has(id)))) {
+      for (const file of await this.reader.listEntry({ source: skillPath(skill), exclude: [] })) {
+        if (project.has(file.targetPath)) continue;
+        project.write(file.targetPath, rename(await this.reader.readText(file.sourcePath)), {
+          kind: FILE_KINDS.SKILL,
+          moduleId: manifest.id,
+        });
+      }
+    }
+  }
+
+  private writePnpmWorkspace(
+    project: VirtualProject,
+    modules: iModuleManifest[],
+    packageJsons: Map<string, iPackageJson>,
+    rename: RenameContent,
+  ) {
+    const pnpmWorkspace = this.pnpmWorkspaceMerger.merge(
+      modules.map((manifest) => ({ moduleId: manifest.id, contribution: manifest.pnpmWorkspace })),
+    );
+    this.pnpmWorkspaceMerger.assertCatalogCoverage(pnpmWorkspace, packageJsons);
+    project.write(PNPM_WORKSPACE_FILE, rename(this.pnpmWorkspaceMerger.serialize(pnpmWorkspace)), {
+      kind: FILE_KINDS.PNPM_WORKSPACE,
+    });
   }
 
   private assertComposedPackage(targetPath: string, packageJsons: Map<string, unknown>, moduleId: string) {

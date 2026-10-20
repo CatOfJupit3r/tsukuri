@@ -1,13 +1,13 @@
 import { GeneratorError } from '#~/engine/generator-error';
+import { modifyActionsEnumwaii } from '#~/enums/cli/modify-actions.enums';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
-import { modifyActionsEnumwaii } from '#~/enums/modify-actions.enums';
 
-import { ClackPrompter } from './clack-prompter';
 import { createCliContainer } from './cli-container';
 import type { iCliContainerOptions } from './cli-container';
 import { NodeCommandRunner } from './command-runner';
-import { CreateCommand } from './create-command';
+import { CreateCommand } from './create/create-command';
 import { ModifyCommand } from './modify-command';
+import { ClackPrompter } from './prompts/clack-prompter';
 
 const CANCELLED_EXIT_CODE = 130;
 const CREATE_SUBCOMMAND = 'create';

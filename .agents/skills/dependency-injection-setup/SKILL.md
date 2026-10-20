@@ -153,7 +153,7 @@ export const USER_PROFILE_REPOSITORY_TOKEN = Symbol.for('UserProfileRepository')
 
 ### 2. Bind the implementation
 
-Bindings are not written in a container file. A module declares a `DI_REGISTRATION` contribution (token plus implementation) in its manifest; `pnpm run sync` (or `create-tsukuri add` in a generated project) writes it to `src/generated/di-registrations.ts`, which `registerServices()` applies with `container.registerSingleton(token, implementation)`. The binding for the example above comes from `packages/create-tsukuri/src/modules/example-domain.module.ts`:
+Bindings are not written in a container file. A module declares a `DI_REGISTRATION` contribution (token plus implementation) in its manifest; `pnpm run sync` (or `create-tsukuri add` in a generated project) writes it to `src/generated/di-registrations.ts`, which `registerServices()` applies with `container.registerSingleton(token, implementation)`. The binding for the example above comes from `packages/create-tsukuri/src/modules/feature/example-domain.module.ts`:
 
 ```typescript
 {

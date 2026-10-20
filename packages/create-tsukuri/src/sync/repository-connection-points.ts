@@ -5,7 +5,7 @@ import { injectable } from 'tsyringe';
 import { ENV_EXAMPLE_FILE } from '#~/engine/connection-points/connection-point.constants';
 import { GENERATED_SOURCE_DIR } from '#~/engine/connection-points/generated-header';
 import { ProjectGenerator } from '#~/engine/project-generator';
-import { FILE_KINDS } from '#~/enums/file-kinds.enums';
+import { FILE_KINDS } from '#~/enums/files/file-kinds.enums';
 import { ProjectRecordStore } from '#~/record/project-record-store';
 
 export interface iRepositoryConnectionPointsPlan {
@@ -25,7 +25,7 @@ const GENERATED_SOURCE_SEGMENT = `/${GENERATED_SOURCE_DIR}/`;
  */
 @injectable()
 export class RepositoryConnectionPoints {
-  constructor(
+  public constructor(
     private readonly recordStore: ProjectRecordStore,
     private readonly generator: ProjectGenerator,
   ) {}

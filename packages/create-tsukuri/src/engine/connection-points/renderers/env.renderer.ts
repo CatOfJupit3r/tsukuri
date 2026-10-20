@@ -3,7 +3,7 @@ import { injectable } from 'tsyringe';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import type { iEnvShapeContribution, iEnvVariableContribution } from '#~/manifest/connection-point.schema';
 
-import type { iTemplateContext } from '../../template-renderer';
+import type { iTemplateContext } from '../../render/template-renderer';
 import { CONNECTION_POINT_TEMPLATES, ENV_EXAMPLE_FILE } from '../connection-point.constants';
 import type { iConnectionPointRenderer, iOwnedContribution } from '../connection-point.types';
 import { GeneratedSourceFiles } from '../generated-source-files';
@@ -25,7 +25,7 @@ function isVariable(item: iOwnedContribution<iEnvContribution>): item is iOwnedC
  */
 @injectable()
 export class EnvRenderer implements iConnectionPointRenderer<iEnvContribution> {
-  constructor(private readonly sourceFiles: GeneratedSourceFiles) {}
+  public constructor(private readonly sourceFiles: GeneratedSourceFiles) {}
 
   public async render(
     items: iOwnedContribution<iEnvContribution>[],

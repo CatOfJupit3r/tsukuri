@@ -2,7 +2,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { createGeneratorContainer } from '#~/di/container';
-import { ModuleSourceReader } from '#~/engine/module-source-reader';
+import { ModuleSourceReader } from '#~/engine/modules/module-source-reader';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import type { ModuleId } from '#~/enums/module-ids.enums';
 import type { iEnvShapeContribution, iEnvVariableContribution } from '#~/manifest/connection-point.schema';

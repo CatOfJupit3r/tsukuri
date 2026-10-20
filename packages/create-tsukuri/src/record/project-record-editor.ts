@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe';
 
 import { GeneratorError } from '#~/engine/generator-error';
-import { ModuleRegistry } from '#~/engine/module-registry';
-import { ModuleResolver } from '#~/engine/module-resolver';
+import { ModuleRegistry } from '#~/engine/modules/module-registry';
+import { ModuleResolver } from '#~/engine/modules/module-resolver';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import type { ModuleId } from '#~/enums/module-ids.enums';
 import type { SkillId } from '#~/enums/skill-ids.enums';
@@ -13,7 +13,7 @@ import type { iProjectRecord } from './project-record.schema';
 /** Computes the next module record for `add` / `remove`; nothing here touches the disk. */
 @injectable()
 export class ProjectRecordEditor {
-  constructor(
+  public constructor(
     private readonly registry: ModuleRegistry,
     private readonly resolver: ModuleResolver,
   ) {}

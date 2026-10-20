@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import { capabilitySchema } from '#~/enums/capabilities.enums';
-import { markdownDocumentSchema } from '#~/enums/markdown-documents.enums';
+import { markdownDocumentSchema } from '#~/enums/files/markdown-documents.enums';
 import { moduleCategorySchema } from '#~/enums/module-categories.enums';
 import { moduleIdSchema } from '#~/enums/module-ids.enums';
 import { skillIdSchema } from '#~/enums/skill-ids.enums';
