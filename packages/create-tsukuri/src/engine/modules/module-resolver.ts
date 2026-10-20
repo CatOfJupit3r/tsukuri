@@ -135,7 +135,7 @@ export class ModuleResolver {
       if (!CAPABILITY_META.get(capability).isExclusive || providerIds.length < 2) continue;
       throw new GeneratorError(
         GENERATOR_ERROR_CODES.CAPABILITY_CONFLICT,
-        `Only one module may provide "${capability}", but ${providerIds.map((id) => `"${id}"`).join(', ')} all do`,
+        `Only one module may provide ${CAPABILITY_META.get(capability).label}, but ${providerIds.map((id) => `"${id}"`).join(', ')} all do`,
       );
     }
 
@@ -155,7 +155,7 @@ export class ModuleResolver {
 
         throw new GeneratorError(
           GENERATOR_ERROR_CODES.MISSING_CAPABILITY,
-          `"${manifest.id}" needs a module that provides "${capability}".${hint}`,
+          `"${manifest.id}" needs a module that provides ${CAPABILITY_META.get(capability).label}.${hint}`,
         );
       }
     }
