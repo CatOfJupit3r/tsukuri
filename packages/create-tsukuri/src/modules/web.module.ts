@@ -20,6 +20,12 @@ const WEB_ROOT_FILES = [
   'vitest.config.ts',
 ];
 
+/** Names and `.env.example` values of the variables `web.env.ts` validates. */
+const ENV_VARIABLES = [
+  ['VITE_HOST', 'localhost'],
+  ['VITE_PORT', '3030'],
+] as const;
+
 /** Shell, UI primitives and helpers shared by both renderings; the rest of `src` belongs to other modules. */
 const WEB_SOURCE_FILES = [
   'components/app-devtools.tsx',
@@ -44,6 +50,7 @@ const WEB_SOURCE_FILES = [
   'components/toastifications/types.ts',
   'components/ui',
   'constants',
+  'env/web.env.ts',
   'hooks/browser',
   'hooks/data',
   'hooks/form-autosave',
@@ -180,19 +187,16 @@ export const webModule = defineModule({
   markdown: [{ document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/web/agents.md.hbs') }],
   contributions: [
     {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: WEB_WORKSPACE,
+      shape: { name: 'webEnvShape', from: '#~/env/web.env' },
+    },
+    ...ENV_VARIABLES.map(([name, example]) => ({
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: WEB_WORKSPACE,
-      name: 'VITE_HOST',
-      schema: "z.string().default('localhost')",
-      example: 'localhost',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: WEB_WORKSPACE,
-      name: 'VITE_PORT',
-      schema: 'z.coerce.number().default(3030)',
-      example: '3030',
-    },
+      name,
+      example,
+    })),
     {
       kind: CONNECTION_POINT_KINDS.CI_STEP,
       name: 'Verify styles (tokens, raw colors, stylesheet allowlist)',
@@ -205,6 +209,6 @@ export const webModule = defineModule({
     { kind: CONNECTION_POINT_KINDS.WEB_COMPONENT, workspace: WEB_WORKSPACE },
     { kind: CONNECTION_POINT_KINDS.WEB_ROOT_PRELOAD, workspace: WEB_WORKSPACE },
     { kind: CONNECTION_POINT_KINDS.WEB_DEVTOOLS_PLUGIN, workspace: WEB_WORKSPACE },
-    { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: WEB_WORKSPACE },
+    { kind: CONNECTION_POINT_KINDS.ENV_SHAPE, workspace: WEB_WORKSPACE },
   ],
 });

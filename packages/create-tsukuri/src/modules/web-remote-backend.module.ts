@@ -14,12 +14,17 @@ export const webRemoteBackendModule = defineModule({
   description: 'Points the web app at an API server running on its own',
   category: MODULE_CATEGORIES.BASE,
   autoInclude: { modules: [MODULE_IDS.WEB], capabilities: [CAPABILITIES.REMOTE_BACKEND] },
+  files: [{ source: `${WEB_WORKSPACE}/src/env/web-remote-backend.env.ts` }],
   contributions: [
+    {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: WEB_WORKSPACE,
+      shape: { name: 'webRemoteBackendEnvShape', from: '#~/env/web-remote-backend.env' },
+    },
     {
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: WEB_WORKSPACE,
       name: 'VITE_SERVER_URL',
-      schema: 'z.url()',
       example: 'http://localhost:5050',
     },
   ],

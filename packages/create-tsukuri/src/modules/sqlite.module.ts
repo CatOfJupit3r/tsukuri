@@ -61,11 +61,14 @@ export const sqliteModule = defineModule({
   skills: [SKILL_IDS.DRIZZLE_ORM],
   contributions: [
     {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: API_WORKSPACE,
+      shape: { name: 'sqliteEnvShape', from: '#~/features/database/sqlite.env' },
+    },
+    {
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: API_WORKSPACE,
       name: 'SQLITE_PATH',
-      // Every app runs from `apps/<name>` or `packages/<name>`, so this is `data/` at the project root.
-      schema: "z.string().default('../../data/startername.db')",
       example: '../../data/startername.db',
     },
     {

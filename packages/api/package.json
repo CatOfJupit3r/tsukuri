@@ -18,7 +18,7 @@
     "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
     "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
     "lint:eslint": "eslint . --fix",
-    "prettify": "prettier --write ./src/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "prettify": "prettier --write ./src/ ./test/ \"./variants/*/src/**/*.env.ts\" --no-error-on-unmatched-pattern --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -132,7 +132,7 @@ NODE_ENV=test
 LOG_LEVEL=error
 ```
 
-Add a variable by declaring it in a module's `ENV_VARIABLE` contribution; `pnpm run sync` updates `.env.example`, and tests pick it up from there.
+Add a variable to the module's `<module>.env.ts` shape and declare it in an `ENV_VARIABLE` contribution with its example value; `pnpm run sync` updates `.env.example`, and tests pick it up from there.
 
 ## Debugging Tests
 

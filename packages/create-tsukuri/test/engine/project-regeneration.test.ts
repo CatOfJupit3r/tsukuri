@@ -28,7 +28,12 @@ const alphaModule: iModuleManifestInput = createManifest(ALPHA, {
       key: 'clean',
       router: { name: 'cleanRouter', from: '#~/clean' },
     },
-    { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: 'apps/api', name: 'API_PORT', schema: 'z.coerce.number()' },
+    {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: 'apps/api',
+      shape: { name: 'apiEnvShape', from: '#~/api.env' },
+    },
+    { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: 'apps/api', name: 'API_PORT' },
     { kind: CONNECTION_POINT_KINDS.COMPOSE_SERVICE, name: 'cache', service: { image: 'valkey/valkey:8' } },
     { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: '@startername/api' },
   ],
@@ -86,6 +91,8 @@ describe('regenerating from the module record', () => {
         'apps/api/src/clean.ts',
       ]),
     );
+
+    expect(after.get('apps/api/src/generated/env.schema.ts')?.content.toString('utf8')).toContain('  ...apiEnvShape,');
 
     // Files that belong to an already installed module are never touched.
     const touchedBaseFiles = changed.filter(([, file]) => file.moduleId === baseModule.id);

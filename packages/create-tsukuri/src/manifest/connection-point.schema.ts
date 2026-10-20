@@ -108,16 +108,23 @@ export const diRegistrationContributionSchema = z.object({
     .default([]),
 });
 
+/** A variable the installed modules read, listed in the generated `.env.example`. */
 export const envVariableContributionSchema = z.object({
   kind: z.literal(CONNECTION_POINT_KINDS.ENV_VARIABLE),
   workspace: workspaceSchema,
   name: z.string().regex(/^[A-Z][A-Z0-9_]*$/, 'Env variable names are CONSTANT_CASE'),
-  /** zod expression for the variable, e.g. `z.string().url()`. */
-  schema: z.string().min(1),
-  /** Named imports the schema expression uses, such as an enumwaii zod schema. */
-  imports: z.array(namedImportSchema).default([]),
   /** Value written to the generated `.env.example`. */
   example: z.string().default(''),
+});
+
+/**
+ * A zod shape object exported by one of the module's own source files (`<module>.env.ts`), spread into the
+ * workspace's generated env shape. Its keys are the module's `ENV_VARIABLE` names for that workspace.
+ */
+export const envShapeContributionSchema = z.object({
+  kind: z.literal(CONNECTION_POINT_KINDS.ENV_SHAPE),
+  workspace: workspaceSchema,
+  shape: namedImportSchema,
 });
 
 /**
@@ -185,6 +192,7 @@ export const connectionPointContributionSchema = z.discriminatedUnion('kind', [
   webRootPreloadContributionSchema,
   webDevtoolsPluginContributionSchema,
   envVariableContributionSchema,
+  envShapeContributionSchema,
   workerBindingContributionSchema,
   composeServiceContributionSchema,
   ciStepContributionSchema,
@@ -210,7 +218,8 @@ export type iConnectionPointContributionInput =
   | iWebComponentContribution
   | iWebRootPreloadContribution
   | iWebDevtoolsPluginContribution
-  | iWithDefaults<iEnvVariableContribution, 'imports' | 'example'>
+  | iWithDefaults<iEnvVariableContribution, 'example'>
+  | iEnvShapeContribution
   | iWorkerBindingContributionInput
   | iWithDefaults<iComposeServiceContribution, 'volumes'>
   | iWithDefaults<iCiStepContribution, 'env'>
@@ -228,6 +237,7 @@ export type iWebRootPreloadContribution = z.output<typeof webRootPreloadContribu
 export type iWebDevtoolsPluginContribution = z.output<typeof webDevtoolsPluginContributionSchema>;
 export type iDiRegistrationContribution = z.output<typeof diRegistrationContributionSchema>;
 export type iEnvVariableContribution = z.output<typeof envVariableContributionSchema>;
+export type iEnvShapeContribution = z.output<typeof envShapeContributionSchema>;
 export type iWorkerBindingContribution = z.output<typeof workerBindingContributionSchema>;
 type iWorkerBindingContributionInput = Omit<iWorkerBindingContribution, 'wrangler'> & {
   wrangler: iWithDefaults<iWorkerBindingContribution['wrangler'], 'entry'>;

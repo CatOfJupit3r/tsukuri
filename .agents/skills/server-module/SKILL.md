@@ -156,7 +156,8 @@ providers and HTTP handlers), and the generator rebuilds these files from
 | `HTTP_HANDLER` | `packages/api/src/generated/http-handlers.ts` |
 | `CONTEXT_PROVIDER` | `packages/api/src/generated/api-context.ts` |
 | `ERROR_CODE` | `packages/common/src/generated/error-codes.ts` |
-| `ENV_VARIABLE` | `packages/api/src/generated/env.schema.ts` and the root `.env.example` |
+| `ENV_SHAPE` | `packages/api/src/generated/env.schema.ts` (spreads the module's `<module>.env.ts` zod shape) |
+| `ENV_VARIABLE` | the root `.env.example` (one entry per key of that shape) |
 
 Never edit anything under `src/generated/`. In this repository, change the
 module manifest and run `pnpm run sync`. In a generated project, a new feature

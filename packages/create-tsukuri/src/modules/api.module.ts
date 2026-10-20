@@ -10,6 +10,9 @@ export const API_WORKSPACE = 'packages/api';
 const CONTRACT_WORKSPACE = 'packages/server-contract';
 const COMMON_WORKSPACE = 'packages/common';
 
+/** The `CORS_ORIGIN` shape every HTTP backend target spreads into its own env. */
+export const CORS_ENV_SHAPE = { name: 'corsEnvShape', from: '@startername/api/features/http/cors.env' };
+
 /** Workspace-level files every package of this module ships. */
 const WORKSPACE_TOOLING_FILES = [
   '.gitignore',
@@ -74,7 +77,9 @@ export const apiModule = defineModule({
         lint: 'pnpm run lint:oxlint && pnpm run lint:eslint',
         'lint:oxlint': 'oxlint -c oxlint.config.mjs --fix',
         'lint:eslint': 'eslint . --fix',
-        prettify: 'prettier --write ./src/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore',
+        // Variants only exist in the generator's repository, where their env shapes are formatted with the package.
+        prettify:
+          'prettier --write ./src/ ./test/ "./variants/*/src/**/*.env.ts" --no-error-on-unmatched-pattern --ignore-path ../../.gitignore --ignore-path ../../.prettierignore',
         test: 'vitest run',
         'test:watch': 'vitest',
       },
@@ -220,14 +225,14 @@ export const apiModule = defineModule({
       router: { name: 'healthRouter', from: '#~/features/health/health.router' },
     },
     {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: API_WORKSPACE,
+      shape: { name: 'apiEnvShape', from: '#~/constants/api.env' },
+    },
+    {
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: API_WORKSPACE,
       name: 'NODE_ENV',
-      schema: `nodeEnvironmentSchema.default(NODE_ENVIRONMENTS.DEVELOPMENT)`,
-      imports: [
-        { name: 'nodeEnvironmentSchema', from: '#~/constants/node-environments.enums' },
-        { name: 'NODE_ENVIRONMENTS', from: '#~/constants/node-environments.enums' },
-      ],
       example: 'development',
     },
     {

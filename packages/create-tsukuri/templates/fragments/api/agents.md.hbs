@@ -5,4 +5,4 @@
 - Files under `src/generated/` are connection points rebuilt from `starter.json` whenever modules are added or removed: the contract and router maps, DI bindings, startup tasks, HTTP handlers, API context providers, the database schema, error codes and env schemas. Never edit them; change the module instead.
 - A feature lives in `packages/api/src/features/<feature>/` with its router (`<feature>.router.ts`), service, repository and tokens. Startup work implements `iStartupTask`; request-scoped data is read through `context.resolve`.
 - Error codes are declared per module and generated into `@startername/common/generated/error-codes`.
-- Every app loads the root `.env`; `.env.example` lists the variables of the installed modules, and tests read it as their environment.
+- Every app loads the root `.env`; `.env.example` lists the variables of the installed modules, each validated by the zod shape in its module's `<module>.env.ts`, and tests read it as their environment.
