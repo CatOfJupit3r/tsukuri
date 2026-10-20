@@ -1,6 +1,5 @@
-import { LuAward, LuCheck, LuLock } from 'react-icons/lu';
+import { LuAward } from 'react-icons/lu';
 
-import { Button } from '#~/components/ui/button/button';
 import { Alert, AlertDescription, AlertTitle } from '#~/components/ui/feedback/alert';
 import { Skeleton } from '#~/components/ui/feedback/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/layout/card';
@@ -9,6 +8,7 @@ import { useBadges } from '#~/features/badges/hooks/use-badges';
 
 import { useUpdateUserBadge } from '../hooks/use-update-user-badge';
 import { useUserProfile } from '../hooks/use-user-profile';
+import { BadgeOption } from './badge-option';
 
 function BadgePickerSkeleton() {
   return (
@@ -76,38 +76,16 @@ export function BadgePicker() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {badges?.map((badge) => {
-            const isUnlocked =
-              !badge.requiresAchievement ||
-              (badge.requiresAchievement && unlockedAchievementIds.has(badge.requiresAchievement));
-            const isSelected = selectedBadge === badge.id;
-
-            return (
-              <Button
-                key={badge.id}
-                variant={isSelected ? 'default' : 'outline'}
-                className={`relative h-auto justify-start gap-3 p-4 ${
-                  !isUnlocked ? 'cursor-not-allowed opacity-50' : ''
-                }`}
-                disabled={!isUnlocked || isPending}
-                onClick={() => {
-                  if (isUnlocked) {
-                    updateUserBadge({ badgeId: badge.id });
-                  }
-                }}
-              >
-                <div className="text-2xl">{badge.icon ?? '🎖️'}</div>
-                <div className="flex-1 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{badge.label}</span>
-                    {!isUnlocked && <LuLock className="size-3" />}
-                    {isSelected ? <LuCheck className="size-4" /> : null}
-                  </div>
-                  <p className="text-xs text-wrap opacity-80">{badge.description}</p>
-                </div>
-              </Button>
-            );
-          })}
+          {badges?.map((badge) => (
+            <BadgeOption
+              key={badge.id}
+              badge={badge}
+              isUnlocked={!badge.requiresAchievement || unlockedAchievementIds.has(badge.requiresAchievement)}
+              isSelected={selectedBadge === badge.id}
+              isDisabled={isPending}
+              onSelect={() => updateUserBadge({ badgeId: badge.id })}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>

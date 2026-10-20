@@ -27,6 +27,18 @@ const FEATURES = [
   },
 ];
 
+function FeatureCard({ feature }: { feature: (typeof FEATURES)[number] }) {
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="mb-4 text-primary">{feature.icon}</div>
+        <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>
+        <p className="text-sm text-muted-foreground">{feature.description}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
 function HomeComponent() {
   return (
     <div className="min-h-[calc(100vh-4rem)] overflow-y-auto bg-background">
@@ -66,13 +78,7 @@ function HomeComponent() {
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((feature) => (
-              <Card key={feature.title}>
-                <CardContent className="pt-6">
-                  <div className="mb-4 text-primary">{feature.icon}</div>
-                  <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
+              <FeatureCard key={feature.title} feature={feature} />
             ))}
           </div>
         </div>

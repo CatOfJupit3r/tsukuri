@@ -3,7 +3,7 @@ import type { KeyboardEvent } from 'react';
 
 import { KEYBOARD_KEYS } from '@startername/common/enums/keyboard-keys.enums';
 
-import { mergeTagValues, parseTagInput } from '#~/components/ui/form/form-fields/tag-array.utils';
+import { mergeTagValues, parseTagInput } from '#~/components/ui/form/form-fields/tag-array/tag-array.utils';
 
 interface iUseTagArrayInputProps {
   maxItems?: number;

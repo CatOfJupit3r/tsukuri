@@ -5,8 +5,8 @@ import { LuCheck, LuChevronRight, LuCircle } from 'react-icons/lu';
 import {
   DROPDOWN_MENU_ITEM_VARIANT_DATA_VALUES,
   DROPDOWN_MENU_ITEM_VARIANTS,
-} from '#~/components/ui/overlay/dropdown-menu.constants';
-import type { DropdownMenuItemVariant } from '#~/components/ui/overlay/dropdown-menu.constants';
+} from '#~/components/ui/overlay/dropdown-menu/dropdown-menu.constants';
+import type { DropdownMenuItemVariant } from '#~/components/ui/overlay/dropdown-menu/dropdown-menu.constants';
 import { usePortalContainer } from '#~/components/ui/overlay/portal-container.context';
 import { cn } from '#~/lib/utils';
 

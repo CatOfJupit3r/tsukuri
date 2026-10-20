@@ -1,14 +1,14 @@
 import { useId } from 'react';
 import type { ComponentProps, KeyboardEvent } from 'react';
 
-import { STEPPER_STEP_PARTS, STEPPER_STEP_STATE_DATA_VALUES } from '#~/components/ui/layout/stepper.constants';
+import { STEPPER_STEP_PARTS, STEPPER_STEP_STATE_DATA_VALUES } from '#~/components/ui/layout/stepper/stepper.constants';
 import {
   StepperContext,
   StepperItemContext,
   useRequiredStepperContext,
   useRequiredStepperItemContext,
-} from '#~/components/ui/layout/stepper.context';
-import { getKeyboardStepIndex, getStepId, getStepState } from '#~/components/ui/layout/stepper.utils';
+} from '#~/components/ui/layout/stepper/stepper.context';
+import { getKeyboardStepIndex, getStepId, getStepState } from '#~/components/ui/layout/stepper/stepper.utils';
 import { cn } from '#~/lib/utils';
 
 interface iStepperProps<TValue extends string> extends Omit<ComponentProps<'div'>, 'onChange'> {

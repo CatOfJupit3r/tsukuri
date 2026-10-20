@@ -15,7 +15,7 @@ const createAuthInstance = () =>
 class AuthService {
   private authInstance;
 
-  constructor() {
+  public constructor() {
     this.authInstance = createAuthInstance();
   }
 
@@ -30,4 +30,4 @@ class AuthService {
 
 export type InternalAuthSession = AuthService['authInstance']['$Infer']['Session'];
 
-export default new AuthService();
+export const authClientService = new AuthService();

@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { LuSettings, LuUser } from 'react-icons/lu';
 
-import { DropdownMenuItem } from '#~/components/ui/overlay/dropdown-menu';
+import { DropdownMenuItem } from '#~/components/ui/overlay/dropdown-menu/dropdown-menu';
 
 export function ProfileMenuItem() {
   return (

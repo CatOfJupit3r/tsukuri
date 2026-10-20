@@ -1,44 +1,35 @@
-import { LuCircleAlert, LuAward } from 'react-icons/lu';
+import { LuCircleAlert } from 'react-icons/lu';
 
 import { Alert, AlertDescription, AlertTitle } from '#~/components/ui/feedback/alert';
-import { Badge } from '#~/components/ui/feedback/badge';
-import { Skeleton } from '#~/components/ui/feedback/skeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/layout/card';
+import { Card, CardContent, CardDescription, CardHeader } from '#~/components/ui/layout/card';
 import { useMyAchievements } from '#~/features/achievements/hooks/use-my-achievements';
 
 import { useBadges } from '../hooks/use-badges';
+import { BadgeCard } from './badge-card';
+import { BadgesSkeleton } from './badges-skeleton';
+import { BadgesTitle } from './badges-title';
 
-function BadgesSkeleton() {
+interface iBadgesErrorProps {
+  hasBadgesFailed: boolean;
+  hasAchievementsFailed: boolean;
+}
+
+function BadgesError({ hasBadgesFailed, hasAchievementsFailed }: iBadgesErrorProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <LuAward className="size-5" />
-          Badges
-        </CardTitle>
-        <Skeleton className="h-4 w-32" />
+        <BadgesTitle />
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            'badge-skeleton-1',
-            'badge-skeleton-2',
-            'badge-skeleton-3',
-            'badge-skeleton-4',
-            'badge-skeleton-5',
-            'badge-skeleton-6',
-          ].map((key) => (
-            <div key={key} className="rounded-lg border p-4">
-              <div className="flex items-start gap-3">
-                <Skeleton className="size-8 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-5 w-24" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <Alert variant="destructive">
+          <LuCircleAlert className="size-4" />
+          <AlertTitle>Error loading badges</AlertTitle>
+          <AlertDescription>
+            {hasBadgesFailed ? 'Failed to load badge list. ' : ''}
+            {hasAchievementsFailed ? 'Failed to load your achievements. ' : ''}
+            Please try again later.
+          </AlertDescription>
+        </Alert>
       </CardContent>
     </Card>
   );
@@ -53,27 +44,7 @@ export function BadgesPanel() {
   }
 
   if (errorBadges || errorAchievements) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LuAward className="size-5" />
-            Badges
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="destructive">
-            <LuCircleAlert className="size-4" />
-            <AlertTitle>Error loading badges</AlertTitle>
-            <AlertDescription>
-              {errorBadges ? 'Failed to load badge list. ' : ''}
-              {errorAchievements ? 'Failed to load your achievements. ' : ''}
-              Please try again later.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
+    return <BadgesError hasBadgesFailed={Boolean(errorBadges)} hasAchievementsFailed={Boolean(errorAchievements)} />;
   }
 
   const unlockedAchievementIds = new Set(myAchievements?.map((a) => a.id) ?? []);
@@ -81,48 +52,18 @@ export function BadgesPanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <LuAward className="size-5" />
-          Badges
-        </CardTitle>
+        <BadgesTitle />
         <CardDescription>Badges you can unlock through achievements</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 md:grid-cols-3">
-          {allBadges?.map((badge) => {
-            const isUnlocked =
-              !badge.requiresAchievement ||
-              (badge.requiresAchievement && unlockedAchievementIds.has(badge.requiresAchievement));
-
-            return (
-              <div
-                key={badge.id}
-                className={`rounded-lg border p-4 transition-colors ${
-                  isUnlocked ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30 opacity-60'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">{badge.icon ?? '🎖️'}</div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{badge.label}</h3>
-                      {isUnlocked ? (
-                        <Badge variant="secondary">Unlocked</Badge>
-                      ) : (
-                        <Badge variant="outline">Locked</Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{badge.description}</p>
-                    {!isUnlocked && badge.requiresAchievement ? (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Requires: {badge.requiresAchievement.replace(/_/g, ' ')} achievement
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {allBadges?.map((badge) => (
+            <BadgeCard
+              key={badge.id}
+              badge={badge}
+              isUnlocked={!badge.requiresAchievement || unlockedAchievementIds.has(badge.requiresAchievement)}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>

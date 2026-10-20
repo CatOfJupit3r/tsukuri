@@ -5,9 +5,9 @@ import { Button } from '#~/components/ui/button/button';
 import { Input } from '#~/components/ui/controls/input';
 import { FieldDescription, FieldError, FieldLabel } from '#~/components/ui/form/field-primitives';
 import { useFieldContext } from '#~/components/ui/form/form-contexts';
-import { TagArrayChips } from '#~/components/ui/form/form-fields/tag-array-chips';
+import { TagArrayChips } from '#~/components/ui/form/form-fields/tag-array/tag-array-chips';
+import { useTagArrayInput } from '#~/components/ui/form/form-fields/tag-array/use-tag-array-input';
 import { useFieldPresentation } from '#~/components/ui/form/form-fields/use-field-presentation';
-import { useTagArrayInput } from '#~/components/ui/form/form-fields/use-tag-array-input';
 
 interface iTagArrayFieldProps {
   label: string;

@@ -11,8 +11,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '#~/components/ui/overlay/dropdown-menu';
-import AuthService from '#~/features/auth/auth-client.service';
+} from '#~/components/ui/overlay/dropdown-menu/dropdown-menu';
+import { authClientService } from '#~/features/auth/auth-client.service';
 import { useMe } from '#~/features/auth/hooks/use-me';
 import { webSlots } from '#~/lib/web-slots';
 
@@ -34,7 +34,7 @@ export function UserMenu() {
 
   const handleSignOut = async () => {
     try {
-      await AuthService.getInstance().signOut({
+      await authClientService.getInstance().signOut({
         fetchOptions: { throw: true },
       });
     } catch (error) {

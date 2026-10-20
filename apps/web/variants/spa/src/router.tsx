@@ -2,7 +2,7 @@ import { createRouter as createTanStackRouter } from '@tanstack/react-router';
 
 import { ErrorBoundary } from '#~/components/error-boundary/error-boundary';
 import { NotFound } from '#~/components/not-found';
-import PseudoPage from '#~/components/pseudo-page';
+import { PseudoPage } from '#~/components/pseudo-page';
 import { createQueryClient } from '#~/lib/query-client';
 import { routeTree } from '#~/routeTree.gen';
 

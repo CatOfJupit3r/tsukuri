@@ -3,14 +3,6 @@ import type { BadgeId } from '@startername/common/constants/badges';
 import { Avatar, AvatarFallback, AvatarImage } from '#~/components/ui/display/avatar';
 import { useBadges } from '#~/features/badges/hooks/use-badges';
 
-interface iAvatarWithBadgeProps {
-  imageUrl?: string | null;
-  fallback: string;
-  selectedBadge?: BadgeId | null;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}
-
 const sizeClasses = {
   sm: 'h-8 w-8',
   md: 'h-12 w-12',
@@ -22,6 +14,14 @@ const badgeOverlaySizeClasses = {
   md: 'h-5 w-5 text-sm',
   lg: 'h-6 w-6 text-base',
 };
+
+interface iAvatarWithBadgeProps {
+  imageUrl?: string | null;
+  fallback: string;
+  selectedBadge?: BadgeId | null;
+  size?: keyof typeof sizeClasses;
+  className?: string;
+}
 
 export function AvatarWithBadge({
   imageUrl,

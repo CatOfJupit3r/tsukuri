@@ -1,7 +1,7 @@
 import { KEYBOARD_KEYS } from '@startername/common/enums/keyboard-keys.enums';
 
-import { STEPPER_STEP_PART_ID_SEGMENTS, STEPPER_STEP_STATES } from '#~/components/ui/layout/stepper.constants';
-import type { StepperStepPart, StepperStepState } from '#~/components/ui/layout/stepper.constants';
+import { STEPPER_STEP_PART_ID_SEGMENTS, STEPPER_STEP_STATES } from '#~/components/ui/layout/stepper/stepper.constants';
+import type { StepperStepPart, StepperStepState } from '#~/components/ui/layout/stepper/stepper.constants';
 
 export function getKeyboardStepIndex(key: string, currentIndex: number, stepCount: number) {
   switch (key) {

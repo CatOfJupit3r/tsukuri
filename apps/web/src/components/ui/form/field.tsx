@@ -16,13 +16,13 @@ import { Form } from '#~/components/ui/form/form';
 import { fieldContext, formContext } from '#~/components/ui/form/form-contexts';
 import { FormErrorSummary } from '#~/components/ui/form/form-error-summary';
 import { CheckboxField } from '#~/components/ui/form/form-fields/checkbox-field';
-import { InfiniteMultiSelectField } from '#~/components/ui/form/form-fields/infinite-multi-select-field';
-import { InfiniteSingleSelectField } from '#~/components/ui/form/form-fields/infinite-single-select-field';
 import { NumberField } from '#~/components/ui/form/form-fields/number-field';
 import { RangerField } from '#~/components/ui/form/form-fields/ranger-field';
-import { SelectField } from '#~/components/ui/form/form-fields/select-field';
+import { InfiniteMultiSelectField } from '#~/components/ui/form/form-fields/select/infinite-multi-select-field';
+import { InfiniteSingleSelectField } from '#~/components/ui/form/form-fields/select/infinite-single-select-field';
+import { SelectField } from '#~/components/ui/form/form-fields/select/select-field';
 import { SubmitButton } from '#~/components/ui/form/form-fields/submit-button';
-import { TagArrayField } from '#~/components/ui/form/form-fields/tag-array-field';
+import { TagArrayField } from '#~/components/ui/form/form-fields/tag-array/tag-array-field';
 import { TextField } from '#~/components/ui/form/form-fields/text-field';
 import { TextareaField } from '#~/components/ui/form/form-fields/textarea-field';
 
