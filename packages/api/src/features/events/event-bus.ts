@@ -57,7 +57,7 @@ export class EventBus {
 
   /** A `once` handler is unregistered before it runs, as `emit` does. */
   private consumeOnce<T>(token: PayloadToken<T>, rawHandler: iHandler<T> | iOnceWrapper<T>) {
-    // eslint-disable-next-line startername/no-in-narrowing, enumwaii/no-union-property-in -- EventEmitter wraps `once` handlers in an untyped function that carries the original as `listener`
+    // eslint-disable-next-line tsukuri/no-in-narrowing, enumwaii/no-union-property-in -- EventEmitter wraps `once` handlers in an untyped function that carries the original as `listener`
     if (!('listener' in rawHandler)) return rawHandler;
     this.emitter.removeListener(token.name, rawHandler.listener);
     return rawHandler.listener;

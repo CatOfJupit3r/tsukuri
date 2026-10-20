@@ -89,7 +89,7 @@ packages/api/src/features/achievements/
     user-achievement.types.ts
 ```
 
-A folder holds at most 10 source files (`startername/max-files-per-folder`), so group files by subdomain once a
+A folder holds at most 10 source files (`tsukuri/max-files-per-folder`), so group files by subdomain once a
 feature grows past that.
 
 When a feature contains distinct subdomains, create nested modules rather than

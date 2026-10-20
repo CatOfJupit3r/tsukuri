@@ -13,12 +13,18 @@ import {
   MAX_JSX_DEPTH,
   MAX_LINES_PER_FUNCTION,
 } from './lint-limits.mjs';
-import { maxFilesPerFolderRule } from './rules/max-files-per-folder.mjs';
+import { CONVENTION_SOURCE_EXTENSIONS, maxFilesPerFolderRule } from './rules/max-files-per-folder.mjs';
 import { noInNarrowingRule } from './rules/no-in-narrowing.mjs';
 
-const CONVENTION_RULES_SOURCE_FILES = ['**/*.{ts,tsx}'];
+const CONVENTION_RULES_SOURCE_FILES = [`**/*.{${CONVENTION_SOURCE_EXTENSIONS.join(',')}}`];
 
-const STARTER_PLUGIN = {
+/**
+ * Namespace of the local rules. Not the project name: generated projects rename that token, and a hyphenated or
+ * clashing project name would break the config.
+ */
+const PLUGIN_NAMESPACE = 'tsukuri';
+
+const LOCAL_PLUGIN = {
   rules: {
     'max-files-per-folder': maxFilesPerFolderRule,
     'no-in-narrowing': noInNarrowingRule,
@@ -27,9 +33,9 @@ const STARTER_PLUGIN = {
 
 const CONVENTION_RULES = {
   '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'explicit' }],
-  'startername/no-in-narrowing': 'error',
+  [`${PLUGIN_NAMESPACE}/no-in-narrowing`]: 'error',
   'import-x/no-default-export': 'error',
-  'startername/max-files-per-folder': ['error', { max: MAX_FILES_PER_FOLDER }],
+  [`${PLUGIN_NAMESPACE}/max-files-per-folder`]: ['error', { max: MAX_FILES_PER_FOLDER }],
   'sonarjs/cognitive-complexity': ['error', MAX_COGNITIVE_COMPLEXITY],
   'max-lines-per-function': ['error', { max: MAX_LINES_PER_FUNCTION, skipBlankLines: true, skipComments: true }],
   'max-depth': ['error', MAX_DEPTH],
@@ -54,9 +60,9 @@ const REACT_CONVENTION_RULES = {
  */
 export const createConventionRulesConfig = ({ doesRenderReact, defaultExportFiles = [] }) => [
   {
-    name: 'startername/convention-rules',
+    name: `${PLUGIN_NAMESPACE}/convention-rules`,
     files: CONVENTION_RULES_SOURCE_FILES,
-    plugins: { sonarjs: sonarjsPlugin, startername: STARTER_PLUGIN },
+    plugins: { sonarjs: sonarjsPlugin, [PLUGIN_NAMESPACE]: LOCAL_PLUGIN },
     rules: {
       ...CONVENTION_RULES,
       ...(doesRenderReact ? REACT_CONVENTION_RULES : {}),
@@ -65,7 +71,7 @@ export const createConventionRulesConfig = ({ doesRenderReact, defaultExportFile
   ...(defaultExportFiles.length > 0
     ? [
         {
-          name: 'startername/default-export-entry-points',
+          name: `${PLUGIN_NAMESPACE}/default-export-entry-points`,
           files: defaultExportFiles,
           rules: { 'import-x/no-default-export': 'off' },
         },

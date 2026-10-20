@@ -8,8 +8,11 @@ import path from 'node:path';
 
 import { MAX_FILES_PER_FOLDER } from '../lint-limits.mjs';
 
-const SOURCE_FILE_PATTERN = /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/u;
-const DECLARATION_FILE_PATTERN = /\.d\.[cm]?ts$/u;
+/** Extensions of the files the convention rules lint, and the only ones this rule counts. */
+export const CONVENTION_SOURCE_EXTENSIONS = ['ts', 'tsx'];
+
+const SOURCE_FILE_PATTERN = new RegExp(`\\.(${CONVENTION_SOURCE_EXTENSIONS.join('|')})$`, 'u');
+const DECLARATION_FILE_PATTERN = /\.d\.ts$/u;
 
 const listSourceFiles = (folder) =>
   readdirSync(folder, { withFileTypes: true })

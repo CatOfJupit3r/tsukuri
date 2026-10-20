@@ -9,7 +9,7 @@ import { maxFilesPerFolderRule } from '../../src/rules/max-files-per-folder.mjs'
 const MAX_FILES = 3;
 const LINT_CONFIG = [
   {
-    files: ['**/*.{ts,tsx,mjs}'],
+    files: ['**/*.{ts,tsx}'],
     plugins: { local: { rules: { 'max-files-per-folder': maxFilesPerFolderRule } } },
     rules: { 'local/max-files-per-folder': ['error', { max: MAX_FILES }] },
   },
@@ -34,7 +34,7 @@ describe('max-files-per-folder', () => {
   });
 
   it('reports an overfull folder once, on its first source file by name', async () => {
-    const folder = await createFolder(['d.ts', 'b.tsx', 'a.ts', 'c.mjs']);
+    const folder = await createFolder(['d.ts', 'b.tsx', 'a.ts', 'c.ts', 'a.mjs']);
 
     expect(lint(folder, 'a.ts')).toEqual([
       expect.objectContaining({ ruleId: 'local/max-files-per-folder', message: expect.stringContaining('4 source') }),
@@ -43,8 +43,8 @@ describe('max-files-per-folder', () => {
     expect(lint(folder, 'd.ts')).toEqual([]);
   });
 
-  it('does not count declaration files or non-source files', async () => {
-    const folder = await createFolder(['a.ts', 'b.ts', 'c.ts', 'globals.d.ts', 'styles.css', 'README.md']);
+  it('counts only the files the convention rules lint', async () => {
+    const folder = await createFolder(['a.ts', 'b.ts', 'c.ts', 'globals.d.ts', 'config.mjs', 'styles.css']);
 
     expect(lint(folder, 'a.ts')).toEqual([]);
   });

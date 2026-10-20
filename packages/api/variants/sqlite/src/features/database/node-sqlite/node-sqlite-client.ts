@@ -11,7 +11,7 @@ const TRANSACTION_MODES = transactionModesEnumwaii.enum;
 type TransactionMode = (typeof transactionModesEnumwaii)['~type'];
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
-  // eslint-disable-next-line startername/no-in-narrowing -- the transaction body may return any value; only a thenable is rejected
+  // eslint-disable-next-line tsukuri/no-in-narrowing -- the transaction body may return any value; only a thenable is rejected
   return typeof value === 'object' && value !== null && 'then' in value && typeof value.then === 'function';
 }
 

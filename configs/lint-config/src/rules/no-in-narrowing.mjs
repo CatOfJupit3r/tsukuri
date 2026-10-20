@@ -3,7 +3,7 @@
  * discriminant instead. When no discriminant can exist (for example, an
  * untyped third-party object), disable the rule for that line and state why:
  *
- *   // eslint-disable-next-line startername/no-in-narrowing -- <reason>
+ *   // eslint-disable-next-line tsukuri/no-in-narrowing -- <reason>
  */
 export const noInNarrowingRule = {
   meta: {
@@ -13,7 +13,7 @@ export const noInNarrowingRule = {
     },
     messages: {
       inNarrowing:
-        "Avoid `'key' in value` narrowing. Add an Enumwaii discriminant and narrow with switch or equality. If no discriminant can exist, use `// eslint-disable-next-line startername/no-in-narrowing -- <reason>`.",
+        "Avoid `'key' in value` narrowing. Add an Enumwaii discriminant and narrow with switch or equality. If no discriminant can exist, use `// eslint-disable-next-line tsukuri/no-in-narrowing -- <reason>`.",
     },
     schema: [],
   },
