@@ -5,7 +5,7 @@ import type { ModuleId } from '#~/enums/module-ids.enums';
 import type { SkillId } from '#~/enums/skill-ids.enums';
 import type { iProjectRecord } from '#~/record/project-record.schema';
 
-import { ModuleResolver } from './module-resolver';
+import { ModuleResolver } from './modules/module-resolver';
 import { ProjectComposer } from './project-composer';
 import { assertProjectName } from './project-identity';
 import { ProjectTargetGuard } from './project-target-guard';
@@ -20,7 +20,7 @@ export interface iCreateProjectOptions {
 
 @injectable()
 export class ProjectGenerator {
-  constructor(
+  public constructor(
     private readonly resolver: ModuleResolver,
     private readonly composer: ProjectComposer,
     private readonly writer: ProjectWriter,

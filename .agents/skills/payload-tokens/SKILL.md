@@ -34,7 +34,9 @@ declaration. Never send tokens over HTTP instead of writing a procedure.
 Token names are members of an enumwaii declaration, never raw strings. Declare one set per feature with
 `definePayloadTokens`; it requires a payload for every member and rejects keys the enum does not declare.
 Put doc comments on the `em({...})` keys: the token set keeps them, so they show on hover. Prefix the values with the feature so names
-from different features cannot collide on a shared channel.
+from different features cannot collide on a shared channel. Name the declaration `<feature>EventNamesEnumwaii` or
+`<feature>MessageNamesEnumwaii`: the lint config treats those names as wire values, so their prefixed
+lowercase spelling passes the enumwaii casing rules.
 
 ```typescript
 import { em } from "enumwaii";

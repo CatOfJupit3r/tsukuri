@@ -424,22 +424,21 @@ import { useQueryState } from 'nuqs';
 import { em } from 'enumwaii';
 import { createEnumwaiiQueryParser } from 'enumwaii/nuqs';
 
-// These values are intentionally lowercase because they are URL-facing.
-const settingsTabsEnumwaii = em(['profile', 'settings', 'billing']);
+const settingsTabsEnumwaii = em(['PROFILE', 'SETTINGS', 'BILLING']);
 const SETTINGS_TABS = settingsTabsEnumwaii.enum;
 
 export function SettingsTabs() {
   const [tab, setTab] = useQueryState(
     'tab',
-    createEnumwaiiQueryParser(settingsTabsEnumwaii).withDefault(SETTINGS_TABS.profile)
+    createEnumwaiiQueryParser(settingsTabsEnumwaii).withDefault(SETTINGS_TABS.PROFILE)
   );
 
   return (
     <Tabs value={tab} onValueChange={(v) => void setTab(v)}>
       <TabsList>
-        <TabsTrigger value={SETTINGS_TABS.profile}>Profile</TabsTrigger>
-        <TabsTrigger value={SETTINGS_TABS.settings}>Settings</TabsTrigger>
-        <TabsTrigger value={SETTINGS_TABS.billing}>Billing</TabsTrigger>
+        <TabsTrigger value={SETTINGS_TABS.PROFILE}>Profile</TabsTrigger>
+        <TabsTrigger value={SETTINGS_TABS.SETTINGS}>Settings</TabsTrigger>
+        <TabsTrigger value={SETTINGS_TABS.BILLING}>Billing</TabsTrigger>
       </TabsList>
     </Tabs>
   );
@@ -523,28 +522,30 @@ export function CreateDialog({ open, onOpenChange }: iCreateDialogProps) {
 Use state machine pattern for wizard flows:
 
 ```typescript
-type WizardStep = 'select-type' | 'configure' | 'confirm';
+const wizardStepsEnumwaii = em(['SELECT_TYPE', 'CONFIGURE', 'CONFIRM']);
+const WIZARD_STEPS = wizardStepsEnumwaii.enum;
+type WizardStep = (typeof wizardStepsEnumwaii)['~type'];
 
 export function SetupWizard() {
-  const [step, setStep] = useState<WizardStep>('select-type');
+  const [step, setStep] = useState<WizardStep>(WIZARD_STEPS.SELECT_TYPE);
   const [config, setConfig] = useState<Config | null>(null);
 
   const handleBack = () => {
-    if (step === 'confirm') setStep('configure');
-    if (step === 'configure') setStep('select-type');
+    if (step === WIZARD_STEPS.CONFIRM) setStep(WIZARD_STEPS.CONFIGURE);
+    if (step === WIZARD_STEPS.CONFIGURE) setStep(WIZARD_STEPS.SELECT_TYPE);
   };
 
   const handleNext = () => {
-    if (step === 'select-type') setStep('configure');
-    if (step === 'configure') setStep('confirm');
+    if (step === WIZARD_STEPS.SELECT_TYPE) setStep(WIZARD_STEPS.CONFIGURE);
+    if (step === WIZARD_STEPS.CONFIGURE) setStep(WIZARD_STEPS.CONFIRM);
   };
 
   return (
     <Card>
       <CardContent>
-        {step === 'select-type' && <SelectTypeStep onNext={handleNext} />}
-        {step === 'configure' && <ConfigureStep onBack={handleBack} onNext={handleNext} />}
-        {step === 'confirm' && <ConfirmStep onBack={handleBack} onComplete={handleComplete} />}
+        {step === WIZARD_STEPS.SELECT_TYPE ? <SelectTypeStep onNext={handleNext} /> : null}
+        {step === WIZARD_STEPS.CONFIGURE ? <ConfigureStep onBack={handleBack} onNext={handleNext} /> : null}
+        {step === WIZARD_STEPS.CONFIRM ? <ConfirmStep onBack={handleBack} onComplete={handleComplete} /> : null}
       </CardContent>
     </Card>
   );

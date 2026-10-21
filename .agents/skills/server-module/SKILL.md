@@ -69,7 +69,7 @@ tables, or query builders.
 
 ## Module shape
 
-Start with a flat feature directory when the feature is small:
+Start with a flat feature directory when the feature is small, and move a subdomain's files into a subfolder:
 
 ```text
 packages/api/src/features/achievements/
@@ -82,11 +82,15 @@ packages/api/src/features/achievements/
   achievements.types.ts
   initialize-achievements.task.ts
   user-achievement.schema.ts
-  user-achievement.repository.ts
-  drizzle-user-achievement.repository.ts
-  user-achievement.resolver.ts
-  user-achievement.types.ts
+  user-achievements/
+    user-achievement.repository.ts
+    drizzle-user-achievement.repository.ts
+    user-achievement.resolver.ts
+    user-achievement.types.ts
 ```
+
+A folder holds at most 10 source files (`tsukuri/max-files-per-folder`), so group files by subdomain once a
+feature grows past that.
 
 When a feature contains distinct subdomains, create nested modules rather than
 allowing the feature root to become a dumping ground:
@@ -141,7 +145,7 @@ from `enumwaii`; `eslint-plugin-enumwaii` enforces it.
 
 Feature files are written by hand; the maps that connect them are not.
 Modules declare what they contribute to the API in their manifest
-(`packages/create-tsukuri/src/modules/*.module.ts`; `example-domain.module.ts` is
+(`packages/create-tsukuri/src/modules/<category>/*.module.ts`; `example-domain.module.ts` is
 the worked example for a feature and `better-auth.module.ts` shows context
 providers and HTTP handlers), and the generator rebuilds these files from
 `starter.json` plus the manifests:

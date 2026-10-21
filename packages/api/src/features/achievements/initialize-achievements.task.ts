@@ -8,7 +8,7 @@ import { AchievementsService } from './achievements.service';
 export class InitializeAchievementsTask implements iStartupTask {
   public readonly name = 'Subscribe achievements to their events';
 
-  constructor(private readonly achievementsService: AchievementsService) {}
+  public constructor(private readonly achievementsService: AchievementsService) {}
 
   public async run() {
     this.achievementsService.initialize();

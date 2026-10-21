@@ -15,7 +15,7 @@ const GLOB_WILDCARD = '*';
 export class KvKeyValueStore implements iKeyValueStore {
   public readonly isConnected = true;
 
-  constructor(@inject(KV_NAMESPACE_TOKEN) private readonly kvNamespace: KVNamespace) {}
+  public constructor(@inject(KV_NAMESPACE_TOKEN) private readonly kvNamespace: KVNamespace) {}
 
   public async get(key: string) {
     return this.kvNamespace.get(key);

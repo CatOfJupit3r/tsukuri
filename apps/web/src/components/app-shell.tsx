@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import type { UserTheme } from '#~/components/themes/constants';
 import { ThemeProvider } from '#~/components/themes/theme-provider';
-import ToasterContainer from '#~/components/toastifications/toaster-container';
+import { ToasterContainer } from '#~/components/toastifications/toaster-container';
 
 import { AppDevtools } from './app-devtools';
 import { Header } from './header';

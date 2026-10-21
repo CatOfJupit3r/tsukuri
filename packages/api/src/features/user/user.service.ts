@@ -4,7 +4,7 @@ import type { BadgeId } from '@startername/common/constants/badges';
 import { errorCodes, errorMessages } from '@startername/common/generated/error-codes';
 
 import { USER_ACHIEVEMENT_REPOSITORY_TOKEN } from '#~/features/achievements/achievements.tokens';
-import type { iUserAchievementRepository } from '#~/features/achievements/user-achievement.repository';
+import type { iUserAchievementRepository } from '#~/features/achievements/user-achievements/user-achievement.repository';
 import { BADGES_META } from '#~/features/badges/badges.constants';
 import { DatabaseErrorGuard } from '#~/features/database/database-error.guard';
 import {
@@ -16,13 +16,13 @@ import {
   rethrowUnexpectedError,
 } from '#~/lib/orpc-error-wrapper';
 
+import type { iUserProfileRepository } from './profile/user-profile.repository';
 import { generatePublicCode } from './public-code';
-import type { iUserProfileRepository } from './user-profile.repository';
 import { USER_PROFILE_REPOSITORY_TOKEN } from './user.tokens';
 
 @injectable()
 export class UserService {
-  constructor(
+  public constructor(
     @inject(USER_ACHIEVEMENT_REPOSITORY_TOKEN)
     private readonly userAchievementRepository: iUserAchievementRepository,
     @inject(USER_PROFILE_REPOSITORY_TOKEN)

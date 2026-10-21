@@ -5,8 +5,8 @@ import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import type { iConnectionPointContribution } from '#~/manifest/connection-point.schema';
 
 import { GeneratorError } from '../generator-error';
-import type { iTemplateContext } from '../template-renderer';
-import { TemplateRenderer } from '../template-renderer';
+import type { iTemplateContext } from '../render/template-renderer';
+import { TemplateRenderer } from '../render/template-renderer';
 import type { iGeneratedFile, iOwnedContribution } from './connection-point.types';
 import { GENERATED_SOURCE_DIR } from './generated-header';
 
@@ -33,7 +33,7 @@ export interface iWorkspaceSourceSpec<T> {
 /** What the renderers share: grouping contributions per workspace, import lists and rendering into a file. */
 @injectable()
 export class GeneratedSourceFiles {
-  constructor(private readonly templates: TemplateRenderer) {}
+  public constructor(private readonly templates: TemplateRenderer) {}
 
   /** Contributions per workspace, keeping module order inside each group; hosted workspaces get a group even when empty. */
   public groupByWorkspace<T extends iConnectionPointContribution & { workspace: string }>(

@@ -174,7 +174,7 @@ if (member.role !== COMMUNITY_MEMBER_ROLES.ADMIN) {
 
 ## Adding new error codes
 
-Error codes are generated, not written by hand. Each module declares the codes its services throw as `ERROR_CODE` contributions in its manifest (`packages/create-tsukuri/src/modules/*.module.ts`, for example `ERROR_CODES` in `example-domain.module.ts`), and the generator writes `packages/common/src/generated/error-codes.ts`, which exports `errorCodes`, `errorMessages`, and the `ErrorCode` type. Never edit that file.
+Error codes are generated, not written by hand. Each module declares the codes its services throw as `ERROR_CODE` contributions in its manifest (`packages/create-tsukuri/src/modules/<category>/*.module.ts`, for example `ERROR_CODES` in `example-domain.module.ts`), and the generator writes `packages/common/src/generated/error-codes.ts`, which exports `errorCodes`, `errorMessages`, and the `ErrorCode` type. Never edit that file.
 
 ### 1. Declare the code in the module manifest
 

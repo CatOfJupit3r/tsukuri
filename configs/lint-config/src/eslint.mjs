@@ -16,7 +16,34 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { createConventionRulesConfig } from './convention-rules.mjs';
 import { createOxlintConfigFromEslintConfig, withoutOxlintRules } from './oxlint.mjs';
+
+const [publishedEnumwaiiTypeCheckedPreset] = enumwaiiPlugin.configs['flat/recommended-type-checked'];
+
+/**
+ * Enumwaii rules of the type-checked preset. `wireExceptions` lists declarations whose values are spelled by an
+ * external system (CLI flags, MIME types, DOM key names, ...), exempt from casing and object input. Each entry is
+ * `{ name: { regex }, reason: 'external-contract', justification }`.
+ */
+const SHARED_ENUMWAII_WIRE_EXCEPTIONS = [
+  {
+    name: { regex: '(EventNames|MessageNames)Enumwaii$' },
+    reason: 'external-contract',
+    justification:
+      'Payload token names travel on shared channels (event bus, BroadcastChannel, WebSocket) and carry a feature prefix so features cannot collide.',
+  },
+];
+
+const createEnumwaiiRules = (wireExceptions) => {
+  const ignore = [...SHARED_ENUMWAII_WIRE_EXCEPTIONS, ...wireExceptions];
+
+  return {
+    ...publishedEnumwaiiTypeCheckedPreset.rules,
+    'enumwaii/enforce-enum-casing': ['error', { ignore }],
+    'enumwaii/no-object-em': ['error', { ignore }],
+  };
+};
 
 /**
  * Helper function to create ignore patterns for workspace packages
@@ -32,11 +59,24 @@ const createWorkspaceIgnorePattern = (workspaceName) => {
   return `^@?${escaped}(/.*)?$`;
 };
 
+const SHARED_RESTRICTED_SYNTAX = [
+  {
+    selector:
+      'TSVoidKeyword:not(TSInterfaceDeclaration TSVoidKeyword, TSAbstractMethodDefinition TSVoidKeyword, TSAbstractPropertyDefinition TSVoidKeyword, TSTypeAliasDeclaration TSVoidKeyword, TSDeclareFunction TSVoidKeyword, TSMethodSignature TSVoidKeyword, MethodDefinition:not([value.body]) TSVoidKeyword)',
+    message:
+      'Using explicit `void` or `Promise<void>` is not encouraged. Please either do not specify a return type or specify the type.',
+  },
+  {
+    selector: 'TSEnumDeclaration',
+    message: 'Avoid TypeScript enum. Declare the closed set with Enumwaii and use its exported accessor and schema.',
+  },
+];
+
 /**
  * Common base configuration shared across all project types
  */
 const getBaseConfig = (options) => {
-  const { tsconfigRootDir, gitignorePath } = options;
+  const { tsconfigRootDir, gitignorePath, enumwaiiWireExceptions = [] } = options;
 
   const jsConfig = [
     // ESLint Recommended Rules
@@ -98,9 +138,7 @@ const getBaseConfig = (options) => {
       enumwaii: enumwaiiPlugin,
     },
     rules: {
-      'enumwaii/no-raw-enum-comparison': 'error',
-      'enumwaii/no-raw-enum-member': 'error',
-      // "@typescript-eslint/explicit-member-accessibility": "error",
+      ...createEnumwaiiRules(enumwaiiWireExceptions),
       'import-x/prefer-default-export': 'off',
       'no-console': 'off',
       'no-continue': 'off',
@@ -132,19 +170,7 @@ const getBaseConfig = (options) => {
       'import-x/order': 'off',
       // Unlimited depth is the default in both import-x and oxlint; airbnb's "∞" string is not valid oxlint config
       'import-x/no-cycle': 'error',
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            'TSVoidKeyword:not(TSInterfaceDeclaration TSVoidKeyword, TSAbstractMethodDefinition TSVoidKeyword, TSAbstractPropertyDefinition TSVoidKeyword, TSTypeAliasDeclaration TSVoidKeyword, TSDeclareFunction TSVoidKeyword, TSMethodSignature TSVoidKeyword, MethodDefinition:not([value.body]) TSVoidKeyword)',
-          message:
-            'Using explicit `void` or `Promise<void>` is not encouraged. Please either do not specify a return type or specify the type.',
-        },
-        {
-          selector: 'TSEnumDeclaration',
-          message: "Avoid using 'enum' as a type. Use `const SOME_ENUM = { VALUE: 'VALUE'; } as const` instead.",
-        },
-      ],
+      'no-restricted-syntax': ['error', ...SHARED_RESTRICTED_SYNTAX],
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-floating-promises': ['error', { ignoreVoid: true }],
       'no-void': ['error', { allowAsStatement: true }],
@@ -161,7 +187,12 @@ const getBaseConfig = (options) => {
           selector: 'variable',
           types: ['boolean'],
           format: ['PascalCase', 'camelCase', 'UPPER_CASE'],
-          prefix: ['is', 'should', 'has', 'can', 'did', 'will', 'have', 'might'],
+          prefix: ['is', 'should', 'has', 'can', 'did', 'will', 'have', 'might', 'does'],
+          // Radix-style `asChild` props keep the name their primitives expect.
+          filter: {
+            regex: '^asChild$',
+            match: false,
+          },
         },
         {
           selector: 'variable',
@@ -169,8 +200,13 @@ const getBaseConfig = (options) => {
           modifiers: ['const'],
           format: null,
           custom: {
-            regex: '^(is|should|has|can|did|will|have|might|was)[A-Z][a-zA-Z]*$|^(IS|SHOULD|HAS|CAN|DID|WILL|HAVE|MIGHT|WAS)_[A-Z_]+$',
+            regex:
+              '^(is|should|has|can|did|will|have|might|was|does)[A-Z][a-zA-Z]*$|^(IS|SHOULD|HAS|CAN|DID|WILL|HAVE|MIGHT|WAS|DOES)_[A-Z_]+$',
             match: true,
+          },
+          filter: {
+            regex: '^asChild$',
+            match: false,
           },
         },
       ],
@@ -184,6 +220,23 @@ const getBaseConfig = (options) => {
         },
       ],
       'prettier/prettier': 'off',
+    },
+  };
+
+  const noIndexFilesConfig = {
+    name: 'no-index-files',
+    files: ['**/index.ts', '**/index.tsx'],
+    // File-based routes name a folder's own route `index`.
+    ignores: ['**/routes/**/index.ts', '**/routes/**/index.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...SHARED_RESTRICTED_SYNTAX,
+        {
+          selector: 'Program',
+          message: 'index.ts/tsx files are forbidden. Use explicit file names for all exports and imports.',
+        },
+      ],
     },
   };
 
@@ -210,6 +263,7 @@ const getBaseConfig = (options) => {
     prettierConfig,
     sharedRules,
     modelFileOverrides,
+    noIndexFilesConfig,
     typescriptSettings: [
       {
         name: 'typescript/parser-options',
@@ -223,6 +277,8 @@ const getBaseConfig = (options) => {
       {
         name: 'typescript/import-resolver',
         settings: {
+          // Resolutions expire after 30 s by default, shorter than a full lint; one lint run outlives no file move.
+          'import-x/cache': { lifetime: Number.POSITIVE_INFINITY },
           'import-x/resolver-next': [
             createTypeScriptImportResolver({
               alwaysTryTypes: true,
@@ -241,17 +297,19 @@ const getBaseConfig = (options) => {
  * @param {Object} options - Configuration options
  * @param {string} options.rootDir - Root directory of the project (typically import.meta.url)
  * @param {string[]} [options.additionalIgnores] - Additional patterns to ignore
+ * @param {string[]} [options.defaultExportFiles] - Files a tool loads through their default export
+ * @param {Object[]} [options.enumwaiiWireExceptions] - Enumwaii declarations whose values an external system spells
  * @returns {Array} ESLint flat config array
  */
 const buildBackendConfig = (options = {}) => {
-  const { rootDir, additionalIgnores = [] } = options;
+  const { rootDir, additionalIgnores = [], defaultExportFiles, enumwaiiWireExceptions } = options;
   
   const currentFilename = fileURLToPath(rootDir);
   const currentDirname = path.dirname(currentFilename);
   const tsconfigRootDir = path.resolve(currentDirname);
   const gitignorePath = path.resolve(currentDirname, '.gitignore');
 
-  const base = getBaseConfig({ tsconfigRootDir, gitignorePath });
+  const base = getBaseConfig({ tsconfigRootDir, gitignorePath, enumwaiiWireExceptions });
 
   const nodeConfig = [
     // Node Plugin
@@ -277,7 +335,9 @@ const buildBackendConfig = (options = {}) => {
     ...base.prettierConfig,
     base.sharedRules,
     base.modelFileOverrides,
+    base.noIndexFilesConfig,
     nodeSpecificRules,
+    ...createConventionRulesConfig({ doesRenderReact: false, defaultExportFiles }),
   ];
 };
 
@@ -315,17 +375,19 @@ const importPlugin = async (pluginName) => {
  * @param {string} options.rootDir - Root directory of the project (typically import.meta.url)
  * @param {string} [options.tailwindConfigPath] - Path to Tailwind CSS config
  * @param {string[]} [options.additionalIgnores] - Additional patterns to ignore
+ * @param {string[]} [options.defaultExportFiles] - Files a tool loads through their default export
+ * @param {Object[]} [options.enumwaiiWireExceptions] - Enumwaii declarations whose values an external system spells
  * @returns {Promise<Array>} ESLint flat config array
  */
 const buildWebConfig = async (options = {}) => {
-  const { rootDir, tailwindConfigPath, additionalIgnores = [] } = options;
+  const { rootDir, tailwindConfigPath, additionalIgnores = [], defaultExportFiles, enumwaiiWireExceptions } = options;
   
   const currentFilename = fileURLToPath(rootDir);
   const currentDirname = path.dirname(currentFilename);
   const tsconfigRootDir = path.resolve(currentDirname);
   const gitignorePath = path.resolve(currentDirname, '.gitignore');
 
-  const base = getBaseConfig({ tsconfigRootDir, gitignorePath });
+  const base = getBaseConfig({ tsconfigRootDir, gitignorePath, enumwaiiWireExceptions });
 
   // Dynamic imports for web-specific plugins
   const tailwindcssPlugin = await importPlugin('eslint-plugin-better-tailwindcss');
@@ -441,7 +503,9 @@ const buildWebConfig = async (options = {}) => {
     ...base.prettierConfig,
     base.sharedRules,
     base.modelFileOverrides,
+    base.noIndexFilesConfig,
     webSpecificRules,
+    ...createConventionRulesConfig({ doesRenderReact: true, defaultExportFiles }),
   ];
 };
 

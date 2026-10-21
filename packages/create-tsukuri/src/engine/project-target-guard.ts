@@ -11,7 +11,7 @@ const PARENT_DIRECTORY = '..';
 /** Keeps generated projects out of the folder the module sources are read from. */
 @injectable()
 export class ProjectTargetGuard {
-  constructor(@inject(SOURCE_ROOT_TOKEN) private readonly sourceRoot: string) {}
+  public constructor(@inject(SOURCE_ROOT_TOKEN) private readonly sourceRoot: string) {}
 
   /** Returns why a project cannot be created in `targetDir`, or null when it can. */
   public getTargetProblem(targetDir: string) {

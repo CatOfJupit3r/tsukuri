@@ -4,7 +4,7 @@ import type { UserAchievementId } from '@startername/common/constants/achievemen
 
 import { ACHIEVEMENT_EVENTS } from '#~/features/achievements/achievements.events';
 import type { iAchievementContext, iAchievementDefinition } from '#~/features/achievements/achievements.types';
-import type { iUserAchievementRepository } from '#~/features/achievements/user-achievement.repository';
+import type { iUserAchievementRepository } from '#~/features/achievements/user-achievements/user-achievement.repository';
 import { CACHE_TTL } from '#~/features/cache/cache.constants';
 import { CacheService } from '#~/features/cache/cache.service';
 import { EventBus } from '#~/features/events/event-bus';
@@ -29,7 +29,7 @@ export class AchievementsService implements iWithLogger {
     },
   };
 
-  constructor(
+  public constructor(
     private readonly eventBus: EventBus,
     @inject(USER_ACHIEVEMENT_REPOSITORY_TOKEN)
     private readonly userAchievementRepository: iUserAchievementRepository,

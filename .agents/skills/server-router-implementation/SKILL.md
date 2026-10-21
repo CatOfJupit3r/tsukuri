@@ -95,6 +95,6 @@ Do not edit `app-router.ts` or `src/generated/routers.ts`. `appRouter` is `base.
 },
 ```
 
-See `packages/create-tsukuri/src/modules/example-domain.module.ts` and the `server-module` skill ("Wiring a feature"). In this repository run `pnpm run sync` afterwards. In a generated project add the entry to the generated router map the way the file shows (follow its header and the project's `AGENTS.md`); it is rebuilt from `starter.json` and the module manifests when modules are added or removed, so re-check it afterwards.
+See `packages/create-tsukuri/src/modules/feature/example-domain.module.ts` and the `server-module` skill ("Wiring a feature"). In this repository run `pnpm run sync` afterwards. In a generated project add the entry to the generated router map the way the file shows (follow its header and the project's `AGENTS.md`); it is rebuilt from `starter.json` and the module manifests when modules are added or removed, so re-check it afterwards.
 
 The router is then served by `ApiRequestHandler` over both REST (OpenAPI) and RPC (`/rpc`); nothing else needs mounting.

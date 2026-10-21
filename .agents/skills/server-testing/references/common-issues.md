@@ -185,12 +185,12 @@ export class AchievementService {
 // user.service.ts
 import { injectable, inject } from 'tsyringe';
 
-import type { iUserAchievementRepository } from '#~/features/achievements/user-achievement.repository';
+import type { iUserAchievementRepository } from '#~/features/achievements/user-achievements/user-achievement.repository';
 import { USER_ACHIEVEMENT_REPOSITORY_TOKEN } from '#~/features/achievements/achievements.tokens';
 
 @injectable()
 export class UserService {
-  constructor(
+  public constructor(
     @inject(USER_ACHIEVEMENT_REPOSITORY_TOKEN)
     private readonly userAchievementRepository: iUserAchievementRepository
   ) {}

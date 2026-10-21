@@ -1,7 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
 import { INTERVALS } from '#~/constants/dates';
-import AuthService from '#~/features/auth/auth-client.service';
+import { authClientService } from '#~/features/auth/auth-client.service';
 import type { InternalAuthSession } from '#~/features/auth/auth-client.service';
 import { isOnClient } from '#~/utils/is-on-client';
 
@@ -28,7 +28,7 @@ const PLACEHOLDER_USER: InternalAuthSession = {
 
 export const USE_ME_QUERY_KEYS = () => ['user', 'me'];
 export type MeQueryResultType = Awaited<ReturnType<typeof meQueryFn>>;
-export const meQueryFn = async () => AuthService.getSession();
+export const meQueryFn = async () => authClientService.getSession();
 
 export const meQueryOptions = queryOptions({
   queryKey: USE_ME_QUERY_KEYS(),
@@ -59,4 +59,3 @@ export const useMe = () => {
 };
 
 export type UseMe = ReturnType<typeof useMe>;
-export default useMe;

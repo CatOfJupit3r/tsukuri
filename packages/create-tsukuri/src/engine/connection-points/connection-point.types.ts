@@ -3,7 +3,7 @@ import type { ModuleId } from '#~/enums/module-ids.enums';
 import type { iConnectionPointContribution } from '#~/manifest/connection-point.schema';
 import type { iPackageJsonContribution } from '#~/manifest/module-manifest.schema';
 
-import type { iTemplateContext } from '../template-renderer';
+import type { iTemplateContext } from '../render/template-renderer';
 
 export interface iGeneratedFile {
   path: string;

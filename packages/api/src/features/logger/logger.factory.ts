@@ -21,7 +21,7 @@ import { Logger } from './logger';
 export class LoggerFactory {
   private readonly instance: Logger;
 
-  constructor(requestContext: RequestContextStorage) {
+  public constructor(requestContext: RequestContextStorage) {
     this.instance = new Logger({
       colorize: env.NODE_ENV !== NODE_ENVIRONMENTS.PRODUCTION,
       requestContext,

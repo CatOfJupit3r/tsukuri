@@ -11,7 +11,7 @@ import { D1_DATABASE_TOKEN } from './d1-database.token';
 export class DatabaseService {
   private db: DrizzleD1Database<typeof generatedDatabaseSchema> | null = null;
 
-  constructor(@inject(D1_DATABASE_TOKEN) private readonly d1Database: D1Database) {}
+  public constructor(@inject(D1_DATABASE_TOKEN) private readonly d1Database: D1Database) {}
 
   /** The D1 binding is ready as soon as the Worker receives it. */
   public async connect() {

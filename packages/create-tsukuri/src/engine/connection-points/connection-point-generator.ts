@@ -5,24 +5,29 @@ import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import type { iConnectionPointContribution } from '#~/manifest/connection-point.schema';
 import type { iModuleManifest } from '#~/manifest/module-manifest.schema';
 
-import type { iTemplateContext } from '../template-renderer';
-import type { iContributionOfKind, iGeneratedConnectionPoints, iOwnedContribution } from './connection-point.types';
+import type { iTemplateContext } from '../render/template-renderer';
+import type {
+  iConnectionPointRenderer,
+  iContributionOfKind,
+  iGeneratedConnectionPoints,
+  iOwnedContribution,
+} from './connection-point.types';
 import { GENERATED_HEADER } from './generated-header';
+import { ContextProviderRenderer } from './renderers/api/context-provider.renderer';
+import { ContractRenderer } from './renderers/api/contract.renderer';
+import { DatabaseSchemaRenderer } from './renderers/api/database-schema.renderer';
+import { DiRegistrationRenderer } from './renderers/api/di-registration.renderer';
+import { ErrorCodeRenderer } from './renderers/api/error-code.renderer';
+import { HttpHandlerRenderer } from './renderers/api/http-handler.renderer';
+import { RouterRenderer } from './renderers/api/router.renderer';
+import { StartupTaskRenderer } from './renderers/api/startup-task.renderer';
 import { CiRenderer } from './renderers/ci.renderer';
 import { ComposeRenderer } from './renderers/compose.renderer';
-import { ContextProviderRenderer } from './renderers/context-provider.renderer';
-import { ContractRenderer } from './renderers/contract.renderer';
-import { DatabaseSchemaRenderer } from './renderers/database-schema.renderer';
-import { DiRegistrationRenderer } from './renderers/di-registration.renderer';
 import { EnvRenderer } from './renderers/env.renderer';
-import { ErrorCodeRenderer } from './renderers/error-code.renderer';
-import { HttpHandlerRenderer } from './renderers/http-handler.renderer';
 import { RootScriptsRenderer } from './renderers/root-scripts.renderer';
-import { RouterRenderer } from './renderers/router.renderer';
-import { StartupTaskRenderer } from './renderers/startup-task.renderer';
-import { WebDevtoolsPluginRenderer } from './renderers/web-devtools-plugin.renderer';
-import { WebRootPreloadRenderer } from './renderers/web-root-preload.renderer';
-import { WebSlotRenderer } from './renderers/web-slot.renderer';
+import { WebDevtoolsPluginRenderer } from './renderers/web/web-devtools-plugin.renderer';
+import { WebRootPreloadRenderer } from './renderers/web/web-root-preload.renderer';
+import { WebSlotRenderer } from './renderers/web/web-slot.renderer';
 import { WorkerBindingRenderer } from './renderers/worker-binding.renderer';
 
 /**
@@ -33,7 +38,7 @@ import { WorkerBindingRenderer } from './renderers/worker-binding.renderer';
  */
 @injectable()
 export class ConnectionPointGenerator {
-  constructor(
+  public constructor(
     private readonly routerRenderer: RouterRenderer,
     private readonly contractRenderer: ContractRenderer,
     private readonly diRegistrationRenderer: DiRegistrationRenderer,
@@ -58,62 +63,23 @@ export class ConnectionPointGenerator {
       manifest.contributions.map((contribution) => ({ moduleId: manifest.id, contribution })),
     );
 
+    const renderHosted = async <K extends ConnectionPointKind>(
+      renderer: iConnectionPointRenderer<iContributionOfKind<K>>,
+      kind: K,
+    ) => renderer.render(this.ofKind(contributions, kind), templateContext, this.hostsOf(modules, kind));
+
     const files = [
-      ...(await this.routerRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.ROUTER),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.ROUTER),
-      )),
-      ...(await this.contractRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.CONTRACT),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.CONTRACT),
-      )),
-      ...(await this.diRegistrationRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.DI_REGISTRATION),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.DI_REGISTRATION),
-      )),
-      ...(await this.startupTaskRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.STARTUP_TASK),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.STARTUP_TASK),
-      )),
-      ...(await this.httpHandlerRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.HTTP_HANDLER),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.HTTP_HANDLER),
-      )),
-      ...(await this.contextProviderRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.CONTEXT_PROVIDER),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.CONTEXT_PROVIDER),
-      )),
-      ...(await this.databaseSchemaRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.DATABASE_SCHEMA),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.DATABASE_SCHEMA),
-      )),
-      ...(await this.errorCodeRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.ERROR_CODE),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.ERROR_CODE),
-      )),
-      ...(await this.webSlotRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.WEB_COMPONENT),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.WEB_COMPONENT),
-      )),
-      ...(await this.webRootPreloadRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.WEB_ROOT_PRELOAD),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.WEB_ROOT_PRELOAD),
-      )),
-      ...(await this.webDevtoolsPluginRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.WEB_DEVTOOLS_PLUGIN),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.WEB_DEVTOOLS_PLUGIN),
-      )),
+      ...(await renderHosted(this.routerRenderer, CONNECTION_POINT_KINDS.ROUTER)),
+      ...(await renderHosted(this.contractRenderer, CONNECTION_POINT_KINDS.CONTRACT)),
+      ...(await renderHosted(this.diRegistrationRenderer, CONNECTION_POINT_KINDS.DI_REGISTRATION)),
+      ...(await renderHosted(this.startupTaskRenderer, CONNECTION_POINT_KINDS.STARTUP_TASK)),
+      ...(await renderHosted(this.httpHandlerRenderer, CONNECTION_POINT_KINDS.HTTP_HANDLER)),
+      ...(await renderHosted(this.contextProviderRenderer, CONNECTION_POINT_KINDS.CONTEXT_PROVIDER)),
+      ...(await renderHosted(this.databaseSchemaRenderer, CONNECTION_POINT_KINDS.DATABASE_SCHEMA)),
+      ...(await renderHosted(this.errorCodeRenderer, CONNECTION_POINT_KINDS.ERROR_CODE)),
+      ...(await renderHosted(this.webSlotRenderer, CONNECTION_POINT_KINDS.WEB_COMPONENT)),
+      ...(await renderHosted(this.webRootPreloadRenderer, CONNECTION_POINT_KINDS.WEB_ROOT_PRELOAD)),
+      ...(await renderHosted(this.webDevtoolsPluginRenderer, CONNECTION_POINT_KINDS.WEB_DEVTOOLS_PLUGIN)),
       ...(await this.envRenderer.render(
         [
           ...this.ofKind(contributions, CONNECTION_POINT_KINDS.ENV_SHAPE),
@@ -122,11 +88,7 @@ export class ConnectionPointGenerator {
         templateContext,
         this.hostsOf(modules, CONNECTION_POINT_KINDS.ENV_SHAPE),
       )),
-      ...(await this.workerBindingRenderer.render(
-        this.ofKind(contributions, CONNECTION_POINT_KINDS.WORKER_BINDING),
-        templateContext,
-        this.hostsOf(modules, CONNECTION_POINT_KINDS.WORKER_BINDING),
-      )),
+      ...(await renderHosted(this.workerBindingRenderer, CONNECTION_POINT_KINDS.WORKER_BINDING)),
       ...(await this.composeRenderer.render(this.ofKind(contributions, CONNECTION_POINT_KINDS.COMPOSE_SERVICE))),
       ...(await this.ciRenderer.render(this.ofKind(contributions, CONNECTION_POINT_KINDS.CI_STEP))),
     ];

@@ -5,8 +5,8 @@ import { injectable } from 'tsyringe';
 import { skillPath } from '#~/constants/skill-path';
 import { TEMPLATES_DIR } from '#~/constants/template-path';
 import { BundledFileNames } from '#~/engine/bundled-file-names';
-import { ModuleRegistry } from '#~/engine/module-registry';
-import { ModuleSourceReader } from '#~/engine/module-source-reader';
+import { ModuleRegistry } from '#~/engine/modules/module-registry';
+import { ModuleSourceReader } from '#~/engine/modules/module-source-reader';
 import type { iModuleFileEntry } from '#~/manifest/module-manifest.schema';
 
 /**
@@ -16,7 +16,7 @@ import type { iModuleFileEntry } from '#~/manifest/module-manifest.schema';
  */
 @injectable()
 export class ModuleSourceBundler {
-  constructor(
+  public constructor(
     private readonly registry: ModuleRegistry,
     private readonly reader: ModuleSourceReader,
     private readonly bundledFileNames: BundledFileNames,

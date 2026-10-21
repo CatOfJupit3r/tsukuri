@@ -3,8 +3,8 @@ import type { DatabaseSync } from 'node:sqlite';
 import { container } from 'tsyringe';
 
 import { IN_MEMORY_DATABASE_PATH } from '#~/features/database/database.constants';
-import { drizzleNodeSqlite } from '#~/features/database/node-sqlite.driver';
-import type { NodeSqliteDatabase } from '#~/features/database/node-sqlite.driver';
+import { drizzleNodeSqlite } from '#~/features/database/node-sqlite/node-sqlite.driver';
+import type { NodeSqliteDatabase } from '#~/features/database/node-sqlite/node-sqlite.driver';
 import { SqliteConnectionFactory } from '#~/features/database/sqlite-connection.factory';
 import { generatedDatabaseSchema } from '#~/generated/database-schema';
 

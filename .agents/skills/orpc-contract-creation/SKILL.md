@@ -90,7 +90,7 @@ Do not edit `app.contract.ts` or `src/generated/contracts.ts`. `CONTRACT` is bui
 },
 ```
 
-See `packages/create-tsukuri/src/modules/example-domain.module.ts`. In this repository run `pnpm run sync` after changing a manifest. In a generated project the entry belongs in the generated contract map the way the file shows (follow its header and the project's `AGENTS.md`); that file is rebuilt from `starter.json` and the module manifests whenever modules are added or removed, so re-check it afterwards.
+See `packages/create-tsukuri/src/modules/feature/example-domain.module.ts`. In this repository run `pnpm run sync` after changing a manifest. In a generated project the entry belongs in the generated contract map the way the file shows (follow its header and the project's `AGENTS.md`); that file is rebuilt from `starter.json` and the module manifests whenever modules are added or removed, so re-check it afterwards.
 
 ### 5. Validate the contract
 

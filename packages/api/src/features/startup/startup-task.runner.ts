@@ -14,7 +14,7 @@ export class StartupTaskRunner implements iWithLogger {
 
   private readonly tasks: constructor<iStartupTask>[] = generatedStartupTasks;
 
-  constructor(loggerFactory: LoggerFactory) {
+  public constructor(loggerFactory: LoggerFactory) {
     this.logger = loggerFactory.create('startup');
   }
 

@@ -3,9 +3,9 @@ import z from 'zod';
 import { Button } from '#~/components/ui/button/button';
 import { useAppForm } from '#~/components/ui/form/field';
 
-import useLogin from '../hooks/use-login';
+import { useLogin } from '../hooks/use-login';
 
-export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => unknown }) {
+export function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => unknown }) {
   const { mutate } = useLogin();
 
   const form = useAppForm({

@@ -210,9 +210,7 @@ export function CharacterEditPanel({ characterId }) {
         </form.AppField>
 
         {/* Show saving indicator */}
-        {isPending && (
-          <div className="text-sm text-muted-foreground">Saving...</div>
-        )}
+        {isPending ? <div className="text-sm text-muted-foreground">Saving...</div> : null}
       </form.Form>
     </form.AppForm>
   );

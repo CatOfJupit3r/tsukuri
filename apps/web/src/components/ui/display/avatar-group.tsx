@@ -26,7 +26,7 @@ interface iAvatarGroupProps
     Omit<ComponentProps<'div'>, 'dir'>,
     Omit<VariantProps<typeof avatarGroupVariants>, 'dir'>,
     useRender.ComponentProps<'div'> {
-  dir?: 'ltr' | 'rtl';
+  dir?: NonNullable<VariantProps<typeof avatarGroupVariants>['dir']>;
   size?: number;
   max?: number;
   isReverse?: boolean;

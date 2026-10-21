@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { ProfileView } from '#~/features/user/components/profile-view';
+import { ProfileView } from '#~/features/user/components/profile/profile-view';
 import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 export const Route = createFileRoute('/_auth_only/profile')({

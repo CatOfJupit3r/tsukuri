@@ -13,7 +13,7 @@ import { KEY_VALUE_STORE_TOKEN } from './key-value-store';
 export class CacheService implements iWithLogger {
   public readonly logger: LoggerType;
 
-  constructor(
+  public constructor(
     @inject(KEY_VALUE_STORE_TOKEN) private readonly store: iKeyValueStore,
     loggerFactory: LoggerFactory,
   ) {

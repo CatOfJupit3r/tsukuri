@@ -5,14 +5,14 @@ import { EventBus } from '#~/features/events/event-bus';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
 import type { iWithLogger } from '#~/features/logger/logger.types';
 
-import type { iUserProfileRepository } from './user-profile.repository';
+import type { iUserProfileRepository } from './profile/user-profile.repository';
 import { USER_PROFILE_REPOSITORY_TOKEN } from './user.tokens';
 
 @singleton()
 export class UserEventsService implements iWithLogger {
   public readonly logger;
 
-  constructor(
+  public constructor(
     private readonly eventBus: EventBus,
     @inject(USER_PROFILE_REPOSITORY_TOKEN)
     private readonly userProfileRepository: iUserProfileRepository,

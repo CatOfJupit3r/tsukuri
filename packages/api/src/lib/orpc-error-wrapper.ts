@@ -29,7 +29,7 @@ interface iUnexpectedErrorOptions {
 }
 
 export class UnexpectedServerError extends Error {
-  constructor(message: string, options?: ErrorOptions) {
+  public constructor(message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = 'UnexpectedServerError';
   }

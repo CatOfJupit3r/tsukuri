@@ -10,7 +10,7 @@ const SCAN_START_CURSOR = '0';
 /** Bound to `KEY_VALUE_STORE_TOKEN`, so caching and auth sessions use Valkey once it is connected. */
 @singleton()
 export class ValkeyKeyValueStore implements iKeyValueStore {
-  constructor(private readonly valkeyService: ValkeyService) {}
+  public constructor(private readonly valkeyService: ValkeyService) {}
 
   public get isConnected() {
     return this.valkeyService.isConnected;

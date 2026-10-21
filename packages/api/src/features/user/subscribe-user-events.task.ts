@@ -8,7 +8,7 @@ import { UserEventsService } from './user-events.service';
 export class SubscribeUserEventsTask implements iStartupTask {
   public readonly name = 'Create user profiles on registration';
 
-  constructor(private readonly userEventsService: UserEventsService) {}
+  public constructor(private readonly userEventsService: UserEventsService) {}
 
   public async run() {
     this.userEventsService.initialize();

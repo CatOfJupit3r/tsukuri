@@ -1,40 +1,35 @@
-import { LuCircleAlert, LuTrophy } from 'react-icons/lu';
+import { LuCircleAlert } from 'react-icons/lu';
 
 import { Alert, AlertDescription, AlertTitle } from '#~/components/ui/feedback/alert';
-import { Badge } from '#~/components/ui/feedback/badge';
-import { Skeleton } from '#~/components/ui/feedback/skeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/layout/card';
+import { Card, CardContent, CardDescription, CardHeader } from '#~/components/ui/layout/card';
 
 import { useAllAchievements } from '../hooks/use-all-achievements';
 import { useMyAchievements } from '../hooks/use-my-achievements';
+import { AchievementCard } from './achievement-card';
+import { AchievementsSkeleton } from './achievements-skeleton';
+import { AchievementsTitle } from './achievements-title';
 
-function AchievementsSkeleton() {
+interface iAchievementsErrorProps {
+  hasListFailed: boolean;
+  hasOwnFailed: boolean;
+}
+
+function AchievementsError({ hasListFailed, hasOwnFailed }: iAchievementsErrorProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <LuTrophy className="size-5" />
-          Achievements
-        </CardTitle>
-        <Skeleton className="h-4 w-32" />
+        <AchievementsTitle />
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-2">
-          {['achievement-skeleton-1', 'achievement-skeleton-2', 'achievement-skeleton-3', 'achievement-skeleton-4'].map(
-            (key) => (
-              <div key={key} className="rounded-lg border p-4">
-                <div className="flex items-start gap-3">
-                  <Skeleton className="size-8 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                </div>
-              </div>
-            ),
-          )}
-        </div>
+        <Alert variant="destructive">
+          <LuCircleAlert className="size-4" />
+          <AlertTitle>Error loading achievements</AlertTitle>
+          <AlertDescription>
+            {hasListFailed ? 'Failed to load achievement list. ' : ''}
+            {hasOwnFailed ? 'Failed to load your achievements. ' : ''}
+            Please try again later.
+          </AlertDescription>
+        </Alert>
       </CardContent>
     </Card>
   );
@@ -49,73 +44,26 @@ export function AchievementsPanel() {
   }
 
   if (errorAll || errorMy) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LuTrophy className="size-5" />
-            Achievements
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="destructive">
-            <LuCircleAlert className="size-4" />
-            <AlertTitle>Error loading achievements</AlertTitle>
-            <AlertDescription>
-              {errorAll ? 'Failed to load achievement list. ' : ''}
-              {errorMy ? 'Failed to load your achievements. ' : ''}
-              Please try again later.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
+    return <AchievementsError hasListFailed={Boolean(errorAll)} hasOwnFailed={Boolean(errorMy)} />;
   }
-
-  const unlockedIds = new Set(myAchievements?.map((a) => a.id) ?? []);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <LuTrophy className="size-5" />
-          Achievements
-        </CardTitle>
+        <AchievementsTitle />
         <CardDescription>
           {myAchievements?.length ?? 0} of {allAchievements?.length ?? 0} unlocked
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 md:grid-cols-2">
-          {allAchievements?.map((achievement) => {
-            const isUnlocked = unlockedIds.has(achievement.id);
-            const userAchievement = myAchievements?.find((a) => a.id === achievement.id);
-
-            return (
-              <div
-                key={achievement.id}
-                className={`rounded-lg border p-4 transition-colors ${
-                  isUnlocked ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30 opacity-60'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">{achievement.icon ?? '🏆'}</div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{achievement.label}</h3>
-                      {isUnlocked ? <Badge variant="secondary">Unlocked</Badge> : null}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                    {isUnlocked && userAchievement ? (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Unlocked on {new Date(userAchievement.unlockedAt).toLocaleDateString()}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {allAchievements?.map((achievement) => (
+            <AchievementCard
+              key={achievement.id}
+              achievement={achievement}
+              userAchievement={myAchievements?.find((a) => a.id === achievement.id)}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>

@@ -5,8 +5,8 @@ import { env } from '#~/constants/env';
 import { generatedDatabaseSchema } from '#~/generated/database-schema';
 import { UnexpectedServerError } from '#~/lib/orpc-error-wrapper';
 
-import { drizzleNodeSqlite } from './node-sqlite.driver';
-import type { NodeSqliteDatabase } from './node-sqlite.driver';
+import { drizzleNodeSqlite } from './node-sqlite/node-sqlite.driver';
+import type { NodeSqliteDatabase } from './node-sqlite/node-sqlite.driver';
 import { SqliteConnectionFactory } from './sqlite-connection.factory';
 
 const testSqliteDbKey = Symbol.for('startername.test.sqlite.db');
@@ -24,7 +24,7 @@ export class DatabaseService {
 
   private db: SqliteDatabase | null = null;
 
-  constructor(private readonly sqliteConnectionFactory: SqliteConnectionFactory) {}
+  public constructor(private readonly sqliteConnectionFactory: SqliteConnectionFactory) {}
 
   /** Opens `SQLITE_PATH`; runs as a startup task before anything queries. */
   public async connect() {

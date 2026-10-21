@@ -43,8 +43,9 @@ export function definePayloadTokens<
   specs: TSpecs & Readonly<Record<Exclude<keyof TSpecs, keyof TKeys>, never>>,
 ) {
   const specsByKey: Readonly<Record<string, iPayloadSpec>> = specs;
+  const namesByKey = names.enum;
   const tokens = Object.fromEntries(
-    Object.entries<PayloadTokenName>(names.enum).map(([key, name]) => {
+    Object.entries<PayloadTokenName>(namesByKey).map(([key, name]) => {
       const spec = specsByKey[key];
       if (!spec) throw new Error(`No payload declared for token ${name}`);
       return [key, spec instanceof PayloadType ? new PayloadToken(name) : new ValidatedPayloadToken(name, spec)];

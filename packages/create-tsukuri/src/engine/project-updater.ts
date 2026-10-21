@@ -3,16 +3,16 @@ import path from 'node:path';
 import { injectable } from 'tsyringe';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 
-import type { FileChangeKind } from '#~/enums/file-change-kinds.enums';
-import { FILE_CHANGE_KINDS } from '#~/enums/file-change-kinds.enums';
-import { FILE_KINDS } from '#~/enums/file-kinds.enums';
-import type { FileKind } from '#~/enums/file-kinds.enums';
+import type { FileChangeKind } from '#~/enums/files/file-change-kinds.enums';
+import { FILE_CHANGE_KINDS } from '#~/enums/files/file-change-kinds.enums';
+import { FILE_KINDS } from '#~/enums/files/file-kinds.enums';
+import type { FileKind } from '#~/enums/files/file-kinds.enums';
 import type { iProjectRecord } from '#~/record/project-record.schema';
 
-import { DEPENDENCY_FIELDS, PackageJsonMerger } from './package-json-merger';
-import type { iPackageJson } from './package-json-merger';
+import { DEPENDENCY_FIELDS, PackageJsonMerger } from './merge/package-json-merger';
+import type { iPackageJson } from './merge/package-json-merger';
+import { mergeThreeWay } from './merge/three-way-merge';
 import { ProjectGenerator } from './project-generator';
-import { mergeThreeWay } from './three-way-merge';
 import type { iVirtualFile } from './virtual-project';
 
 export interface iFileChange {
@@ -71,7 +71,7 @@ function sortDependencies(packageJson: iPackageJson) {
  */
 @injectable()
 export class ProjectUpdater {
-  constructor(
+  public constructor(
     private readonly generator: ProjectGenerator,
     private readonly packageJsonMerger: PackageJsonMerger,
   ) {}

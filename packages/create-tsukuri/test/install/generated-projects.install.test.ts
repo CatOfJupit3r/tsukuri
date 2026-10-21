@@ -12,6 +12,8 @@ import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
 interface iProjectCase {
   name: string;
   modules: ModuleId[];
+  /** Defaults to `acme`; a hyphenated name checks that renamed sources stay valid. */
+  projectName?: string;
   /** Extra commands that must pass after verify, e.g. a production build. */
   commands: string[];
 }
@@ -21,6 +23,7 @@ const SERVER_FEATURES = [MODULE_IDS.BETTER_AUTH, MODULE_IDS.EXAMPLE_DOMAIN];
 const PROJECT_CASES: iProjectCase[] = [
   {
     name: 'SSR web app with a Node server and every server module',
+    projectName: 'my-app',
     modules: [MODULE_IDS.WEB_SSR, MODULE_IDS.NODE_HONO, MODULE_IDS.POSTGRES, MODULE_IDS.VALKEY, ...SERVER_FEATURES],
     commands: ['pnpm run build'],
   },
@@ -60,16 +63,19 @@ const PROJECT_CASES: iProjectCase[] = [
 describe('generated projects', () => {
   const createTempDir = useTempDir();
 
-  it.each(PROJECT_CASES)('$name installs, passes verify and builds', async ({ modules, commands }) => {
-    const targetDir = path.join(await createTempDir(), 'acme');
-    await createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT })
-      .resolve(ProjectGenerator)
-      .create({ targetDir, projectName: 'acme', modules });
-    await copyFile(path.join(targetDir, '.env.example'), path.join(targetDir, '.env'));
+  it.each(PROJECT_CASES)(
+    '$name installs, passes verify and builds',
+    async ({ modules, projectName = 'acme', commands }) => {
+      const targetDir = path.join(await createTempDir(), projectName);
+      await createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT })
+        .resolve(ProjectGenerator)
+        .create({ targetDir, projectName, modules });
+      await copyFile(path.join(targetDir, '.env.example'), path.join(targetDir, '.env'));
 
-    for (const command of ['pnpm install --no-frozen-lockfile', 'pnpm run verify --tests', ...commands]) {
-      const result = await runCommand(command, targetDir);
-      expect(result.exitCode, `${command}\n${result.output}`).toBe(0);
-    }
-  });
+      for (const command of ['pnpm install --no-frozen-lockfile', 'pnpm run verify --tests', ...commands]) {
+        const result = await runCommand(command, targetDir);
+        expect(result.exitCode, `${command}\n${result.output}`).toBe(0);
+      }
+    },
+  );
 });

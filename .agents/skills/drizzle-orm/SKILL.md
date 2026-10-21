@@ -77,7 +77,7 @@ Repositories take the resolver as a constructor dependency and call its methods:
 ```typescript
 @singleton()
 export class DrizzleSomeRepository implements iSomeRepository {
-  constructor(
+  public constructor(
     private readonly databaseService: DatabaseService,
     private readonly someResolver: SomeResolver,
   ) {}
@@ -89,4 +89,4 @@ export class DrizzleSomeRepository implements iSomeRepository {
 }
 ```
 
-See `packages/api/src/features/auth/auth-user.resolver.ts`, `packages/api/src/features/achievements/user-achievement.resolver.ts`, and `packages/api/src/features/user/user-profile.resolver.ts` (with its `drizzle-user-profile.repository.ts`) for real examples.
+See `packages/api/src/features/auth/users/auth-user.resolver.ts`, `packages/api/src/features/achievements/user-achievements/user-achievement.resolver.ts`, and `packages/api/src/features/user/profile/user-profile.resolver.ts` (with its `drizzle-user-profile.repository.ts`) for real examples.

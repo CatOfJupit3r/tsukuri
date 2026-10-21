@@ -1,4 +1,4 @@
-function PseudoPage() {
+export function PseudoPage() {
   return (
     <div
       style={{
@@ -50,5 +50,3 @@ function PseudoPage() {
     </div>
   );
 }
-
-export default PseudoPage;

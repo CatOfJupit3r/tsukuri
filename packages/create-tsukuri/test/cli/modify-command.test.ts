@@ -5,12 +5,12 @@ import path from 'node:path';
 import { createCliContainer } from '#~/cli/cli-container';
 import { ModifyCommand } from '#~/cli/modify-command';
 import { ProjectGenerator } from '#~/engine/project-generator';
+import { MODIFY_ACTIONS } from '#~/enums/cli/modify-actions.enums';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
-import { FILE_CHANGE_KINDS } from '#~/enums/file-change-kinds.enums';
+import { FILE_CHANGE_KINDS } from '#~/enums/files/file-change-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
-import { MODIFY_ACTIONS } from '#~/enums/modify-actions.enums';
 import type { ModuleId } from '#~/enums/module-ids.enums';
-import { baseModule } from '#~/modules/base.module';
+import { baseModule } from '#~/modules/base/base.module';
 import type { iProjectRecord } from '#~/record/project-record.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';

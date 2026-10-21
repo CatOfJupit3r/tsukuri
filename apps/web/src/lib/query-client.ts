@@ -10,6 +10,7 @@ const RETRY_DELAY_MS = 1000;
 
 /** 4xx responses mean the request itself is wrong, so repeating it cannot help. */
 function isClientError(error: unknown) {
+  // eslint-disable-next-line tsukuri/no-in-narrowing -- errors of every fetch client reach here; only some carry an HTTP status
   if (!(error instanceof Error) || !('status' in error) || typeof error.status !== 'number') return false;
   return error.status >= CLIENT_ERROR_STATUS_MIN && error.status <= CLIENT_ERROR_STATUS_MAX;
 }
