@@ -25,6 +25,7 @@ export const PRESETS = presetIdsEnumwaii.derive<iPreset>()(
         [PROMPT_IDS.DATABASE, [MODULE_IDS.POSTGRES]],
         [PROMPT_IDS.AUTH, [MODULE_IDS.BETTER_AUTH]],
         [PROMPT_IDS.INFRASTRUCTURE, [MODULE_IDS.VALKEY]],
+        [PROMPT_IDS.QUALITY, [MODULE_IDS.E2E]],
       ]),
     },
   ],

@@ -28,6 +28,9 @@ export const moduleIdsEnumwaii = em({
   WEB_SSR_REMOTE_BACKEND: 'web-ssr-remote-backend',
   BETTER_AUTH_WEB: 'better-auth-web',
   EXAMPLE_DOMAIN_WEB: 'example-domain-web',
+  E2E: 'e2e',
+  E2E_API: 'e2e-api',
+  E2E_BETTER_AUTH: 'e2e-better-auth',
 });
 
 export const MODULE_IDS = moduleIdsEnumwaii.enum;

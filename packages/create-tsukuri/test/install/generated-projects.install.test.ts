@@ -19,13 +19,22 @@ interface iProjectCase {
 }
 
 const SERVER_FEATURES = [MODULE_IDS.BETTER_AUTH, MODULE_IDS.EXAMPLE_DOMAIN];
+/** Loads the Playwright config and every spec without a browser or a running stack. */
+const LIST_E2E_SPECS = 'pnpm --filter=e2e exec playwright test --list';
 
 const PROJECT_CASES: iProjectCase[] = [
   {
-    name: 'SSR web app with a Node server and every server module',
+    name: 'SSR web app with a Node server, every server module and the E2E stack',
     projectName: 'my-app',
-    modules: [MODULE_IDS.WEB_SSR, MODULE_IDS.NODE_HONO, MODULE_IDS.POSTGRES, MODULE_IDS.VALKEY, ...SERVER_FEATURES],
-    commands: ['pnpm run build'],
+    modules: [
+      MODULE_IDS.WEB_SSR,
+      MODULE_IDS.NODE_HONO,
+      MODULE_IDS.POSTGRES,
+      MODULE_IDS.VALKEY,
+      MODULE_IDS.E2E,
+      ...SERVER_FEATURES,
+    ],
+    commands: ['pnpm run build', LIST_E2E_SPECS],
   },
   {
     name: 'SPA with a Node server',
@@ -33,9 +42,9 @@ const PROJECT_CASES: iProjectCase[] = [
     commands: ['pnpm --filter=web run build'],
   },
   {
-    name: 'TanStack Start app serving the API itself on SQLite',
-    modules: [MODULE_IDS.TANSTACK_START, MODULE_IDS.SQLITE, ...SERVER_FEATURES],
-    commands: ['pnpm --filter=web run build'],
+    name: 'TanStack Start app serving the API itself on SQLite, with the E2E stack',
+    modules: [MODULE_IDS.TANSTACK_START, MODULE_IDS.SQLITE, MODULE_IDS.E2E, ...SERVER_FEATURES],
+    commands: ['pnpm --filter=web run build', LIST_E2E_SPECS],
   },
   {
     name: 'Node server on SQLite',

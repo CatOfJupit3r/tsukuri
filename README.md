@@ -34,6 +34,7 @@ Update `.agents/skills/` once and both flows pick up the change.
 - `packages/api` – runtime-agnostic server: oRPC routers, services, Drizzle schema, Better Auth setup
 - `apps/server` – Node.js + Hono backend serving `packages/api`
 - `apps/web` – React 19 client, TanStack Router tree, authentication flows, Tailwind config
+- `apps/e2e` – Playwright end-to-end specs and the per-checkout stack they run against (`pnpm run e2e`)
 - `packages/server-contract` – API contract definitions and schema exports
 - `packages/common` – Shared utilities, types, constants, and helpers
 - `docs` – Product requirements, roadmap, risk registers, and supporting documentation
