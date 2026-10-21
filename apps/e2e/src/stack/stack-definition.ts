@@ -7,9 +7,6 @@ import { generatedDevTasks } from '#~/generated/dev-tasks';
 import { readPortEntries, readPublishedPort } from './published-ports';
 import { ENV_EXAMPLE_PATH, ROOT_PACKAGE_JSON_PATH } from './stack-paths';
 
-/** The dev task of the web app, whose port is the stack's base URL and which the stack serves from a build. */
-const WEB_DEV_TASK_FILTER = 'web';
-
 export interface iStackService {
   name: string;
   definition: Record<string, unknown>;
@@ -20,8 +17,8 @@ export interface iStackApp {
   filter: string;
   devPort: number;
   /**
-   * Served from a production build (its `build`, then `serve --port <port>`) instead of its dev server, so pages
-   * load like the deployed app instead of compiling modules on their first request.
+   * Served from a production build (its `build`, then `serve`) instead of its dev server, so pages load like the
+   * deployed app instead of compiling modules on their first request. The web app is, and its port is the base URL.
    */
   isServedFromBuild: boolean;
 }
@@ -40,7 +37,7 @@ export interface iStackDefinition {
 interface iStackDefinitionSources {
   projectName: string;
   composeServices: readonly { name: string; service: Record<string, unknown> }[];
-  devTasks: readonly { filter: string; portVariable: string | null }[];
+  devTasks: readonly { filter: string; portVariable: string | null; isServedFromBuild: boolean }[];
   exampleEnvironment: Record<string, string>;
 }
 
@@ -58,10 +55,12 @@ export function createStackDefinition(sources: iStackDefinitionSources): iStackD
   const apps = sources.devTasks.map((task) => ({
     filter: task.filter,
     devPort: readAppDevPort(task, sources.exampleEnvironment),
-    isServedFromBuild: task.filter === WEB_DEV_TASK_FILTER,
+    isServedFromBuild: task.isServedFromBuild,
   }));
-  const webApp = apps.find((app) => app.filter === WEB_DEV_TASK_FILTER);
-  if (webApp === undefined) throw new Error('The E2E stack needs the web app, but no dev task starts it.');
+  const [webApp, ...otherBuiltApps] = apps.filter((app) => app.isServedFromBuild);
+  if (webApp === undefined || otherBuiltApps.length > 0) {
+    throw new Error('The E2E stack serves exactly one web app from a build; its dev task says so (isServedFromBuild).');
+  }
 
   const services = sources.composeServices.map(({ name, service }) => ({ name, definition: service }));
   const servicePorts = services.flatMap((service) =>

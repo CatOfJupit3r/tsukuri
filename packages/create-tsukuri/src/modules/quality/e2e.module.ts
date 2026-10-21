@@ -14,6 +14,24 @@ const SPECS = `${E2E_WORKSPACE}/specs`;
 /** Specs that need a module besides the web app come with the glue module of that module. */
 const API_HEALTH_SPEC = 'api-health.spec.ts';
 const AUTH_SPEC = 'auth.spec.ts';
+/**
+ * A project that has not committed migrations yet still gets its tables; once it has, a schema change without a
+ * committed migration fails here instead of being generated. Stdin is closed and the run bounded, so a drizzle-kit
+ * prompt (such as a rename question) fails instead of hanging.
+ */
+const MIGRATIONS_CHECK = [
+  'timeout 300 pnpm run --if-present db:generate < /dev/null',
+  // No pipe: GitHub runs steps with `pipefail`, where an early-exiting `grep -q` would fail the listing.
+  'if [ -n "$(git ls-files -- \'*/migrations/*\')" ]; then',
+  '  git status --porcelain',
+  '  if [ -n "$(git status --porcelain)" ]; then',
+  "    echo '::error::The schema changed without a committed migration. Run pnpm run db:generate and commit it.'",
+  '    exit 1',
+  '  fi',
+  'fi',
+  '',
+].join('\n');
+
 /** Local output of a stack or a Playwright run. */
 const RUN_OUTPUT = ['.stack', 'test-results', 'playwright-report'];
 
@@ -107,8 +125,7 @@ export const e2eModule = defineModule({
       name: 'E2E',
       timeoutMinutes: 30,
       steps: [
-        // Projects that have not committed migrations yet still get their tables.
-        { name: 'Generate missing migrations', run: 'pnpm run --if-present db:generate' },
+        { name: 'Migrations match the schema', run: MIGRATIONS_CHECK },
         { name: 'Install Chromium', run: `pnpm ${E2E_FILTER} exec playwright install --with-deps chromium` },
         { name: 'E2E tests', run: 'pnpm run e2e' },
         {

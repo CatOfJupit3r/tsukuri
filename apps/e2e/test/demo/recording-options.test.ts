@@ -13,7 +13,17 @@ describe('parseRecordingOptions', () => {
       viewport: { width: 1440, height: 900 },
       colorScheme: 'no-preference',
       themeCookie: null,
+      themeStorage: null,
     });
+  });
+
+  it('sets the theme the app keeps in localStorage', () => {
+    const options = parseRecordingOptions(
+      [...REQUIRED_ARGUMENTS, '--theme-storage', 'acme.theme=LIGHT'],
+      INVOCATION_DIRECTORY,
+    );
+
+    expect(options.themeStorage).toEqual({ name: 'acme.theme', value: 'LIGHT' });
   });
 
   it('sets the color scheme and the theme cookie the app reads', () => {

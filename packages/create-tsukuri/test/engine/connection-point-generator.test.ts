@@ -400,6 +400,7 @@ describe('ConnectionPointGenerator', () => {
       createManifest(ALPHA, {
         contributions: [
           { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'server', portVariable: 'SERVER_PORT' },
+          { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'web', portVariable: 'VITE_PORT', isServedFromBuild: true },
           { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'worker' },
           {
             kind: CONNECTION_POINT_KINDS.COMPOSE_SERVICE,
@@ -421,11 +422,26 @@ describe('ConnectionPointGenerator', () => {
     expect(services).toContain('"5432:5432"');
     expect(fileContent(result, 'apps/e2e/src/generated/dev-tasks.ts')).toContain(
       [
-        "  { filter: 'server', portVariable: 'SERVER_PORT' },",
-        "  { filter: 'worker', portVariable: null },",
+        "  { filter: 'server', portVariable: 'SERVER_PORT', isServedFromBuild: false },",
+        "  { filter: 'web', portVariable: 'VITE_PORT', isServedFromBuild: true },",
+        "  { filter: 'worker', portVariable: null, isServedFromBuild: false },",
         '];',
       ].join('\n'),
     );
+  });
+
+  it('rejects two modules starting one dev task on different ports', async () => {
+    await expect(
+      generate(
+        createManifest(ALPHA, {
+          contributions: [{ kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'web', portVariable: 'VITE_PORT' }],
+        }),
+        createManifest(BETA, {
+          contributions: [{ kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'web', portVariable: 'WEB_PORT' }],
+          hosts: [{ kind: CONNECTION_POINT_KINDS.DEV_TASK, workspace: 'apps/e2e' }],
+        }),
+      ),
+    ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
   });
 
   it('adds each module CI job after the verify job, starting with the shared setup steps', async () => {
@@ -440,6 +456,7 @@ describe('ConnectionPointGenerator', () => {
             timeoutMinutes: 30,
             steps: [
               { name: 'E2E tests', run: 'pnpm run e2e', env: { E2E: 'true' } },
+              { name: 'Check', run: 'echo one\nif true; then\n  echo two\nfi\n' },
               { name: 'Upload report', if: 'failure()', uses: 'actions/upload-artifact@v4', with: { name: 'report' } },
             ],
           },
@@ -457,8 +474,11 @@ describe('ConnectionPointGenerator', () => {
     const e2eJob = workflow.jobs.e2e;
     expect(e2eJob?.['timeout-minutes']).toBe(30);
     expect(e2eJob?.steps.slice(0, 4)).toEqual(workflow.jobs.verify?.steps.slice(0, 4));
+    // A multi-line script stays a literal block, so the shell sees its lines as written.
+    expect(content).toContain('run: |\n');
     expect(e2eJob?.steps.slice(4)).toEqual([
       { name: 'E2E tests', run: 'pnpm run e2e', env: { E2E: 'true' } },
+      { name: 'Check', run: 'echo one\nif true; then\n  echo two\nfi\n' },
       { name: 'Upload report', if: 'failure()', uses: 'actions/upload-artifact@v4', with: { name: 'report' } },
     ]);
   });

@@ -191,6 +191,11 @@ export const devTaskContributionSchema = z.object({
     .string()
     .regex(/^[A-Z][A-Z0-9_]*$/, 'Env variable names are CONSTANT_CASE')
     .optional(),
+  /**
+   * Tools that start the app like production (an E2E stack) build it, then serve the build: its `build` and `serve`
+   * scripts take `--outDir <dir>`, and `serve` takes `--port <port>`.
+   */
+  isServedFromBuild: z.boolean().default(false),
 });
 
 /** A workspace built (with its dependencies) by the root `build` script. */
@@ -254,7 +259,7 @@ export type iConnectionPointContributionInput =
   | iWithDefaults<iComposeServiceContribution, 'volumes'>
   | iWithDefaults<iCiStepContribution, 'env'>
   | iCiJobContributionInput
-  | iDevTaskContribution
+  | iWithDefaults<iDevTaskContribution, 'isServedFromBuild'>
   | iBuildTaskContribution;
 export type iRouterContribution = z.output<typeof routerContributionSchema>;
 export type iContractContribution = z.output<typeof contractContributionSchema>;

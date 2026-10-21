@@ -40,7 +40,10 @@ export default defineConfig({
     timeout: STACK_BOOT_TIMEOUT_MS,
     reuseExistingServer: shouldReuseStack,
     env: stack.environment,
-    gracefulShutdown: { signal: 'SIGTERM', timeout: 10_000 },
+    // Shows the stack's progress, so a boot that fails in CI explains itself.
+    stdout: 'pipe',
+    // The stack stops its apps, then removes its services.
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 30_000 },
   },
 
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

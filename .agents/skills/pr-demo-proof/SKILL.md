@@ -43,7 +43,7 @@ Demos run against this checkout's E2E stack (`pnpm run e2e:stack`): its own data
   ```
 
 - Record it: `pnpm run e2e:record --flow <flow.ts> --out <dir>/<issue>-<surface>-<theme> --app /`. The recorder opens `--app` on the stack, overlays the URL, the keys pressed and the cursor, runs the flow at readable speed and writes `<out>.mp4` with ffmpeg; screenshots land next to it.
-- Options: `--viewport 390x844` for phone, `--theme dark|light` for the browser color scheme, `--theme-cookie <name>=<value>` for an app that reads its theme from a cookie (for this app: `--theme-cookie startername.theme=DARK` or `=LIGHT`), `--wait-for "<selector>"` before the flow starts, `--storage-state <file>` to start signed in, `--base-url` for a server other than the stack.
+- Options: `--viewport 390x844` for phone, `--theme dark|light` for the browser color scheme, `--theme-cookie <name>=<value>` for an app that reads its theme from a cookie and `--theme-storage <key>=<value>` for one that reads it from localStorage (this app keeps the theme under `startername.theme`, value `DARK` or `LIGHT`: in a cookie when it renders on the server, in localStorage as a single-page app), `--wait-for "<selector>"` before the flow starts, `--storage-state <file>` to start signed in, `--base-url` for a server other than the stack.
 - Use the mouse API (locator actions, `page.mouse`) so the cursor shows, and stop after the outcome is visible.
 - For recordings of whole specs, run `pnpm --filter=e2e exec playwright test -c playwright.video.config.ts <spec>` and take the videos from `apps/e2e/test-results/`. With the stack already running, add `E2E_REUSE_STACK=true` so the run skips the stack boot.
 - Stop what you started (`pnpm run e2e:cleanup`) and say so in Validation.

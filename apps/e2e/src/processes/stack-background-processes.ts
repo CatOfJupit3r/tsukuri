@@ -15,6 +15,13 @@ export interface iBackgroundCommand {
   env: NodeJS.ProcessEnv;
 }
 
+export interface iStackBackgroundProcessesOptions {
+  /** Runs once every server stopped, such as removing the services the servers used. */
+  onStop: () => Promise<unknown>;
+  /** Starts a watchdog that stops the server trees when this process is killed outright. */
+  shouldWatchOrphans: boolean;
+}
+
 /**
  * Owns the long-running servers of the E2E stack and stops each one with its whole process tree: the servers run
  * through `pnpm`, so killing only the spawned process would leave its node and vite descendants running. The stack
@@ -27,9 +34,24 @@ export class StackBackgroundProcesses {
 
   private readonly stopController = new AbortController();
 
+  private readonly stopped = Promise.withResolvers<unknown>();
+
   private isStopping = false;
 
-  public constructor(private readonly onStop: () => Promise<unknown>) {
+  public constructor(private readonly options: iStackBackgroundProcessesOptions) {}
+
+  /** Aborted once the stack starts stopping, so its boot steps end early. */
+  public get stopSignal() {
+    return this.stopController.signal;
+  }
+
+  /** Settles once the servers exited and `onStop` finished. */
+  public get whenStopped() {
+    return this.stopped.promise;
+  }
+
+  /** Stops the stack on a stop signal, and kills the servers when this process exits. */
+  public stopOnProcessSignals() {
     for (const signal of STOP_SIGNALS) {
       process.on(signal, () => {
         console.log(`[e2e-stack] Received ${signal}, stopping the stack...`);
@@ -39,15 +61,12 @@ export class StackBackgroundProcesses {
     process.on('exit', () => this.stopAll());
   }
 
-  /** Aborted once the stack starts stopping, so waits for its servers end early. */
-  public get stopSignal() {
-    return this.stopController.signal;
-  }
-
+  /** Starts every server; refuses once the stack is stopping, so a late boot step never starts orphans. */
   public startAll(commands: readonly iBackgroundCommand[]) {
+    this.stopSignal.throwIfAborted();
     for (const command of commands) this.start(command);
     const serverPids = this.servers.flatMap((server) => (server.pid === undefined ? [] : [server.pid]));
-    if (serverPids.length > 0) this.startOrphanWatchdog(serverPids);
+    if (this.options.shouldWatchOrphans && serverPids.length > 0) this.startOrphanWatchdog(serverPids);
   }
 
   /**
@@ -57,14 +76,16 @@ export class StackBackgroundProcesses {
   public stopAll() {
     if (this.isStopping) return;
     this.isStopping = true;
-    this.stopController.abort(new Error('The stack stopped'));
+    this.stopController.abort(new Error('The E2E stack stopped'));
     console.log('[e2e-stack] Stopping background processes...');
     const runningServers = this.servers.filter((server) => server.exitCode === null && server.signalCode === null);
     const exits = runningServers.map(async (server) => once(server, 'exit'));
     for (const server of runningServers) {
       if (server.pid !== undefined) killProcessTree(server.pid);
     }
-    void Promise.all(exits).then(this.onStop);
+    void Promise.all(exits)
+      .then(this.options.onStop)
+      .finally(() => this.stopped.resolve(undefined));
   }
 
   private start({ command, args, cwd, env }: iBackgroundCommand) {

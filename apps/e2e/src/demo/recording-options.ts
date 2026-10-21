@@ -18,8 +18,10 @@ export interface iRecordingOptions {
   appPath: string;
   viewport: { width: number; height: number };
   colorScheme: ColorScheme;
-  /** A cookie the app reads its theme from, set before the first page load. */
+  /** A cookie a server-rendered app reads its theme from, set before the first page load. */
   themeCookie: { name: string; value: string } | null;
+  /** A localStorage entry a client-rendered app reads its theme from, set before the app's scripts run. */
+  themeStorage: { name: string; value: string } | null;
   waitForSelector: string | null;
   baseUrl: string | null;
   storageStatePath: string | null;
@@ -27,7 +29,8 @@ export interface iRecordingOptions {
 
 export const RECORDING_USAGE = [
   'Usage: pnpm run e2e:record --flow <flow.ts> --out <path without extension> --app <path>',
-  '  [--viewport 1440x900] [--theme dark|light] [--theme-cookie <name>=<value>] [--wait-for <selector>]',
+  '  [--viewport 1440x900] [--theme dark|light] [--theme-cookie <name>=<value>] [--theme-storage <key>=<value>]',
+  '  [--wait-for <selector>]',
   '  [--base-url <url>] [--storage-state <signed-in Playwright state>]',
 ].join('\n');
 
@@ -46,11 +49,11 @@ function parseColorScheme(rawTheme: string | null) {
   return THEME_COLOR_SCHEMES.find((colorScheme) => colorScheme === rawTheme) ?? DEFAULT_COLOR_SCHEME;
 }
 
-function parseThemeCookie(rawCookie: string | null) {
-  if (rawCookie === null) return null;
-  const separatorIndex = rawCookie.indexOf(COOKIE_SEPARATOR);
-  if (separatorIndex <= 0) throw new Error(`--theme-cookie takes <name>=<value>, got "${rawCookie}"`);
-  return { name: rawCookie.slice(0, separatorIndex), value: rawCookie.slice(separatorIndex + 1) };
+function parseNameValue(optionName: string, rawValue: string | null) {
+  if (rawValue === null) return null;
+  const separatorIndex = rawValue.indexOf(COOKIE_SEPARATOR);
+  if (separatorIndex <= 0) throw new Error(`--${optionName} takes <name>=<value>, got "${rawValue}"`);
+  return { name: rawValue.slice(0, separatorIndex), value: rawValue.slice(separatorIndex + 1) };
 }
 
 /** Paths are relative to where the command was typed: pnpm runs the script inside this workspace. */
@@ -67,7 +70,8 @@ export function parseRecordingOptions(argv: readonly string[], invocationDirecto
     appPath,
     viewport: parseViewport(readOption(argv, 'viewport') ?? DEFAULT_VIEWPORT),
     colorScheme: parseColorScheme(readOption(argv, 'theme')),
-    themeCookie: parseThemeCookie(readOption(argv, 'theme-cookie')),
+    themeCookie: parseNameValue('theme-cookie', readOption(argv, 'theme-cookie')),
+    themeStorage: parseNameValue('theme-storage', readOption(argv, 'theme-storage')),
     waitForSelector: readOption(argv, 'wait-for'),
     baseUrl: readOption(argv, 'base-url'),
     storageStatePath: storageStatePath === null ? null : path.resolve(invocationDirectory, storageStatePath),

@@ -5,7 +5,7 @@ import { createMachineSlotProbe } from '#~/machine/machine-slot-probe';
 import type { iStackDefinition } from './stack-definition';
 import { readStackDefinition } from './stack-definition';
 import { buildStackEnvironment } from './stack-environment';
-import { E2E_WORKSPACE_DIRECTORY, PROJECT_ROOT_DIRECTORY, slotDataDirectory, slotStateDirectory } from './stack-paths';
+import { CHECKOUT_ID, PROJECT_ROOT_DIRECTORY, slotDataDirectory, slotStateDirectory } from './stack-paths';
 import { buildSlotPortMap, toSlotPort } from './stack-ports';
 import { chooseStackSlot, parseStackSlot, STACK_SLOT_ENV_NAME } from './stack-slot';
 
@@ -33,7 +33,7 @@ function composeProjectNameOf(definition: iStackDefinition, slot: number) {
     .toLowerCase()
     .replace(INVALID_PROJECT_NAME_CHARACTERS, '-')
     .replace(EDGE_SEPARATORS, '');
-  return `${projectName}-e2e-${slot}`;
+  return `${projectName}-e2e-${slot}-${CHECKOUT_ID}`;
 }
 
 /** The stack `definition` runs in `slot`, in an environment derived from `baseEnvironment`. */
@@ -68,7 +68,7 @@ export function describeStack(definition: iStackDefinition, slot: number, baseEn
  */
 export async function claimStack() {
   const definition = await readStackDefinition();
-  const probe = createMachineSlotProbe((slot) => composeProjectNameOf(definition, slot), E2E_WORKSPACE_DIRECTORY);
+  const probe = createMachineSlotProbe();
   const slot =
     parseStackSlot(process.env[STACK_SLOT_ENV_NAME]) ??
     (await chooseStackSlot(probe, (candidate) => definition.devPorts.map((devPort) => toSlotPort(devPort, candidate))));

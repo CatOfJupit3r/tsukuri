@@ -5,6 +5,7 @@ function createProbe(overrides: Partial<iStackSlotProbe> = {}): iStackSlotProbe 
   return {
     readRunningSlot: async () => null,
     listComposeSlots: async () => new Map(),
+    isSlotLocked: async () => false,
     isPortFree: async () => true,
     ...overrides,
   };
@@ -38,6 +39,12 @@ describe('chooseStackSlot', () => {
     });
 
     await expect(chooseStackSlot(probe, slotPorts)).resolves.toBe(2);
+  });
+
+  it('skips a slot another stack locked while it starts', async () => {
+    const probe = createProbe({ isSlotLocked: async (slot) => slot === 0 });
+
+    await expect(chooseStackSlot(probe, slotPorts)).resolves.toBe(1);
   });
 
   it('fails when every slot is held', async () => {

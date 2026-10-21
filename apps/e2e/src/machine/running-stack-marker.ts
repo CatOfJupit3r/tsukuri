@@ -1,8 +1,10 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { isProcessRunning } from '#~/processes/process-tree';
 import { RUNNING_STACK_MARKER_PATH } from '#~/stack/stack-paths';
+
+import { readJsonObject, readNumberField } from './json-file';
 
 interface iRunningStackMarker {
   slot: number;
@@ -10,13 +12,11 @@ interface iRunningStackMarker {
 }
 
 async function readMarker(): Promise<iRunningStackMarker | null> {
-  const content = await readFile(RUNNING_STACK_MARKER_PATH, 'utf8').catch(() => null);
-  if (content === null) return null;
-  const marker: unknown = JSON.parse(content);
-  if (typeof marker !== 'object' || marker === null) return null;
-  const slot: unknown = Reflect.get(marker, 'slot');
-  const pid: unknown = Reflect.get(marker, 'pid');
-  return typeof slot === 'number' && typeof pid === 'number' ? { slot, pid } : null;
+  const marker = await readJsonObject(RUNNING_STACK_MARKER_PATH);
+  if (marker === null) return null;
+  const slot = readNumberField(marker, 'slot');
+  const pid = readNumberField(marker, 'pid');
+  return slot !== null && pid !== null ? { slot, pid } : null;
 }
 
 /** The stack this checkout runs; a marker whose process is gone was left by a stack that was killed. */

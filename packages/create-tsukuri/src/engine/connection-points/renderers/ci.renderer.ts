@@ -54,8 +54,13 @@ export class CiRenderer {
       },
     };
 
-    // Every job repeats the setup steps in full rather than through YAML aliases.
-    return [{ path: CI_WORKFLOW_FILE, content: withHashHeader(stringify(workflow, { aliasDuplicateObjects: false })) }];
+    // Every job repeats the setup steps in full rather than through YAML aliases; multi-line scripts stay literal.
+    return [
+      {
+        path: CI_WORKFLOW_FILE,
+        content: withHashHeader(stringify(workflow, { aliasDuplicateObjects: false, blockQuote: 'literal' })),
+      },
+    ];
   }
 
   private verifyJob(steps: iOwnedContribution<iCiStepContribution>[]) {

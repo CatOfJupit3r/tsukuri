@@ -9,7 +9,8 @@
  *   }
  *
  * and record it: `pnpm run e2e:record --flow <flow.ts> --out <dir>/<issue>-<surface>-<theme> --app /`. Options are
- * listed in `RECORDING_USAGE`; `--theme-cookie <name>=<value>` sets the cookie an app reads its theme from. Produces
+ * listed in `RECORDING_USAGE`; `--theme-cookie <name>=<value>` sets the cookie a server-rendered app reads its theme
+ * from, and `--theme-storage <key>=<value>` the localStorage entry a client-rendered app reads it from. Produces
  * `<out>.mp4` (through ffmpeg) with screenshots next to it as `<name>.png`. Keep flows under about 20 seconds and use
  * the mouse API (page.mouse, locator actions) so the cursor shows.
  */
@@ -94,6 +95,12 @@ async function createRecordingContext(options: iRecordingOptions, baseUrl: strin
   });
   // An app that keeps its theme in a cookie ignores the browser's color scheme.
   if (options.themeCookie !== null) await context.addCookies([{ ...options.themeCookie, url: baseUrl }]);
+  if (options.themeStorage !== null) {
+    const { name, value } = options.themeStorage;
+    await context.addInitScript({
+      content: `localStorage.setItem(${JSON.stringify(name)}, ${JSON.stringify(value)});`,
+    });
+  }
   await context.addInitScript({ content: buildFlowHudScript(DEVTOOLS_TEST_IDENTIFIER) });
   return { browser, context };
 }

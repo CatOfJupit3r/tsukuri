@@ -7,8 +7,10 @@ export const STACK_SLOT_ENV_NAME = 'E2E_STACK_SLOT';
 export interface iStackSlotProbe {
   /** The slot of the stack this checkout is running, if it runs one. */
   readRunningSlot: () => Promise<number | null>;
-  /** The slot of each compose project that still has containers, with whether this checkout started it. */
+  /** The slot of each E2E compose project that still has containers, with whether this checkout started it. */
   listComposeSlots: () => Promise<Map<number, { isOwn: boolean }>>;
+  /** Whether a running stack holds the slot's lock. */
+  isSlotLocked: (slot: number) => Promise<boolean>;
   isPortFree: (port: number) => Promise<boolean>;
 }
 
@@ -31,14 +33,15 @@ async function findFreeSlot(
   slotPorts: (slot: number) => number[],
 ) {
   for (let slot = 0; slot < STACK_SLOT_COUNT; slot += 1) {
-    if (!composeSlots.has(slot) && (await arePortsFree(probe, slotPorts(slot)))) return slot;
+    const isHeld = composeSlots.has(slot) || (await probe.isSlotLocked(slot));
+    if (!isHeld && (await arePortsFree(probe, slotPorts(slot)))) return slot;
   }
   return null;
 }
 
 /**
  * The slot of the stack this checkout runs, else the slot its leftover containers hold, else the first slot that
- * neither another checkout's containers nor a taken port hold.
+ * neither another stack's containers or lock nor a taken port hold.
  */
 export async function chooseStackSlot(probe: iStackSlotProbe, slotPorts: (slot: number) => number[]) {
   const runningSlot = await probe.readRunningSlot();
