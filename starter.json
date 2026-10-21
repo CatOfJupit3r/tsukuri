@@ -49,6 +49,11 @@
       "id": "web-ssr",
       "version": "1.0.0",
       "options": {}
+    },
+    {
+      "id": "e2e",
+      "version": "1.0.0",
+      "options": {}
     }
   ],
   "skills": {

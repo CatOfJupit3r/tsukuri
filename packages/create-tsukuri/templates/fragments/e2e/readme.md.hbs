@@ -1,0 +1,9 @@
+## End-to-End Tests
+
+- `pnpm run e2e` – boot this checkout's E2E stack, run the Playwright specs in `apps/e2e/specs` and remove the stack
+- `pnpm run e2e:stack` – keep the stack running; run specs against it with `E2E_REUSE_STACK=true pnpm run e2e`
+- `pnpm run e2e:cleanup` – stop the stack and remove its containers
+- `pnpm run e2e:preflight` – check Docker, the Playwright browser and the stack's ports
+- `pnpm run e2e:record` – record a demo of a flow as an MP4 (needs ffmpeg)
+
+Install the browser once with `pnpm --filter=e2e exec playwright install chromium`.

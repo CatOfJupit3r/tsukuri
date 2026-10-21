@@ -202,7 +202,13 @@ export const webModule = defineModule({
       name: 'Verify styles (tokens, raw colors, stylesheet allowlist)',
       run: 'pnpm run verify:styles',
     },
-    { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: WEB_PACKAGE_NAME },
+    {
+      kind: CONNECTION_POINT_KINDS.DEV_TASK,
+      filter: WEB_PACKAGE_NAME,
+      portVariable: 'VITE_PORT',
+      // `vite build` and `vite preview` take `--outDir` and `--port`.
+      isServedFromBuild: true,
+    },
     { kind: CONNECTION_POINT_KINDS.BUILD_TASK, filter: WEB_PACKAGE_NAME },
   ],
   hosts: [

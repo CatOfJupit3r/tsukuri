@@ -95,7 +95,8 @@ export const postgresModule = defineModule({
         ports: ['5432:5432'],
         volumes: [`${POSTGRES_VOLUME}:/var/lib/postgresql/data`],
         healthcheck: {
-          test: ['CMD-SHELL', 'pg_isready -U postgres'],
+          // Over TCP: the init server the image runs first only listens on its socket, then restarts.
+          test: ['CMD-SHELL', 'pg_isready -U postgres -h 127.0.0.1'],
           interval: '5s',
           timeout: '5s',
           retries: 10,

@@ -20,6 +20,7 @@ import { sqliteModule } from './database/sqlite.module';
 import { exampleDomainWebModule } from './feature/example-domain-web.module';
 import { exampleDomainModule } from './feature/example-domain.module';
 import { valkeyModule } from './infrastructure/valkey.module';
+import { e2eApiModule, e2eBetterAuthModule, e2eModule } from './quality/e2e.module';
 import { webApiModule } from './web/web-api.module';
 import { webRemoteBackendModule, webSsrRemoteBackendModule } from './web/web-remote-backend.module';
 import { webSpaModule } from './web/web-spa.module';
@@ -54,4 +55,7 @@ export const MODULE_MANIFESTS: iModuleManifestInput[] = [
   webSsrRemoteBackendModule,
   betterAuthWebModule,
   exampleDomainWebModule,
+  e2eModule,
+  e2eApiModule,
+  e2eBetterAuthModule,
 ];

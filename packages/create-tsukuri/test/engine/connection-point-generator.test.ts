@@ -395,6 +395,113 @@ describe('ConnectionPointGenerator', () => {
     ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
   });
 
+  it('gives a hosting workspace the compose services and dev tasks as data', async () => {
+    const result = await generate(
+      createManifest(ALPHA, {
+        contributions: [
+          { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'server', portVariable: 'SERVER_PORT' },
+          { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'web', portVariable: 'VITE_PORT', isServedFromBuild: true },
+          { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'worker' },
+          {
+            kind: CONNECTION_POINT_KINDS.COMPOSE_SERVICE,
+            name: 'postgres',
+            service: { image: 'postgres:17', ports: ['5432:5432'] },
+          },
+        ],
+      }),
+      createManifest(BETA, {
+        hosts: [
+          { kind: CONNECTION_POINT_KINDS.COMPOSE_SERVICE, workspace: 'apps/e2e' },
+          { kind: CONNECTION_POINT_KINDS.DEV_TASK, workspace: 'apps/e2e' },
+        ],
+      }),
+    );
+
+    const services = fileContent(result, 'apps/e2e/src/generated/compose-services.ts');
+    expect(services).toContain("name: 'postgres',");
+    expect(services).toContain('"5432:5432"');
+    expect(fileContent(result, 'apps/e2e/src/generated/dev-tasks.ts')).toContain(
+      [
+        "  { filter: 'server', portVariable: 'SERVER_PORT', isServedFromBuild: false },",
+        "  { filter: 'web', portVariable: 'VITE_PORT', isServedFromBuild: true },",
+        "  { filter: 'worker', portVariable: null, isServedFromBuild: false },",
+        '];',
+      ].join('\n'),
+    );
+  });
+
+  it('rejects two modules starting one dev task on different ports', async () => {
+    await expect(
+      generate(
+        createManifest(ALPHA, {
+          contributions: [{ kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'web', portVariable: 'VITE_PORT' }],
+        }),
+        createManifest(BETA, {
+          contributions: [{ kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: 'web', portVariable: 'WEB_PORT' }],
+          hosts: [{ kind: CONNECTION_POINT_KINDS.DEV_TASK, workspace: 'apps/e2e' }],
+        }),
+      ),
+    ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
+  });
+
+  it('adds each module CI job after the verify job, starting with the shared setup steps', async () => {
+    const result = await generate(
+      createManifest(ALPHA, {
+        contributions: [
+          { kind: CONNECTION_POINT_KINDS.CI_STEP, name: 'Verify', run: 'pnpm run verify --tests' },
+          {
+            kind: CONNECTION_POINT_KINDS.CI_JOB,
+            id: 'e2e',
+            name: 'E2E',
+            timeoutMinutes: 30,
+            steps: [
+              { name: 'E2E tests', run: 'pnpm run e2e', env: { E2E: 'true' } },
+              { name: 'Check', run: 'echo one\nif true; then\n  echo two\nfi\n' },
+              { name: 'Upload report', if: 'failure()', uses: 'actions/upload-artifact@v4', with: { name: 'report' } },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const content = fileContent(result, '.github/workflows/ci.yml');
+    // Each job spells its setup steps out instead of pointing at the first job's through YAML aliases.
+    expect(content).not.toMatch(/^\s*- [*&]/m);
+    const workflow = parse(content) as {
+      jobs: Record<string, { name: string; 'timeout-minutes': number; steps: Record<string, unknown>[] }>;
+    };
+    expect(Object.keys(workflow.jobs)).toEqual(['verify', 'e2e']);
+    const e2eJob = workflow.jobs.e2e;
+    expect(e2eJob?.['timeout-minutes']).toBe(30);
+    expect(e2eJob?.steps.slice(0, 4)).toEqual(workflow.jobs.verify?.steps.slice(0, 4));
+    // A multi-line script stays a literal block, so the shell sees its lines as written.
+    expect(content).toContain('run: |\n');
+    expect(e2eJob?.steps.slice(4)).toEqual([
+      { name: 'E2E tests', run: 'pnpm run e2e', env: { E2E: 'true' } },
+      { name: 'Check', run: 'echo one\nif true; then\n  echo two\nfi\n' },
+      { name: 'Upload report', if: 'failure()', uses: 'actions/upload-artifact@v4', with: { name: 'report' } },
+    ]);
+  });
+
+  it('rejects a CI job whose id another job already uses', async () => {
+    await expect(
+      generate(
+        createManifest(ALPHA, {
+          contributions: [
+            { kind: CONNECTION_POINT_KINDS.CI_STEP, name: 'Verify', run: 'pnpm run verify' },
+            {
+              kind: CONNECTION_POINT_KINDS.CI_JOB,
+              id: 'verify',
+              name: 'Verify again',
+              timeoutMinutes: 10,
+              steps: [{ name: 'Check', run: 'pnpm run check' }],
+            },
+          ],
+        }),
+      ),
+    ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
+  });
+
   it('generates nothing but a recursive build script when no module contributes', async () => {
     const result = await generate(createManifest(ALPHA));
 

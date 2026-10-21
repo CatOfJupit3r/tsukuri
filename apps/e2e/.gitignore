@@ -1,0 +1,17 @@
+# deps
+node_modules/
+
+# playwright output
+test-results/
+playwright-report/
+blob-report/
+
+# per-slot stack state: compose file, local data, running marker
+.stack/
+
+# env
+.env*
+!.env.example
+
+# logs
+*.log

@@ -18,6 +18,7 @@ const connectionPointKindsEnumwaii = em([
   'WORKER_BINDING',
   'COMPOSE_SERVICE',
   'CI_STEP',
+  'CI_JOB',
   'DEV_TASK',
   'BUILD_TASK',
 ]);

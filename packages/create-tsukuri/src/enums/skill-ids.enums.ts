@@ -15,6 +15,7 @@ const skillIdsEnumwaii = em({
   REACT_COMPONENT_PATTERNS: 'react-component-patterns',
   TANSTACK_FORMS: 'tanstack-forms',
   TANSTACK_QUERY_INTEGRATION: 'tanstack-query-integration',
+  PR_DEMO_PROOF: 'pr-demo-proof',
 });
 
 export const SKILL_IDS = skillIdsEnumwaii.enum;

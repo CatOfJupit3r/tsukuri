@@ -29,7 +29,7 @@ const baseProjectConfig = {
       transformerPackageNames: ['@swc/core', 'unplugin-swc'],
     }),
   ],
-  ...withWorkspaceSourceResolve(),
+  ...withWorkspaceSourceResolve({ isTest: true }),
   cacheDir: 'node_modules/.vitest',
 };
 

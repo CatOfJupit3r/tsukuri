@@ -158,10 +158,44 @@ export const ciStepContributionSchema = z.object({
   env: z.record(z.string(), z.string()).default({}),
 });
 
+/** One step of a CI job: a command or an action. */
+const ciJobStepSchema = z
+  .object({
+    name: z.string().min(1),
+    /** GitHub Actions condition, e.g. `failure()`. */
+    if: z.string().min(1).optional(),
+    run: z.string().min(1).optional(),
+    uses: z.string().min(1).optional(),
+    with: z.record(z.string(), z.unknown()).optional(),
+    env: z.record(z.string(), z.string()).default({}),
+  })
+  .refine((step) => (step.run === undefined) !== (step.uses === undefined), {
+    message: 'A CI step either runs a command or uses an action',
+  });
+
+/** A CI job of its own, after the checkout, pnpm, Node and install steps every job starts with. */
+export const ciJobContributionSchema = z.object({
+  kind: z.literal(CONNECTION_POINT_KINDS.CI_JOB),
+  id: z.string().regex(/^[a-z][a-z0-9-]*$/, 'Job ids are kebab-case'),
+  name: z.string().min(1),
+  timeoutMinutes: z.number().int().positive(),
+  steps: z.array(ciJobStepSchema).min(1),
+});
+
 /** A workspace started by the root `dev` script. */
 export const devTaskContributionSchema = z.object({
   kind: z.literal(CONNECTION_POINT_KINDS.DEV_TASK),
   filter: z.string().min(1),
+  /** The env variable holding the port its dev server listens on, for tools that start it on another port. */
+  portVariable: z
+    .string()
+    .regex(/^[A-Z][A-Z0-9_]*$/, 'Env variable names are CONSTANT_CASE')
+    .optional(),
+  /**
+   * Tools that start the app like production (an E2E stack) build it, then serve the build: its `build` and `serve`
+   * scripts take `--outDir <dir>`, and `serve` takes `--port <port>`.
+   */
+  isServedFromBuild: z.boolean().default(false),
 });
 
 /** A workspace built (with its dependencies) by the root `build` script. */
@@ -196,6 +230,7 @@ export const connectionPointContributionSchema = z.discriminatedUnion('kind', [
   workerBindingContributionSchema,
   composeServiceContributionSchema,
   ciStepContributionSchema,
+  ciJobContributionSchema,
   devTaskContributionSchema,
   buildTaskContributionSchema,
 ]);
@@ -223,7 +258,8 @@ export type iConnectionPointContributionInput =
   | iWorkerBindingContributionInput
   | iWithDefaults<iComposeServiceContribution, 'volumes'>
   | iWithDefaults<iCiStepContribution, 'env'>
-  | iDevTaskContribution
+  | iCiJobContributionInput
+  | iWithDefaults<iDevTaskContribution, 'isServedFromBuild'>
   | iBuildTaskContribution;
 export type iRouterContribution = z.output<typeof routerContributionSchema>;
 export type iContractContribution = z.output<typeof contractContributionSchema>;
@@ -244,5 +280,9 @@ type iWorkerBindingContributionInput = Omit<iWorkerBindingContribution, 'wrangle
 };
 export type iComposeServiceContribution = z.output<typeof composeServiceContributionSchema>;
 export type iCiStepContribution = z.output<typeof ciStepContributionSchema>;
+export type iCiJobContribution = z.output<typeof ciJobContributionSchema>;
+type iCiJobContributionInput = Omit<iCiJobContribution, 'steps'> & {
+  steps: iWithDefaults<iCiJobContribution['steps'][number], 'env'>[];
+};
 export type iDevTaskContribution = z.output<typeof devTaskContributionSchema>;
 export type iBuildTaskContribution = z.output<typeof buildTaskContributionSchema>;

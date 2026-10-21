@@ -1,6 +1,6 @@
 import { isOnClient } from '#~/utils/is-on-client';
 
-import { USER_THEME } from './constants';
+import { THEME_CLASS_NAMES, USER_THEME } from './constants';
 import type { AppTheme, UserTheme } from './constants';
 
 export function getInitialThemeClass(theme: UserTheme): AppTheme {
@@ -13,11 +13,16 @@ export function getSystemTheme(): AppTheme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? USER_THEME.DARK : USER_THEME.LIGHT;
 }
 
+/** The class `<html>` renders with on the server, before the client resolves a system theme. */
+export function getInitialThemeClassName(theme: UserTheme) {
+  return THEME_CLASS_NAMES.get(getInitialThemeClass(theme));
+}
+
 export function handleThemeChange(theme: UserTheme) {
   const root = document.documentElement;
-  root.classList.remove(USER_THEME.LIGHT, USER_THEME.DARK);
+  root.classList.remove(THEME_CLASS_NAMES.get(USER_THEME.LIGHT), THEME_CLASS_NAMES.get(USER_THEME.DARK));
   const newTheme = theme === USER_THEME.SYSTEM ? getSystemTheme() : getInitialThemeClass(theme);
-  root.classList.add(String(newTheme));
+  root.classList.add(THEME_CLASS_NAMES.get(newTheme));
 }
 
 export function setupPreferredListener() {

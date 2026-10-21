@@ -113,7 +113,7 @@ export const nodeHonoModule = defineModule({
       name,
       example,
     })),
-    { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: SERVER_PACKAGE_NAME },
+    { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: SERVER_PACKAGE_NAME, portVariable: 'SERVER_PORT' },
     { kind: CONNECTION_POINT_KINDS.BUILD_TASK, filter: SERVER_PACKAGE_NAME },
   ],
 });

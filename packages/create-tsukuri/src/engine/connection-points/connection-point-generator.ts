@@ -23,6 +23,7 @@ import { RouterRenderer } from './renderers/api/router.renderer';
 import { StartupTaskRenderer } from './renderers/api/startup-task.renderer';
 import { CiRenderer } from './renderers/ci.renderer';
 import { ComposeRenderer } from './renderers/compose.renderer';
+import { DevTaskRenderer } from './renderers/dev-task.renderer';
 import { EnvRenderer } from './renderers/env.renderer';
 import { RootScriptsRenderer } from './renderers/root-scripts.renderer';
 import { WebDevtoolsPluginRenderer } from './renderers/web/web-devtools-plugin.renderer';
@@ -33,8 +34,8 @@ import { WorkerBindingRenderer } from './renderers/worker-binding.renderer';
 /**
  * Builds the files where modules meet (router and contract maps, DI registrations, startup tasks,
  * HTTP handlers, API context, database schema, error codes, env schema, Worker bindings, compose file,
- * CI workflow, root scripts) from the installed modules' contributions. Output depends only on the module list,
- * so regenerating is idempotent.
+ * compose services and dev tasks as data, CI workflow, root scripts) from the installed modules'
+ * contributions. Output depends only on the module list, so regenerating is idempotent.
  */
 @injectable()
 export class ConnectionPointGenerator {
@@ -53,6 +54,7 @@ export class ConnectionPointGenerator {
     private readonly envRenderer: EnvRenderer,
     private readonly workerBindingRenderer: WorkerBindingRenderer,
     private readonly composeRenderer: ComposeRenderer,
+    private readonly devTaskRenderer: DevTaskRenderer,
     private readonly ciRenderer: CiRenderer,
     private readonly rootScriptsRenderer: RootScriptsRenderer,
   ) {}
@@ -89,8 +91,12 @@ export class ConnectionPointGenerator {
         this.hostsOf(modules, CONNECTION_POINT_KINDS.ENV_SHAPE),
       )),
       ...(await renderHosted(this.workerBindingRenderer, CONNECTION_POINT_KINDS.WORKER_BINDING)),
-      ...(await this.composeRenderer.render(this.ofKind(contributions, CONNECTION_POINT_KINDS.COMPOSE_SERVICE))),
-      ...(await this.ciRenderer.render(this.ofKind(contributions, CONNECTION_POINT_KINDS.CI_STEP))),
+      ...(await renderHosted(this.composeRenderer, CONNECTION_POINT_KINDS.COMPOSE_SERVICE)),
+      ...(await renderHosted(this.devTaskRenderer, CONNECTION_POINT_KINDS.DEV_TASK)),
+      ...(await this.ciRenderer.render(
+        this.ofKind(contributions, CONNECTION_POINT_KINDS.CI_STEP),
+        this.ofKind(contributions, CONNECTION_POINT_KINDS.CI_JOB),
+      )),
     ];
 
     return {

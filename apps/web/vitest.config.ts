@@ -30,5 +30,5 @@ export default defineConfig({
       exclude: ['node_modules', 'dist', 'test', '**/*.{test,spec}.{ts,tsx}', '**/*.config.ts'],
     },
   },
-  ...withWorkspaceSourceResolve(),
+  ...withWorkspaceSourceResolve({ isTest: true }),
 });

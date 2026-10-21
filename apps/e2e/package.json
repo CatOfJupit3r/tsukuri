@@ -1,0 +1,42 @@
+{
+  "name": "e2e",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#~/*": "./src/*.ts"
+  },
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "prettier": "@startername/prettier-config",
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "stack": "tsx ./src/commands/start-stack.ts",
+    "preflight": "tsx ./src/commands/preflight-check.ts",
+    "cleanup": "tsx ./src/commands/cleanup-stack.ts",
+    "record": "tsx ./src/demo/record-flow.ts",
+    "check-types": "tsgo --noEmit",
+    "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
+    "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
+    "lint:eslint": "eslint . --fix",
+    "prettify": "prettier --write ./src/ ./specs/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "@startername/lint-config": "workspace:*",
+    "@startername/prettier-config": "workspace:*",
+    "@startername/vitest-config": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "eslint": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
