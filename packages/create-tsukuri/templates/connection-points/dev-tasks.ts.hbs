@@ -1,0 +1,8 @@
+// {{header}}
+
+/** The workspaces the root `dev` script starts, with the env variable holding each one's port. */
+export const generatedDevTasks: { filter: string; portVariable: string | null }[] = [
+{{#each tasks}}
+  { filter: '{{filter}}', portVariable: {{portVariable}} },
+{{/each}}
+];

@@ -1,0 +1,11 @@
+// {{header}}
+
+/** The Docker Compose services of the installed modules, as `docker-compose.dev.yml` declares them. */
+export const generatedComposeServices: { name: string; service: Record<string, unknown> }[] = [
+{{#each services}}
+  {
+    name: '{{name}}',
+    service: {{definition}},
+  },
+{{/each}}
+];

@@ -35,4 +35,6 @@ export const CONNECTION_POINT_TEMPLATES = {
   envSchema: templatePath('connection-points/env.schema.ts.hbs'),
   envExample: templatePath('connection-points/env.example.hbs'),
   workerBindings: templatePath('connection-points/worker-bindings.ts.hbs'),
+  composeServices: templatePath('connection-points/compose-services.ts.hbs'),
+  devTasks: templatePath('connection-points/dev-tasks.ts.hbs'),
 } satisfies Record<string, string>;
