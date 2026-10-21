@@ -26,11 +26,24 @@ const [publishedEnumwaiiTypeCheckedPreset] = enumwaiiPlugin.configs['flat/recomm
  * external system (CLI flags, MIME types, DOM key names, ...), exempt from casing and object input. Each entry is
  * `{ name: { regex }, reason: 'external-contract', justification }`.
  */
-const createEnumwaiiRules = (wireExceptions) => ({
-  ...publishedEnumwaiiTypeCheckedPreset.rules,
-  'enumwaii/enforce-enum-casing': ['error', { ignore: wireExceptions }],
-  'enumwaii/no-object-em': ['error', { ignore: wireExceptions }],
-});
+const SHARED_ENUMWAII_WIRE_EXCEPTIONS = [
+  {
+    name: { regex: '(EventNames|MessageNames)Enumwaii$' },
+    reason: 'external-contract',
+    justification:
+      'Payload token names travel on shared channels (event bus, BroadcastChannel, WebSocket) and carry a feature prefix so features cannot collide.',
+  },
+];
+
+const createEnumwaiiRules = (wireExceptions) => {
+  const ignore = [...SHARED_ENUMWAII_WIRE_EXCEPTIONS, ...wireExceptions];
+
+  return {
+    ...publishedEnumwaiiTypeCheckedPreset.rules,
+    'enumwaii/enforce-enum-casing': ['error', { ignore }],
+    'enumwaii/no-object-em': ['error', { ignore }],
+  };
+};
 
 /**
  * Helper function to create ignore patterns for workspace packages

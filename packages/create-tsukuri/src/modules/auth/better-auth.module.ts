@@ -117,7 +117,7 @@ export const betterAuthModule = defineModule({
     {
       kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
       workspace: API_WORKSPACE,
-      shape: { name: 'betterAuthEnvShape', from: `${AUTH_FEATURE}/better-auth.env` },
+      shape: { name: 'betterAuthEnvShape', from: `${AUTH_FEATURE}/env/better-auth.env` },
     },
     ...ENV_VARIABLES.map(([name, example]) => ({
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,

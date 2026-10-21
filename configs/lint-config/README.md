@@ -35,7 +35,8 @@ Options besides `rootDir` and `additionalIgnores`:
   `import-x/no-default-export` is off for them. Config files (`*.config.*`) are not linted at all.
 - `enumwaiiWireExceptions`: Enumwaii declarations whose values are spelled by an external system (CLI flags, MIME
   types, DOM key names, env values, ...), exempt from `enumwaii/enforce-enum-casing` and `enumwaii/no-object-em`. Each
-  entry is `{ name: { regex }, reason: 'external-contract', justification }`.
+  entry is `{ name: { regex }, reason: 'external-contract', justification }`. Payload token name declarations (`...EventNamesEnumwaii`,
+  `...MessageNamesEnumwaii`) are exempt in every workspace.
 
 ## Where the rules live
 

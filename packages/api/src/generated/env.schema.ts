@@ -2,7 +2,7 @@
 
 import { apiEnvShape } from '#~/constants/api.env';
 import { postgresEnvShape } from '#~/features/database/postgres.env';
-import { betterAuthEnvShape } from '#~/features/auth/better-auth.env';
+import { betterAuthEnvShape } from '#~/features/auth/env/better-auth.env';
 import { valkeyEnvShape } from '#~/features/valkey/valkey.env';
 
 export const generatedEnvShape = {

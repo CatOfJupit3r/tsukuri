@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { AUTH_COOKIE_SAME_SITES, authCookieSameSiteSchema } from '#~/features/auth/auth-cookie-same-site.enums';
+import { AUTH_COOKIE_SAME_SITES, authCookieSameSiteSchema } from '#~/features/auth/env/auth-cookie-same-site.enums';
 
 export const betterAuthEnvShape = {
   BETTER_AUTH_SECRET: z.string().min(32),
