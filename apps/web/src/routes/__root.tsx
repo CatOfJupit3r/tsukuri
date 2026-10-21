@@ -4,7 +4,7 @@ import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanst
 import { MEDIA_TYPES } from '@startername/common/enums/media-types.enums';
 
 import { AppShell } from '#~/components/app-shell';
-import { getInitialThemeClass } from '#~/components/themes/helpers';
+import { getInitialThemeClassName } from '#~/components/themes/helpers';
 import { loadRoot } from '#~/lib/root-loader';
 import type { iRouterAppContext } from '#~/router-context';
 import { seo } from '#~/utils/seo';
@@ -39,7 +39,7 @@ function RootComponent() {
   const { initialTheme } = Route.useLoaderData();
 
   return (
-    <html lang="en" className={getInitialThemeClass(initialTheme)} suppressHydrationWarning>
+    <html lang="en" className={getInitialThemeClassName(initialTheme)} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
