@@ -15,7 +15,7 @@ export default defineConfig({
       transformerPackageNames: ['@swc/core', 'unplugin-swc'],
     }),
   ],
-  ...withWorkspaceSourceResolve(),
+  ...withWorkspaceSourceResolve({ isTest: true }),
   cacheDir: 'node_modules/.vitest',
   test: {
     experimental: MODULE_CACHE_TEST_OPTIONS,

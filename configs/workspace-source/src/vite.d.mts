@@ -1,3 +1,10 @@
 import type { UserConfig } from 'vite';
 
-export declare const withWorkspaceSourceResolve: () => Pick<UserConfig, 'resolve' | 'ssr'>;
+export interface iWorkspaceSourceResolveOptions {
+  /** Set by Vitest configs: Node then resolves the SSR conditions itself. */
+  isTest?: boolean;
+}
+
+export declare const withWorkspaceSourceResolve: (
+  options?: iWorkspaceSourceResolveOptions,
+) => Pick<UserConfig, 'resolve' | 'ssr'>;
