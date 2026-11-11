@@ -9,7 +9,7 @@ export async function readTree(directory: string) {
     .map((entry) => path.relative(directory, path.join(entry.parentPath, entry.name)).split(path.sep).join('/'))
     .sort();
 
-  const tree = new Map<string, string>();
-  for (const file of files) tree.set(file, await readFile(path.join(directory, file), 'utf8'));
+  const tree = new Map<string, Buffer>();
+  for (const file of files) tree.set(file, await readFile(path.join(directory, file)));
   return tree;
 }
