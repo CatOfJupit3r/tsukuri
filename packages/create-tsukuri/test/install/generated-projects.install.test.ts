@@ -1,10 +1,11 @@
+import { existsSync } from 'node:fs';
 import { copyFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { createGeneratorContainer } from '#~/di/container';
 import { ProjectGenerator } from '#~/engine/project-generator';
 import type { ModuleId } from '#~/enums/module-ids.enums';
-import { MODULE_IDS } from '#~/enums/module-ids.enums';
+import { MODULE_IDS, moduleIdSchema } from '#~/enums/module-ids.enums';
 
 import { runCommand } from '../helpers/run-command';
 import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
@@ -69,17 +70,25 @@ const PROJECT_CASES: iProjectCase[] = [
   },
 ];
 
+function getInstallCases() {
+  const matrixModules = process.env.TSUKURI_MATRIX_MODULES;
+  if (matrixModules === undefined) return PROJECT_CASES;
+  const modules = moduleIdSchema.array().parse(JSON.parse(matrixModules));
+  return [{ name: modules.join(' + ') || 'base', modules, commands: [] }] satisfies iProjectCase[];
+}
+
 describe('generated projects', () => {
   const createTempDir = useTempDir();
 
-  it.each(PROJECT_CASES)(
-    '$name installs, passes verify and builds',
+  it.each(getInstallCases())(
+    '$name installs and passes project checks',
     async ({ modules, projectName = 'acme', commands }) => {
       const targetDir = path.join(await createTempDir(), projectName);
       await createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT })
         .resolve(ProjectGenerator)
         .create({ targetDir, projectName, modules });
-      await copyFile(path.join(targetDir, '.env.example'), path.join(targetDir, '.env'));
+      const envExamplePath = path.join(targetDir, '.env.example');
+      if (existsSync(envExamplePath)) await copyFile(envExamplePath, path.join(targetDir, '.env'));
 
       for (const command of ['pnpm install --no-frozen-lockfile', 'pnpm run verify --tests', ...commands]) {
         const result = await runCommand(command, targetDir);

@@ -19,6 +19,7 @@ export const postgresModule = defineModule({
   description: 'Postgres through Drizzle, with a dev docker-compose service and db:* scripts',
   category: MODULE_CATEGORIES.DATABASE,
   requires: [MODULE_IDS.API],
+  requiresCapabilities: [CAPABILITIES.BACKEND_TARGET],
   provides: [CAPABILITIES.DATABASE],
   files: [
     { source: `${API_WORKSPACE}/drizzle.config.ts` },

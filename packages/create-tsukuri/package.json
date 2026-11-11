@@ -35,6 +35,7 @@
     "lint:eslint": "eslint . --fix",
     "prettify": "prettier --write ./src/ ./test/ --ignore-path ../../.gitignore --ignore-path ../../.prettierignore",
     "test": "vitest run",
+    "plan:matrix": "node --no-deprecation --conditions=workspace-source --import @swc-node/register/esm-register ./test/matrix/print-module-matrix.ts",
     "test:install": "vitest run --config vitest.install.config.ts"
   },
   "engines": {

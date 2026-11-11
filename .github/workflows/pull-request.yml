@@ -79,3 +79,45 @@ jobs:
 
       - name: Generate, install and verify
         run: pnpm --filter create-tsukuri run test:install
+
+  plan-generated-projects:
+    name: Plan generated project matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      cases: ${{ steps.matrix.outputs.cases }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Resolve module combinations
+        id: matrix
+        run: |
+          cases=$(pnpm --silent --filter create-tsukuri run plan:matrix)
+          printf 'cases=%s\n' "$cases" >> "$GITHUB_OUTPUT"
+
+  generated-project-matrix:
+    name: Generated project (${{ matrix.name }})
+    needs: plan-generated-projects
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan-generated-projects.outputs.cases) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Generate, install and verify
+        env:
+          TSUKURI_MATRIX_MODULES: ${{ matrix.modules }}
+        run: pnpm --filter create-tsukuri run test:install generated-projects.install.test.ts
