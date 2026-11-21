@@ -9,3 +9,8 @@ export const GENERATED_SOURCE_DIR = 'src/generated';
 export function withHashHeader(body: string) {
   return `# ${GENERATED_HEADER}\n\n${body}`;
 }
+
+export function withSlashHeader(body: string) {
+  return `// ${GENERATED_HEADER}
+${body}`;
+}

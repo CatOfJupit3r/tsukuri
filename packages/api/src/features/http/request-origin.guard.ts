@@ -17,7 +17,8 @@ export const REQUEST_ORIGIN_POLICY_TOKEN: InjectionToken<iRequestOriginPolicy> =
 
 /**
  * Refuses cross-site requests that could change state: a POST, PUT, PATCH or DELETE whose `Origin` is
- * neither the API's own nor trusted. Strict mode also refuses those that send no `Origin` at all.
+ * neither the API's own nor trusted. Strict mode also refuses those that send no `Origin` at all; lenient mode
+ * lets them through on purpose, because non-browser clients send none. Trusted origins match exactly, with no wildcards.
  */
 @singleton()
 export class RequestOriginGuard {

@@ -15,7 +15,7 @@ import {
   WRANGLER_CONFIG_FILE,
 } from '../connection-point.constants';
 import type { iConnectionPointRenderer, iGeneratedFile, iOwnedContribution } from '../connection-point.types';
-import { GENERATED_HEADER } from '../generated-header';
+import { withSlashHeader } from '../generated-header';
 import { GeneratedSourceFiles } from '../generated-source-files';
 
 /** Characters a project name may have that a Worker name may not. */
@@ -73,7 +73,8 @@ export class WorkerBindingRenderer implements iConnectionPointRenderer<iWorkerBi
       sections.set(section, [...(sections.get(section) ?? []), { binding, ...entry }]);
     }
     const config = { name, ...WRANGLER_CONFIG, ...Object.fromEntries(sections) };
-    return `// ${GENERATED_HEADER}\n${JSON.stringify(config, null, 2)}\n`;
+    return withSlashHeader(`${JSON.stringify(config, null, 2)}
+`);
   }
 
   /**

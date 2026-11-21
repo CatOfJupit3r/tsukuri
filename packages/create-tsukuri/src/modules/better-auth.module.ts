@@ -48,6 +48,7 @@ export const betterAuthModule = defineModule({
     { source: `${API_WORKSPACE}/test/integration/auth-client-ip.test.ts` },
     { source: `${API_WORKSPACE}/test/integration/auth-service-config.test.ts` },
     { source: `${API_WORKSPACE}/test/integration/dev-impersonation.test.ts` },
+    { source: `${API_WORKSPACE}/test/unit/auth-secret-task.test.ts` },
     { source: `${API_WORKSPACE}/test/unit/auth-context.test.ts` },
     { source: `${CONTRACT_WORKSPACE}/src/contract/auth.contract.ts` },
     { source: `${CONTRACT_WORKSPACE}/src/contract/auth.procedures.ts` },
