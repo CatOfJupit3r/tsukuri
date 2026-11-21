@@ -1,5 +1,5 @@
 import { builtinModules } from 'node:module';
-import { defineConfig } from 'tsdown';
+import { defineConfig, Rolldown } from 'tsdown';
 
 import { withWorkspaceSourceCondition } from '@startername/workspace-source/conditions';
 
@@ -7,10 +7,12 @@ import { withWorkspaceSourceCondition } from '@startername/workspace-source/cond
 const RUNTIME_MODULES = [...builtinModules, ...builtinModules.map((name) => `node:${name}`)];
 const RUNTIME_PREFIX = 'cloudflare:';
 /**
- * Bundled CommonJS packages require Node builtins through `createRequire(import.meta.url)`, but a Worker
- * module has no URL. The bundle loads nothing from disk, so any absolute module URL serves.
+ * Bundled CommonJS packages require Node builtins through rolldown's `createRequire(import.meta.url)` helper,
+ * but workerd leaves `import.meta.url` undefined. The bundle loads nothing from disk, so any absolute module
+ * URL serves.
  */
-const WORKER_MODULE_URL = 'file:///worker.mjs';
+const REQUIRE_HELPER_CALL = 'createRequire(import.meta.url)';
+const WORKER_REQUIRE_HELPER_CALL = `createRequire(${JSON.stringify('file:///worker.mjs')})`;
 
 export default defineConfig({
   entry: 'src/worker.ts',
@@ -28,13 +30,22 @@ export default defineConfig({
   outputOptions: { codeSplitting: false },
   plugins: [
     {
-      // Runs on the finished chunk, after rolldown added its `createRequire` helper.
-      name: 'worker-module-url',
-      // Same lines before and after, so the existing sourcemap still applies (`map: null`).
-      renderChunk: (code) => ({
-        code: code.replaceAll('import.meta.url', JSON.stringify(WORKER_MODULE_URL)),
-        map: null,
-      }),
+      // Runs on the finished chunk, after rolldown added its helper; only that call changes.
+      name: 'worker-require-helper',
+      renderChunk: (code) => {
+        const start = code.indexOf(REQUIRE_HELPER_CALL);
+        if (start === -1) return null;
+        if (code.includes(REQUIRE_HELPER_CALL, start + REQUIRE_HELPER_CALL.length)) {
+          throw new Error(`Expected rolldown to emit "${REQUIRE_HELPER_CALL}" once`);
+        }
+        const edited = new Rolldown.RolldownMagicString(code).overwrite(
+          start,
+          start + REQUIRE_HELPER_CALL.length,
+          WORKER_REQUIRE_HELPER_CALL,
+        );
+        // A character-level map of the edit, so composing it keeps every mapping of the chunk's sourcemap.
+        return { code: edited.toString(), map: edited.generateMap({ hires: true }).toString() };
+      },
     },
   ],
   inputOptions: {

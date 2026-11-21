@@ -110,7 +110,9 @@ const getBaseConfig = (options) => {
         'error',
         {
           ignore: [
+            // Package subpath imports, which TypeScript resolves and checks.
             '^#~/',
+            '^#test/',
             // Builtins newer than the resolver's list.
             '^node:sqlite$',
             // Workspace packages (prevent false positives)
@@ -199,8 +201,8 @@ const getBaseConfig = (options) => {
           'dist/**',
           'build/**',
           '.lintstagedrc.{js,cjs,mjs}',
-          // Connection points, rewritten by create-tsukuri on every add/remove.
-          'src/generated/**',
+          // Connection points, rewritten by create-tsukuri on every add/remove (variant folders hold them too).
+          '**/src/generated/**',
         ],
       },
       ...(gitignorePath ? [includeIgnoreFile(gitignorePath)] : []),
