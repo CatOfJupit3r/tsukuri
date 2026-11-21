@@ -48,7 +48,7 @@ Options besides `rootDir` and `additionalIgnores`:
   (re-exports, bare `void`, boolean defaults, intersection aliases, `enum`, empty `catch`) that
   `SHARED_RESTRICTED_SYNTAX` hands to `no-restricted-syntax`; each has a failing and a passing fixture in `test/rules`.
 - [`src/lint-limits.mjs`](src/lint-limits.mjs): the limits those conventions use.
-- [`src/rules`](src/rules): the local rules `tsukuri/max-files-per-folder` and `tsukuri/no-in-narrowing`.
+- [`src/rules`](src/rules): the local rules `tsukuri/max-files-per-folder`, `tsukuri/no-in-narrowing` and `tsukuri/no-inline-signature-object-type` (inline object types in function parameters and return types, at any depth).
 - [`src/oxlint.mjs`](src/oxlint.mjs): the oxlint translation, the rules ESLint keeps because oxlint's port behaves
   differently, and the rules only oxlint runs.
 

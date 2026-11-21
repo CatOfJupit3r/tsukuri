@@ -1,6 +1,7 @@
 /**
  * Reports an inline object type (`{ a: string }`) written in a function parameter or return annotation, at any depth
- * inside generics, unions, intersections, arrays, tuples, predicates, conditional and indexed access types. Declare an
+ * inside any type wrapper (generics, unions, template literals, import types, type queries, predicates, conditional and
+ * indexed access types, ...). Declare an
  * `i`-prefixed interface instead.
  *
  * The walk goes from each literal up to the nearest signature annotation and stops at anything else, so a literal inside
@@ -22,22 +23,42 @@ const SIGNATURE_NODE_TYPES = new Set([
 
 const PARAMETER_NODE_TYPES = new Set(['Identifier', 'ObjectPattern', 'ArrayPattern', 'RestElement']);
 
-/** Type nodes an inline object type can sit inside of on its way up to a signature annotation. */
-const WRAPPER_NODE_TYPES = new Set([
-  'TSTypeReference',
-  'TSTypeParameterInstantiation',
-  'TSUnionType',
-  'TSIntersectionType',
-  'TSArrayType',
-  'TSTupleType',
-  'TSTypeOperator',
-  'TSOptionalType',
-  'TSRestType',
-  'TSNamedTupleMember',
-  'TSTypePredicate',
-  'TSConditionalType',
-  'TSIndexedAccessType',
+/**
+ * Nodes that end the search. Every other type node (references, unions, template literals, import types, type queries,
+ * operators, tuples and any wrapper added later) is walked through, so only this closed set needs maintenance.
+ */
+const BOUNDARY_NODE_TYPES = new Set([
+  'TSTypeLiteral',
+  'TSMappedType',
+  'TSPropertySignature',
+  'TSIndexSignature',
+  'TSTypeParameter',
+  'TSTypeParameterDeclaration',
+  'TSTypeAliasDeclaration',
+  'TSInterfaceDeclaration',
+  'TSInterfaceHeritage',
+  'TSClassImplements',
+  'TSFunctionType',
+  'TSConstructorType',
+  'TSAsExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+  'TSNonNullExpression',
+  'TSInstantiationExpression',
+  'TSParameterProperty',
+  'TSEnumDeclaration',
+  'TSModuleDeclaration',
 ]);
+
+/** Nodes whose type arguments are part of a type, as opposed to type arguments of a call or instantiation expression. */
+const TYPE_ARGUMENT_OWNER_NODE_TYPES = new Set(['TSTypeReference', 'TSImportType', 'TSTypeQuery']);
+
+const isBoundary = (node) => {
+  if (node.type === 'TSTypeParameterInstantiation') {
+    return !TYPE_ARGUMENT_OWNER_NODE_TYPES.has(node.parent.type);
+  }
+  return !node.type.startsWith('TS') || BOUNDARY_NODE_TYPES.has(node.type);
+};
 
 const ANNOTATION_KIND = { PARAMETER: 'PARAMETER', RETURN: 'RETURN' };
 
@@ -79,7 +100,7 @@ const findSignatureAnnotationKind = (literal) => {
       if (node.parent.type !== 'TSTypePredicate') {
         return null;
       }
-    } else if (!WRAPPER_NODE_TYPES.has(node.type)) {
+    } else if (isBoundary(node)) {
       return null;
     }
     node = node.parent;

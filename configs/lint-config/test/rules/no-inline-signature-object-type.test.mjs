@@ -137,6 +137,34 @@ describe('no-inline-signature-object-type', () => {
     expect(lintMessages(code)).toHaveLength(1);
   });
 
+  it.each([
+    'function f(): import("x").Foo<{ a: string }> { return null; }',
+    'function f(o: `${keyof { a: string }}`) { return o; }',
+    'function f(o: typeof g<{ a: string }>) { return o; }',
+    'function f(o: import("x").Foo<{ a: string }>) { return o; }',
+    'function f(): `a-${Foo<{ a: string }>}` { return null; }',
+    'declare function f(o: Readonly<Partial<{ a: string }>>): void;',
+  ])('reports an inline object type inside any wrapper type of %s', (code) => {
+    expect(lintMessages(code)).toHaveLength(1);
+  });
+
+  it.each([
+    'function f<T extends { a: string }>(o: T) { return o; }',
+    'function f<T = { a: string }>(o: T) { return o; }',
+    'function f(): void { g<{ a: string }>(); }',
+    'function f(): void { new Map<string, { a: string }>(); }',
+    'function f(): void { const h = g<{ a: string }>; return h; }',
+    'function f(o: unknown) { return o as { a: string }; }',
+    'function f(o: unknown) { return o satisfies { a: string }; }',
+    'function f(o: iX) { return o; }\ntype A = { a: string };',
+    'function f(o: iX) { return o; }\ninterface iY { a: { b: string }; run: (o: iX) => void }',
+    'function f(o: { [K in keyof iX]: { a: string } }) { return o; }',
+    'class C implements Foo<{ a: string }> { public x = 1; }',
+    'function f(o: iX) { const v: { a: string } = o; return v; }',
+  ])('does not report an inline object type behind a boundary in %s', (code) => {
+    expect(lintMessages(code)).toHaveLength(0);
+  });
+
   it('reports each inline object type of a union once, so two literals report twice', () => {
     expect(lintMessages('function f(o: { a: string } | { b: string }) { return o; }')).toHaveLength(2);
     expect(lintMessages('function f(): { a: string } | { b: string } { return null; }')).toHaveLength(2);
