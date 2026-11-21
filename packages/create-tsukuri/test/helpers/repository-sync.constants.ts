@@ -4,7 +4,7 @@ export const CATALOG_REFERENCE = 'catalog:';
 
 export const ROOT_WORKSPACE = '.';
 
-export const LINT_TOOLCHAIN_WORKSPACE = 'configs/lint-config';
+export const LINT_TOOLCHAIN_WORKSPACES = ['configs/lint-config', 'configs/prettier-config'];
 
 /** Catalog entries the lint toolchain uses without `configs/lint-config` referencing them. */
 export const LINT_TOOLCHAIN_EXTRA_CATALOG_ENTRIES = ['@typescript/native-preview'];

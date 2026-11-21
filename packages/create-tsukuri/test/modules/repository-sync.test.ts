@@ -11,7 +11,7 @@ import {
   CATALOG_REFERENCE,
   EXACT_VERSION_PATTERN,
   LINT_TOOLCHAIN_EXTRA_CATALOG_ENTRIES,
-  LINT_TOOLCHAIN_WORKSPACE,
+  LINT_TOOLCHAIN_WORKSPACES,
   REPOSITORY_ONLY_CATALOG_ENTRIES,
   ROOT_WORKSPACE,
 } from '../helpers/repository-sync.constants';
@@ -82,31 +82,29 @@ describe('pnpm catalog contributions', () => {
   });
 });
 
-describe('lint toolchain pins', () => {
-  const lintToolchainPackageJson = readRepositoryPackageJson(LINT_TOOLCHAIN_WORKSPACE);
-  const lintToolchainDependencies = Object.entries({
-    ...lintToolchainPackageJson?.dependencies,
-    ...lintToolchainPackageJson?.devDependencies,
-  });
+describe('lint and format toolchain pins', () => {
+  const toolchainDependencies = LINT_TOOLCHAIN_WORKSPACES.flatMap((workspace) =>
+    DEPENDENCY_FIELDS.flatMap((field) =>
+      Object.entries(readRepositoryPackageJson(workspace)?.[field] ?? {}).map(([name, version]) => ({
+        label: `${workspace} ${field} ${name}`,
+        name,
+        version,
+      })),
+    ),
+  );
   const catalogEntries = [
-    ...Object.entries({
-      ...lintToolchainPackageJson?.dependencies,
-      ...lintToolchainPackageJson?.devDependencies,
-      ...lintToolchainPackageJson?.peerDependencies,
-    })
-      .filter(([, version]) => version === CATALOG_REFERENCE)
-      .map(([name]) => name),
+    ...toolchainDependencies.filter(({ version }) => version === CATALOG_REFERENCE).map(({ name }) => name),
     ...LINT_TOOLCHAIN_EXTRA_CATALOG_ENTRIES,
   ];
 
-  it.each(lintToolchainDependencies.filter(([, version]) => version !== CATALOG_REFERENCE))(
-    'lint-config dependency %s is an exact pin',
-    (_name, version) => {
+  it.each(toolchainDependencies.filter(({ version }) => version !== CATALOG_REFERENCE))(
+    '$label is an exact pin',
+    ({ version }) => {
       expect(version).toMatch(EXACT_VERSION_PATTERN);
     },
   );
 
-  it.each(catalogEntries)('lint toolchain catalog entry %s is an exact pin', (name) => {
+  it.each(catalogEntries)('toolchain catalog entry %s is an exact pin', (name) => {
     expect(repositoryCatalog[name]).toMatch(EXACT_VERSION_PATTERN);
   });
 });
