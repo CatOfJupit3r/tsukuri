@@ -10,6 +10,7 @@ const START_VARIANT = `${WEB_WORKSPACE}/variants/tanstack-start`;
 const START_BACKEND_FILES = [
   'src/load-env.ts',
   'src/routes/api/$.ts',
+  'src/utils/forward-request-to-api.ts',
   'src/utils/backend-url.ts',
   'test/api-route.test.ts',
 ];

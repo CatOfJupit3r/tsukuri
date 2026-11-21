@@ -1,13 +1,20 @@
 import { getRequestIP } from '@tanstack/react-start/server';
 
+import type { iApiRequestOptions } from '@startername/api/features/http/api-request-handler';
+
 import { handleApiRequest } from '#~/routes/api/$';
+import { getServerRenderFetch } from '#~/utils/backend-url';
 
-const forwardedRequestOptions: Array<{ clientIp?: string } | undefined> = [];
+const forwardedRequestOptions: Array<iApiRequestOptions | undefined> = [];
 
-vi.mock('@tanstack/react-start/server', () => ({ getRequestIP: vi.fn() }));
+vi.mock('@tanstack/react-start/server', () => ({
+  getRequestIP: vi.fn(),
+  getRequest: vi.fn(),
+  getRequestHeaders: vi.fn(),
+}));
 vi.mock('@startername/api/start-api', () => ({
   startApi: async () => ({
-    handle: async (_request: Request, options?: { clientIp?: string }) => {
+    handle: async (_request: Request, options?: iApiRequestOptions) => {
       forwardedRequestOptions.push(options);
       return new Response(null, { status: 204 });
     },
@@ -38,5 +45,19 @@ describe('Start API route', () => {
     });
 
     expect(forwardedRequestOptions).toEqual([{ clientIp: '203.0.113.7' }]);
+  });
+
+  it('marks a server render lookup as in-process and never marks a request that arrives over the network', async () => {
+    vi.mocked(getRequestIP).mockReturnValue('203.0.113.7');
+
+    await getServerRenderFetch()?.('http://localhost/api/auth/get-session');
+    await handleApiRequest({
+      request: new Request('http://localhost/api/auth/get-session', { headers: { 'X-Server-Render': 'true' } }),
+    });
+
+    expect(forwardedRequestOptions).toEqual([
+      { clientIp: '203.0.113.7', isServerRender: true },
+      { clientIp: '203.0.113.7' },
+    ]);
   });
 });

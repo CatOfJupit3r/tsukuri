@@ -21,6 +21,7 @@ import { DATABASE_DIALECT } from '#~/features/database/database.constants';
 import { DatabaseService } from '#~/features/database/database.service';
 import { EventBus } from '#~/features/events/event-bus';
 import { CLIENT_IP_HEADER } from '#~/features/http/client-ip.constants';
+import { ServerRenderRequestRegistry } from '#~/features/http/server-render-request.registry';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
 import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
 import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
@@ -31,6 +32,7 @@ import { UserAfterRegisteredListener } from './auth.listeners';
 import { devImpersonatePlugin } from './better-auth-plugins/dev-impersonate.plugin';
 
 const AUTH_BASE_PATH = '/auth';
+const SESSION_LOOKUP_PATH = '/get-session';
 
 type iAuthInstance = ReturnType<AuthService['createInstance']>;
 
@@ -50,6 +52,7 @@ export class AuthService implements iWithLogger {
     private readonly eventBus: EventBus,
     private readonly requestContextStorage: RequestContextStorage,
     private readonly passwordHasher: AuthPasswordHasher,
+    private readonly serverRenderRequestRegistry: ServerRenderRequestRegistry,
     @inject(KEY_VALUE_STORE_TOKEN) private readonly keyValueStore: iKeyValueStore,
   ) {
     this.logger = loggerFactory.create('auth');
@@ -102,8 +105,15 @@ export class AuthService implements iWithLogger {
       session: { storeSessionInDatabase: isSessionAlsoInDatabase },
       verification: { storeInDatabase: isSessionAlsoInDatabase },
       rateLimit: {
+        enabled: NODE_ENVIRONMENT_META.get(env.NODE_ENV).hasRateLimits,
         // Counters change on every request: only a strongly consistent shared store can hold them.
         storage: isStoreStronglyConsistent ? 'secondary-storage' : 'database',
+        // The server render looks the session up for every page it renders on behalf of different visitors; those
+        // in-process lookups are read-only and skip the per-address limit. Writes keep their per-visitor limits.
+        customRules: {
+          [SESSION_LOOKUP_PATH]: (request, currentRule) =>
+            this.serverRenderRequestRegistry.isMarked(request) ? false : currentRule,
+        },
       },
       emailAndPassword: {
         enabled: true,

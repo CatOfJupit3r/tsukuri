@@ -1,7 +1,8 @@
 import { createIsomorphicFn } from '@tanstack/react-start';
-import { getRequest, getRequestHeaders } from '@tanstack/react-start/server';
+import { getRequest, getRequestHeaders, getRequestIP } from '@tanstack/react-start/server';
 
 import { clientAbsoluteLink } from '#~/utils/client-absolute-link';
+import type { iServerRenderFetch } from '#~/utils/server-render-fetch.types';
 
 const API_PREFIX = '/api';
 
@@ -14,3 +15,14 @@ export const getBackendURL = createIsomorphicFn()
 export const getForwardedRequestHeaders = createIsomorphicFn()
   .client((): Record<string, string> => ({}))
   .server(() => Object.fromEntries(getRequestHeaders().entries()));
+
+/**
+ * The server render reaches the API inside this process, so its session lookups are not counted against one
+ * shared per-address rate limit. Browsers use the network.
+ */
+export const getServerRenderFetch = createIsomorphicFn()
+  .client((): iServerRenderFetch | undefined => undefined)
+  .server((): iServerRenderFetch | undefined => async (input, init) => {
+    const { forwardRequestToApi } = await import('#~/utils/forward-request-to-api');
+    return forwardRequestToApi(new Request(input, init), { clientIp: getRequestIP(), isServerRender: true });
+  });

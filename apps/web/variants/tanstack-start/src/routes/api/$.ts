@@ -1,22 +1,12 @@
-// sort-imports-ignore
-import 'reflect-metadata';
-import '../../load-env';
 import { createFileRoute } from '@tanstack/react-router';
 import { getRequestIP } from '@tanstack/react-start/server';
 
-import { startApi } from '@startername/api/start-api';
-
-const API_PREFIX = '/api';
-const NOT_FOUND_STATUS = 404;
+import { forwardRequestToApi } from '#~/utils/forward-request-to-api';
 
 /** Serves the shared API under `/api`, so this app is also the backend. */
 export async function handleApiRequest({ request }: { request: Request }) {
-  const url = new URL(request.url);
-  url.pathname = url.pathname.slice(API_PREFIX.length) || '/';
-
   /** Without `xForwardedFor`, h3 reports the connection address, which a client cannot forge. */
-  const response = await (await startApi()).handle(new Request(url, request), { clientIp: getRequestIP() });
-  return response ?? new Response(null, { status: NOT_FOUND_STATUS });
+  return forwardRequestToApi(request, { clientIp: getRequestIP() });
 }
 
 export const Route = createFileRoute('/api/$')({

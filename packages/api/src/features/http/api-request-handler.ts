@@ -21,6 +21,7 @@ import { getORPCErrorMetadata, isORPCError, shouldLogORPCError } from '#~/lib/or
 import { CLIENT_IP_HEADER } from './client-ip.constants';
 import type { iHttpHandle } from './http-handler.types';
 import { RequestOriginGuard } from './request-origin.guard';
+import { ServerRenderRequestRegistry } from './server-render-request.registry';
 
 const orpcTransportsEnumwaii = em(['API', 'RPC']);
 
@@ -36,6 +37,8 @@ export interface iApiRequestOptions {
   waitUntil?: iWaitUntil;
   /** The address the adapter observed for the connection; handlers read it from `CLIENT_IP_HEADER`. */
   clientIp?: string;
+  /** Set only by the server render handing its own request to this process; read-only session lookups then skip the per-IP rate limit. */
+  isServerRender?: boolean;
 }
 
 interface iMountedHttpHandler {
@@ -63,6 +66,7 @@ export class ApiRequestHandler implements iWithLogger {
     loggerFactory: LoggerFactory,
     private readonly requestContext: RequestContextStorage,
     private readonly requestOriginGuard: RequestOriginGuard,
+    private readonly serverRenderRequestRegistry: ServerRenderRequestRegistry,
   ) {
     this.logger = loggerFactory.create('API');
     this.openApiHandler = new OpenAPIHandler(appRouter, {
@@ -89,8 +93,11 @@ export class ApiRequestHandler implements iWithLogger {
       );
     }
 
+    const forwardedRequest = this.withClientIp(request, options.clientIp);
+    if (options.isServerRender) this.serverRenderRequestRegistry.mark(forwardedRequest);
+
     return this.requestContext.run({ requestId: randomUUID(), waitUntil: options.waitUntil }, async () =>
-      this.route(this.withClientIp(request, options.clientIp)),
+      this.route(forwardedRequest),
     );
   }
 

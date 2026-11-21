@@ -7,6 +7,7 @@ import { AuthService } from '#~/features/auth/auth.service';
 import type { iKeyValueStore } from '#~/features/cache/key-value-store';
 import { DatabaseService } from '#~/features/database/database.service';
 import { EventBus } from '#~/features/events/event-bus';
+import { ServerRenderRequestRegistry } from '#~/features/http/server-render-request.registry';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
 import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
 
@@ -38,6 +39,7 @@ function createAuthService(store: iKeyValueStore) {
     container.resolve(EventBus),
     container.resolve(RequestContextStorage),
     container.resolve(AuthPasswordHasher),
+    container.resolve(ServerRenderRequestRegistry),
     store,
   );
 }

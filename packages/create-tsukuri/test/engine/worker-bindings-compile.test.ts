@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import ts from 'typescript';
+import { z } from 'zod';
 
 import { createGeneratorContainer } from '#~/di/container';
 import { ConnectionPointGenerator } from '#~/engine/connection-points/connection-point-generator';
@@ -21,17 +22,10 @@ const ESLINT_BINARY = path.join(
   'bin/eslint.js',
 );
 const runProcess = promisify(execFile);
+const WORKERS_TYPES_DIRECTORY = path.join(REPOSITORY_ROOT, 'packages/api/node_modules/@cloudflare/workers-types');
 const API_SOURCE_ROOTS = ['src', 'variants/d1/src', 'variants/postgres-hyperdrive/src'].map((root) =>
   path.join(REPOSITORY_ROOT, 'packages/api', root, '*'),
 );
-
-/** The Worker types the rendered file imports, reduced to what it needs to compile. */
-const WORKERS_TYPES_STUB = `declare module '@cloudflare/workers-types' {
-  export interface D1Database { readonly d1: true }
-  export interface KVNamespace { readonly kv: true }
-  export interface Hyperdrive { readonly hyperdrive: true }
-}
-`;
 
 const BINDING_COMBINATIONS = [
   { name: 'no bindings', bindingModules: [] },
@@ -70,7 +64,7 @@ function compileDiagnostics(rootNames: string[]) {
       moduleResolution: ts.ModuleResolutionKind.Bundler,
       experimentalDecorators: true,
       types: [],
-      paths: { '@startername/api/*': API_SOURCE_ROOTS },
+      paths: { '@startername/api/*': API_SOURCE_ROOTS, '@cloudflare/workers-types': [WORKERS_TYPES_DIRECTORY] },
     },
   });
   return ts.getPreEmitDiagnostics(program).map((diagnostic) => ({
@@ -97,11 +91,9 @@ describe('generated worker-bindings.ts', () => {
     'compiles with $name',
     async ({ bindingModules }) => {
       const bindingsPath = path.join(projectDirectory, 'worker-bindings.ts');
-      const stubPath = path.join(projectDirectory, 'workers-types.d.ts');
       await writeFile(bindingsPath, await renderWorkerBindings(bindingModules));
-      await writeFile(stubPath, WORKERS_TYPES_STUB);
 
-      expect(compileDiagnostics([bindingsPath, stubPath])).toEqual([]);
+      expect(compileDiagnostics([bindingsPath])).toEqual([]);
     },
     COMPILE_TIMEOUT_MS,
   );
@@ -133,10 +125,16 @@ describe('generated worker-bindings.ts', () => {
       );
 
       // The CLI, not the API: the lint config resolves `packageDir` against the process working directory.
-      const lint = await runProcess(process.execPath, [ESLINT_BINARY, 'worker-bindings.ts'], {
+      // JSON output lists every file ESLint looked at, so a file it ignored or never linted cannot pass unnoticed.
+      const lint = await runProcess(process.execPath, [ESLINT_BINARY, '--format', 'json', 'worker-bindings.ts'], {
         cwd: projectDirectory,
       }).catch((error: { stdout: string; stderr: string }) => error);
 
+      const reports = z
+        .array(z.object({ filePath: z.string(), messages: z.array(z.unknown()) }))
+        .parse(JSON.parse(lint.stdout));
+      expect(reports.map((report) => path.basename(report.filePath))).toEqual(['worker-bindings.ts']);
+      expect(reports.flatMap((report) => report.messages)).toEqual([]);
       expect(lint).not.toHaveProperty('code');
     },
     COMPILE_TIMEOUT_MS,
