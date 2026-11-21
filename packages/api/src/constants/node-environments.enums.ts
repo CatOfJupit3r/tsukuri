@@ -7,3 +7,14 @@ const nodeEnvironmentsEnumwaii = em({ DEVELOPMENT: 'development', PRODUCTION: 'p
 export const NODE_ENVIRONMENTS = nodeEnvironmentsEnumwaii.enum;
 export type NodeEnvironment = (typeof nodeEnvironmentsEnumwaii)['~type'];
 export const nodeEnvironmentSchema = emToZodSchema(nodeEnvironmentsEnumwaii);
+
+interface iNodeEnvironmentMeta {
+  /** Development-only tools (user impersonation, ...) exist only here; anything else keeps them off. */
+  allowsDevelopmentTools: boolean;
+}
+
+export const NODE_ENVIRONMENT_META = nodeEnvironmentsEnumwaii.derive<iNodeEnvironmentMeta>()(
+  [NODE_ENVIRONMENTS.DEVELOPMENT, { allowsDevelopmentTools: true }],
+  [NODE_ENVIRONMENTS.TEST, { allowsDevelopmentTools: true }],
+  [NODE_ENVIRONMENTS.PRODUCTION, { allowsDevelopmentTools: false }],
+);

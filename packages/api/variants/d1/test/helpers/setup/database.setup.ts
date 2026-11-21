@@ -1,3 +1,4 @@
+import { startLocalD1Database } from '#test/helpers/cloudflare-platform';
 import type { D1Database } from '@cloudflare/workers-types';
 import { generateSQLiteDrizzleJson, generateSQLiteMigration } from 'drizzle-kit/api';
 import { container } from 'tsyringe';
@@ -6,26 +7,18 @@ import { afterEach } from 'vitest';
 import { D1_DATABASE_TOKEN } from '#~/features/database/d1-database.token';
 import { generatedDatabaseSchema } from '#~/generated/database-schema';
 
-import { startLocalCloudflarePlatform } from '../cloudflare-platform';
-
-interface iD1Bindings extends Record<string, unknown> {
-  DB: D1Database;
-}
-
 const testD1Key = Symbol.for('startername.test.d1');
 const testGlobals = globalThis as typeof globalThis & { [testD1Key]?: Promise<D1Database> };
 
-/** A local D1 database with the installed modules' tables, shared by every integration test file. */
+/** A local D1 database with the installed modules' tables, shared by every integration test file of the run. */
 async function createTestD1() {
-  const platform = await startLocalCloudflarePlatform<iD1Bindings>({
-    d1_databases: [{ binding: 'DB', database_name: 'startername-test', database_id: 'local' }],
-  });
+  const { binding: database } = await startLocalD1Database();
   const statements = await generateSQLiteMigration(
     await generateSQLiteDrizzleJson({}),
     await generateSQLiteDrizzleJson(generatedDatabaseSchema),
   );
-  for (const statement of statements) await platform.env.DB.prepare(statement).run();
-  return platform.env.DB;
+  for (const statement of statements) await database.prepare(statement).run();
+  return database;
 }
 
 testGlobals[testD1Key] ??= createTestD1();

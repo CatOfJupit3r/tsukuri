@@ -3,14 +3,16 @@
 import z from 'zod';
 
 import { nodeEnvironmentSchema, NODE_ENVIRONMENTS } from '#~/constants/node-environments.enums';
+import { requestOriginModeSchema, REQUEST_ORIGIN_MODES } from '#~/features/http/request-origin-modes.enums';
 import { authCookieSameSiteSchema, AUTH_COOKIE_SAME_SITES } from '#~/features/auth/auth-cookie-same-site.enums';
 
 export const generatedEnvShape = {
-  NODE_ENV: nodeEnvironmentSchema.default(NODE_ENVIRONMENTS.DEVELOPMENT),
+  NODE_ENV: nodeEnvironmentSchema.default(NODE_ENVIRONMENTS.PRODUCTION),
+  TRUSTED_ORIGINS: z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean)),
+  REQUEST_ORIGIN_MODE: requestOriginModeSchema.default(REQUEST_ORIGIN_MODES.LENIENT),
   POSTGRES_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/startername'),
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.url(),
-  AUTH_TRUSTED_ORIGINS: z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean)),
   AUTH_COOKIE_SECURE: z.stringbool().default(false),
   AUTH_COOKIE_SAME_SITE: authCookieSameSiteSchema.default(AUTH_COOKIE_SAME_SITES.LAX),
   VALKEY_HOST: z.string().default('localhost'),

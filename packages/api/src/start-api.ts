@@ -14,9 +14,13 @@ let startedApi: ReturnType<typeof bootstrap> | null = null;
 
 /**
  * Registers the installed modules' services and runs their startup tasks once, then returns the
- * handler every backend adapter forwards its fetch requests to.
+ * handler every backend adapter forwards its fetch requests to. A failed start is not kept, so the
+ * next call starts again.
  */
 export async function startApi() {
-  startedApi ??= bootstrap();
+  startedApi ??= bootstrap().catch((error: unknown) => {
+    startedApi = null;
+    throw error;
+  });
   return startedApi;
 }

@@ -7,15 +7,19 @@ import { em } from 'enumwaii';
 import { randomUUID } from 'node:crypto';
 import { singleton } from 'tsyringe';
 
+import { errorCodes, errorMessages } from '@startername/common/generated/error-codes';
+
 import { appRouter } from '#~/app-router';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
 import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
+import type { iWaitUntil } from '#~/features/request-context/request-context.storage';
 import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
 import { generatedHttpHandlers } from '#~/generated/http-handlers';
 import { createApiContext } from '#~/lib/api-context';
 import { getORPCErrorMetadata, isORPCError, shouldLogORPCError } from '#~/lib/orpc-error-wrapper';
 
 import type { iHttpHandle } from './http-handler.types';
+import { RequestOriginGuard } from './request-origin.guard';
 
 const orpcTransportsEnumwaii = em(['API', 'RPC']);
 
@@ -23,7 +27,13 @@ const ORPC_TRANSPORTS = orpcTransportsEnumwaii.enum;
 type ORPCTransport = (typeof orpcTransportsEnumwaii)['~type'];
 
 const RPC_PREFIX = '/rpc';
+const FORBIDDEN_STATUS = 403;
 const PATH_SEPARATOR = '/';
+
+export interface iApiRequestOptions {
+  /** The runtime's way to finish work after responding (Workers' `ExecutionContext.waitUntil`). */
+  waitUntil?: iWaitUntil;
+}
 
 interface iMountedHttpHandler {
   path: string;
@@ -49,6 +59,7 @@ export class ApiRequestHandler implements iWithLogger {
   constructor(
     loggerFactory: LoggerFactory,
     private readonly requestContext: RequestContextStorage,
+    private readonly requestOriginGuard: RequestOriginGuard,
   ) {
     this.logger = loggerFactory.create('API');
     this.openApiHandler = new OpenAPIHandler(appRouter, {
@@ -64,8 +75,20 @@ export class ApiRequestHandler implements iWithLogger {
     });
   }
 
-  public async handle(request: Request) {
-    return this.requestContext.run({ requestId: randomUUID() }, async () => this.route(request));
+  public async handle(request: Request, options: iApiRequestOptions = {}) {
+    if (!this.requestOriginGuard.isAllowed(request)) {
+      return Response.json(
+        {
+          code: errorCodes.REQUEST_ORIGIN_NOT_ALLOWED,
+          message: errorMessages.get(errorCodes.REQUEST_ORIGIN_NOT_ALLOWED),
+        },
+        { status: FORBIDDEN_STATUS },
+      );
+    }
+
+    return this.requestContext.run({ requestId: randomUUID(), waitUntil: options.waitUntil }, async () =>
+      this.route(request),
+    );
   }
 
   private async route(request: Request): Promise<Response | null> {

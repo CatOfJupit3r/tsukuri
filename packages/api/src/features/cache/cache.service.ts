@@ -60,12 +60,8 @@ export class CacheService implements iWithLogger {
   public async invalidatePattern(pattern: string) {
     if (!this.store.isConnected) return;
 
-    const { data: deletedCount, error } = await tryCatch(async () => this.store.deleteMatching(pattern));
-    if (error) {
-      this.logger.warn('Cache pattern invalidation failed', { pattern, error });
-      return;
-    }
-    if (deletedCount && deletedCount > 0) this.logger.debug('Invalidated cache keys', { pattern, count: deletedCount });
+    const { error } = await tryCatch(async () => this.store.deleteMatching(pattern));
+    if (error) this.logger.warn('Cache pattern invalidation failed', { pattern, error });
   }
 
   /**

@@ -4,6 +4,17 @@ import { username } from 'better-auth/plugins';
 import { inject, singleton } from 'tsyringe';
 
 import { env } from '#~/constants/env';
+import { NODE_ENVIRONMENT_META } from '#~/constants/node-environments.enums';
+import {
+  accounts,
+  accountsRelations,
+  rateLimits,
+  sessions,
+  sessionsRelations,
+  users,
+  usersRelations,
+  verifications,
+} from '#~/features/auth/auth.schema';
 import type { iKeyValueStore } from '#~/features/cache/key-value-store';
 import { KEY_VALUE_STORE_TOKEN } from '#~/features/cache/key-value-store';
 import { DATABASE_DIALECT } from '#~/features/database/database.constants';
@@ -14,24 +25,21 @@ import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
 
 import { AuthPasswordHasher } from './auth-password-hasher';
 import { UserAfterRegisteredListener } from './auth.listeners';
-import {
-  accounts,
-  accountsRelations,
-  sessions,
-  sessionsRelations,
-  users,
-  usersRelations,
-  verifications,
-} from './auth.schema';
 import { devImpersonatePlugin } from './better-auth-plugins/dev-impersonate.plugin';
 
 const AUTH_BASE_PATH = '/auth';
+
+type iAuthInstance = ReturnType<AuthService['createInstance']>;
 
 @singleton()
 export class AuthService implements iWithLogger {
   public readonly logger: LoggerType;
 
-  private instance: ReturnType<AuthService['createInstance']> | null = null;
+  /**
+   * One instance per database handle: a single one where the database is shared (a Node pool, D1), one per
+   * request where every request has its own connections (Postgres through Hyperdrive on a Worker).
+   */
+  private readonly instances = new WeakMap<object, iAuthInstance>();
 
   constructor(
     loggerFactory: LoggerFactory,
@@ -45,21 +53,49 @@ export class AuthService implements iWithLogger {
 
   /** Created on first use, after every startup task ran, so a connected key-value store holds the sessions. */
   public getInstance() {
-    this.instance ??= this.createInstance();
-    return this.instance;
+    const database = this.databaseService.getDb();
+    const existing = this.instances.get(database);
+    if (existing) return existing;
+
+    const instance = this.createInstance(database);
+    this.instances.set(database, instance);
+    return instance;
   }
 
-  private createInstance() {
+  private createInstance(database: ReturnType<DatabaseService['getDb']>) {
+    const hasSharedStore = this.keyValueStore.isConnected && this.keyValueStore.isStronglyConsistent;
+    const hasEventuallyConsistentStore = this.keyValueStore.isConnected && !this.keyValueStore.isStronglyConsistent;
+
     return betterAuth({
-      database: drizzleAdapter(this.databaseService.getDb(), {
+      database: drizzleAdapter(database, {
         provider: DATABASE_DIALECT,
-        schema: { users, usersRelations, sessions, sessionsRelations, accounts, accountsRelations, verifications },
+        schema: {
+          users,
+          usersRelations,
+          sessions,
+          sessionsRelations,
+          accounts,
+          accountsRelations,
+          verifications,
+          rateLimits,
+        },
         usePlural: true,
       }),
       secret: env.BETTER_AUTH_SECRET,
-      trustedOrigins: env.AUTH_TRUSTED_ORIGINS,
-      plugins: [username(), devImpersonatePlugin()],
+      trustedOrigins: env.TRUSTED_ORIGINS,
+      plugins: [
+        username(),
+        ...(NODE_ENVIRONMENT_META.get(env.NODE_ENV).allowsDevelopmentTools ? [devImpersonatePlugin()] : []),
+      ],
       secondaryStorage: this.keyValueStore.isConnected ? this.createSecondaryStorage() : undefined,
+      // An eventually consistent store (KV) may not show a write elsewhere for a minute, so sessions and
+      // verifications are also kept in the database, which stays their source of truth.
+      session: { storeSessionInDatabase: hasEventuallyConsistentStore },
+      verification: { storeInDatabase: hasEventuallyConsistentStore },
+      rateLimit: {
+        // Counters change on every request: only a strongly consistent shared store can hold them.
+        storage: hasSharedStore ? 'secondary-storage' : 'database',
+      },
       emailAndPassword: {
         enabled: true,
         password: {
@@ -99,7 +135,14 @@ export class AuthService implements iWithLogger {
   private createSecondaryStorage() {
     return {
       get: async (key: string) => this.keyValueStore.get(key),
-      set: async (key: string, value: string, ttl?: number) => this.keyValueStore.set(key, value, ttl),
+      // A session or verification close to expiry may get a TTL below the store's minimum. Both carry their
+      // own expiry, which Better Auth checks when it reads them, so keeping them a little longer is harmless.
+      set: async (key: string, value: string, ttl?: number) =>
+        this.keyValueStore.set(
+          key,
+          value,
+          ttl === undefined ? ttl : Math.max(ttl, this.keyValueStore.minimumTtlSeconds),
+        ),
       delete: async (key: string) => this.keyValueStore.delete(key),
     };
   }

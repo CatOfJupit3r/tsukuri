@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "imports": {
-    "#~/*": "./src/*.js"
+    "#~/*": "./src/*.js",
+    "#test/*": "./test/*.js"
   },
   "exports": {
     "./*": "./src/*.ts"

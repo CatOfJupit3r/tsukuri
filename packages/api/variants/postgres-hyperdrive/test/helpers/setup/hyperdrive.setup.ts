@@ -1,25 +1,20 @@
-import type { Hyperdrive } from '@cloudflare/workers-types';
+import { initializeTestPostgres } from '#test/helpers/postgres-memory';
+import { randomUUID } from 'node:crypto';
 import { container } from 'tsyringe';
+import { aroundEach } from 'vitest';
 
-import { env } from '#~/constants/env';
-import { HYPERDRIVE_TOKEN } from '#~/features/database/hyperdrive.token';
+import { HyperdrivePoolFactory } from '#~/features/database/hyperdrive-pool.factory';
+import { LoggerFactory } from '#~/features/logger/logger.factory';
+import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
 
-import { startLocalCloudflarePlatform } from '../cloudflare-platform';
+import { PgliteRequestDatabaseFactory } from '../pglite-request-database.factory';
 
-interface iHyperdriveBindings extends Record<string, unknown> {
-  HYPERDRIVE: Hyperdrive;
-}
+container.registerInstance(
+  HyperdrivePoolFactory,
+  new PgliteRequestDatabaseFactory(await initializeTestPostgres(), container.resolve(LoggerFactory)),
+);
 
-const testHyperdriveKey = Symbol.for('startername.test.hyperdrive');
-const testGlobals = globalThis as typeof globalThis & { [testHyperdriveKey]?: Promise<Hyperdrive> };
-
-/** A local Hyperdrive binding to `POSTGRES_URL`; tests still query the in-memory database. */
-async function createTestHyperdrive() {
-  const platform = await startLocalCloudflarePlatform<iHyperdriveBindings>({
-    hyperdrive: [{ binding: 'HYPERDRIVE', id: 'local', localConnectionString: env.POSTGRES_URL }],
-  });
-  return platform.env.HYPERDRIVE;
-}
-
-testGlobals[testHyperdriveKey] ??= createTestHyperdrive();
-container.registerInstance(HYPERDRIVE_TOKEN, await testGlobals[testHyperdriveKey]);
+// On a Worker the database exists only while a request is served, so every test (with its hooks) runs as one.
+aroundEach(async (runTest) => {
+  await container.resolve(RequestContextStorage).run({ requestId: randomUUID() }, runTest);
+});
