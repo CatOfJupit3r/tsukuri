@@ -8,8 +8,8 @@ import {
   LINT_CONFIG_SOURCE_EXTENSIONS,
   LINT_CONFIG_SOURCE_ROOT,
   NON_PACKAGE_SPECIFIER_PATTERN,
-  PACKAGE_LOADING_FUNCTION_NAMES,
 } from '../helpers/lint-config-dependencies.constants';
+import { readImportSpecifiers } from '../helpers/lint-config-import-scanner';
 import { readRepositoryPackageJson } from '../helpers/repository-files';
 import { LINT_CONFIG_WORKSPACE } from '../helpers/repository-sync.constants';
 
@@ -17,31 +17,6 @@ function toPackageName(specifier: string) {
   if (NON_PACKAGE_SPECIFIER_PATTERN.test(specifier)) return undefined;
   const segments = specifier.split('/');
   return specifier.startsWith('@') ? segments.slice(0, 2).join('/') : segments[0];
-}
-
-function readImportSpecifiers(sourceFile: ts.SourceFile) {
-  const specifiers: string[] = [];
-  const visit = (node: ts.Node) => {
-    if (
-      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-      node.moduleSpecifier !== undefined &&
-      ts.isStringLiteralLike(node.moduleSpecifier)
-    ) {
-      specifiers.push(node.moduleSpecifier.text);
-    }
-    if (ts.isCallExpression(node)) {
-      const [argument] = node.arguments;
-      const isPackageLoadingCall =
-        node.expression.kind === ts.SyntaxKind.ImportKeyword ||
-        (ts.isIdentifier(node.expression) && PACKAGE_LOADING_FUNCTION_NAMES.includes(node.expression.text));
-      if (isPackageLoadingCall && argument !== undefined && ts.isStringLiteralLike(argument)) {
-        specifiers.push(argument.text);
-      }
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(sourceFile);
-  return specifiers;
 }
 
 function readImportedPackageNames() {
@@ -73,5 +48,22 @@ describe('lint-config dependencies', () => {
 
   it.each(dependencyNames)('%s is imported by a lint-config source or is a peer of another dependency', (name) => {
     expect(importedPackageNames.has(name) || peerDependencyNames.has(name)).toBe(true);
+  });
+});
+
+describe('lint-config import scanner', () => {
+  it.each([
+    ['static import', "import x from 'pkg-a';"],
+    ['side-effect import', "import 'pkg-a';"],
+    ['export from', "export { x } from 'pkg-a';"],
+    ['dynamic import', "await import('pkg-a');"],
+    ['importPlugin call', "await importPlugin('pkg-a');"],
+    ['require call', "const x = require('pkg-a');"],
+    ['import equals require', "import x = require('pkg-a');"],
+    ['import.meta.resolve', "import.meta.resolve('pkg-a');"],
+  ])('finds the package named by a %s', (_form, source) => {
+    const sourceFile = ts.createSourceFile('source.ts', source, ts.ScriptTarget.Latest);
+
+    expect(readImportSpecifiers(sourceFile)).toEqual(['pkg-a']);
   });
 });

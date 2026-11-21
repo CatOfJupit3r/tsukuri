@@ -90,6 +90,10 @@ describe('pnpm catalog contributions', () => {
 
     expect(missing).toEqual([]);
   });
+
+  it.each(Object.keys(repositoryCatalog))('catalog entry %s is an exact pin', (name) => {
+    expect(repositoryCatalog[name]).toMatch(EXACT_VERSION_PATTERN);
+  });
 });
 
 describe('lint and format toolchain pins', () => {
@@ -104,6 +108,10 @@ describe('lint and format toolchain pins', () => {
     .map((dependency) => ({ ...dependency, label: `${ROOT_WORKSPACE} ${dependency.field} ${dependency.name}` }));
   const toolchainDependencies = [...workspaceDependencies, ...rootDependencies];
 
+  it.each(LINT_TOOLCHAIN_WORKSPACES)('%s has a package.json to check', (workspace) => {
+    expect(readRepositoryPackageJson(workspace)).toBeDefined();
+  });
+
   it('finds every named root lint tool in the repository root package.json', () => {
     expect(rootDependencies.map(({ name }) => name).sort()).toEqual([...ROOT_LINT_TOOL_NAMES].sort());
   });
@@ -114,8 +122,4 @@ describe('lint and format toolchain pins', () => {
       expect(version).toMatch(EXACT_VERSION_PATTERN);
     },
   );
-
-  it.each(Object.keys(repositoryCatalog))('catalog entry %s is an exact pin', (name) => {
-    expect(repositoryCatalog[name]).toMatch(EXACT_VERSION_PATTERN);
-  });
 });
