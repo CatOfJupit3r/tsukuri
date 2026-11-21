@@ -4,6 +4,7 @@
  */
 const FUNCTION_NODES = ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression, TSDeclareFunction)';
 const PARAMETER_NODES = ':matches(Identifier, ObjectPattern, ArrayPattern, RestElement)';
+const INLINE_OBJECT_TYPE = '[typeAnnotation.typeAnnotation.type="TSTypeLiteral"]';
 
 export const CONVENTION_RESTRICTED_SYNTAX = [
   {
@@ -21,7 +22,12 @@ export const CONVENTION_RESTRICTED_SYNTAX = [
     message: 'A detached promise needs a rejection handler: `void promise.catch(handler)`.',
   },
   {
-    selector: `${FUNCTION_NODES} > ${PARAMETER_NODES}[typeAnnotation.typeAnnotation.type="TSTypeLiteral"]`,
+    selector: [
+      `${FUNCTION_NODES} > ${PARAMETER_NODES}${INLINE_OBJECT_TYPE}`,
+      `${FUNCTION_NODES} > AssignmentPattern[left.typeAnnotation.typeAnnotation.type="TSTypeLiteral"]`,
+      `${FUNCTION_NODES} > TSParameterProperty > ${PARAMETER_NODES}${INLINE_OBJECT_TYPE}`,
+      `${FUNCTION_NODES} > TSParameterProperty > AssignmentPattern[left.typeAnnotation.typeAnnotation.type="TSTypeLiteral"]`,
+    ].join(', '),
     message: 'Declare the parameter type as a named interface instead of an inline object type.',
   },
   {

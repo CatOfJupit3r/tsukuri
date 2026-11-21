@@ -71,6 +71,10 @@ describe('convention restricted syntax', () => {
       'function f([first]: { a: string }) { return first; }',
       'class C { public run(options: { a: string }) { return options; } }',
       'declare function f(options: { a: string }): void;',
+      'function f(options: { a: string } = { a: "x" }) { return options; }',
+      'const f = ({ a }: { a: string } = { a: "x" }) => a;',
+      'class C { public constructor(private options: { a: string }) {} }',
+      'class C { public constructor(private options: { a: string } = { a: "x" }) {} }',
     ])('reports an inline parameter type in %s', (code) => {
       expect(lintMessages(code).filter((message) => message.includes('parameter type'))).toHaveLength(1);
     });
@@ -87,7 +91,7 @@ describe('convention restricted syntax', () => {
     it('allows named interfaces and inline types outside function signatures', () => {
       expect(
         lintMessages(
-          'interface iOptions { a: string }\nfunction f(options: iOptions): iOptions { return options; }\nconst value: { a: string } = { a: "x" };',
+          'interface iOptions { a: string }\nfunction f(options: iOptions = { a: "x" }): iOptions { return options; }\nclass C { public constructor(private options: iOptions) {} }\nconst value: { a: string } = { a: "x" };',
         ),
       ).toEqual([]);
     });

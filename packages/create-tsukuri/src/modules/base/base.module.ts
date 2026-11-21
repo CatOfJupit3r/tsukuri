@@ -28,7 +28,6 @@ export const baseModule = defineModule({
     { source: 'tsconfig.json' },
     { source: 'tsconfig.base.json' },
     { source: 'oxlint.config.mjs' },
-    { source: 'types' },
     { source: 'scripts/verify.ts' },
     { source: 'scripts/clean.ts' },
     { source: 'configs/lint-config' },
