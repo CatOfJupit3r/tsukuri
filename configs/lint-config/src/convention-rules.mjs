@@ -1,5 +1,5 @@
 /**
- * Convention rules: member accessibility, no `in` narrowing, no default
+ * Convention rules: member accessibility, no default
  * exports, small functions, files and folders, and (for React workspaces)
  * explicit JSX rendering, shallow JSX trees and the React compiler rules. They
  * apply to every TypeScript file of every workspace.
@@ -14,7 +14,6 @@ import {
   MAX_LINES_PER_FUNCTION,
 } from './lint-limits.mjs';
 import { CONVENTION_SOURCE_EXTENSIONS, maxFilesPerFolderRule } from './rules/max-files-per-folder.mjs';
-import { noInNarrowingRule } from './rules/no-in-narrowing.mjs';
 
 const CONVENTION_RULES_SOURCE_FILES = [`**/*.{${CONVENTION_SOURCE_EXTENSIONS.join(',')}}`];
 
@@ -27,13 +26,11 @@ const PLUGIN_NAMESPACE = 'tsukuri';
 const LOCAL_PLUGIN = {
   rules: {
     'max-files-per-folder': maxFilesPerFolderRule,
-    'no-in-narrowing': noInNarrowingRule,
   },
 };
 
 const CONVENTION_RULES = {
   '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'explicit' }],
-  [`${PLUGIN_NAMESPACE}/no-in-narrowing`]: 'error',
   'import-x/no-default-export': 'error',
   [`${PLUGIN_NAMESPACE}/max-files-per-folder`]: ['error', { max: MAX_FILES_PER_FOLDER }],
   'sonarjs/cognitive-complexity': ['error', MAX_COGNITIVE_COMPLEXITY],

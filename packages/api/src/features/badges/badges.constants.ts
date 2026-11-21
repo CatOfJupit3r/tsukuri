@@ -1,13 +1,13 @@
 import { USER_ACHIEVEMENTS } from '@startername/common/constants/achievements';
 import type { iBadgeMeta } from '@startername/common/constants/badges';
-import { BADGE_IDS } from '@startername/common/constants/badges';
+import { BADGE_IDS, DEFAULT_BADGE_ICON } from '@startername/common/constants/badges';
 
 export const BADGES_META: iBadgeMeta[] = [
   {
     id: BADGE_IDS.DEFAULT,
     label: 'Default Badge',
     description: 'The default badge for all users',
-    icon: '🎖️',
+    icon: DEFAULT_BADGE_ICON,
   },
   {
     id: BADGE_IDS.BETA_TESTER,

@@ -17,6 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createConventionRulesConfig } from './convention-rules.mjs';
+import { BASE_IGNORE_PATTERNS } from './lint-ignores.mjs';
 import { createOxlintConfigFromEslintConfig, withoutOxlintRules } from './oxlint.mjs';
 
 const [publishedEnumwaiiTypeCheckedPreset] = enumwaiiPlugin.configs['flat/recommended-type-checked'];
@@ -69,6 +70,11 @@ const SHARED_RESTRICTED_SYNTAX = [
   {
     selector: 'TSEnumDeclaration',
     message: 'Avoid TypeScript enum. Declare the closed set with Enumwaii and use its exported accessor and schema.',
+  },
+  {
+    selector: 'BinaryExpression[operator="in"]',
+    message:
+      "Avoid `'key' in value` narrowing. Add an Enumwaii discriminant and narrow with switch or equality. If no discriminant can exist, use `// eslint-disable-next-line no-restricted-syntax -- <reason>`.",
   },
 ];
 
@@ -243,18 +249,7 @@ const getBaseConfig = (options) => {
   return {
     baseIgnores: [
       {
-        ignores: [
-          'node_modules/**',
-          '*.config.{js,mjs,cjs,ts}',
-          '**/*.config.{js,mjs,cjs,ts}',
-          'test/**',
-          'tests/**',
-          'dist/**',
-          'build/**',
-          '.lintstagedrc.{js,cjs,mjs}',
-          // Connection points, rewritten by create-tsukuri on every add/remove.
-          'src/generated/**',
-        ],
+        ignores: BASE_IGNORE_PATTERNS,
       },
       ...(gitignorePath ? [includeIgnoreFile(gitignorePath)] : []),
     ],

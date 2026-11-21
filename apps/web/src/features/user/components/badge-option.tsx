@@ -1,6 +1,7 @@
 import { LuCheck, LuLock } from 'react-icons/lu';
 
 import { Button } from '#~/components/ui/button/button';
+import { BadgeSummary } from '#~/features/badges/components/badge-summary';
 import type { BadgesQueryReturnType } from '#~/features/badges/hooks/use-badges';
 
 interface iBadgeOptionProps {
@@ -23,15 +24,16 @@ export function BadgeOption({ badge, isUnlocked, isSelected, isDisabled, onSelec
         }
       }}
     >
-      <div className="text-2xl">{badge.icon ?? '🎖️'}</div>
-      <div className="flex-1 text-left">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold">{badge.label}</span>
-          {isUnlocked ? null : <LuLock className="size-3" />}
-          {isSelected ? <LuCheck className="size-4" /> : null}
-        </div>
-        <p className="text-xs text-wrap opacity-80">{badge.description}</p>
-      </div>
+      <BadgeSummary
+        badge={badge}
+        descriptionClassName="text-xs text-wrap opacity-80"
+        labelAccessories={
+          <>
+            {isUnlocked ? null : <LuLock className="size-3" />}
+            {isSelected ? <LuCheck className="size-4" /> : null}
+          </>
+        }
+      />
     </Button>
   );
 }

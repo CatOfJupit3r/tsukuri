@@ -48,7 +48,6 @@ interface iVerifyScope {
   /** pnpm selector arguments shared by every package-scoped step. */
   scopeArgs: string[];
   description: string;
-  shouldUseLintCache: boolean;
 }
 
 interface iPnpmInvocation {
@@ -70,7 +69,6 @@ const SUMMARY_MARKER = '=== verify final summary ===';
 const DOCUMENTATION_FILE_PATTERN = /\.md$/i;
 /** Each linted workspace has one, and the root one combines them. */
 const OXLINT_CONFIG_FILE_NAME = 'oxlint.config.mjs';
-const ESLINT_CACHE_ARGS = ['--cache', '--cache-strategy', 'content', '--cache-location', 'node_modules/.cache/eslint/'];
 /** None of the steps read another workspace's build output, so dependency order would only serialize them. */
 const NO_SORT_ARG = '--no-sort';
 
@@ -173,8 +171,8 @@ async function readRootWorkspaceName() {
 
 /**
  * `--files` scopes to the owning packages; otherwise `--filter` and `--changed-since` combine,
- * and with neither the whole workspace runs. Scoped runs are the iteration path, so their lint
- * keeps ESLint's cache. A full run lints uncached: the cache cannot see type changes in imported files.
+ * and with neither the whole workspace runs. ESLint runs uncached: its cache keys a file by its own content,
+ * so it cannot see type changes in imported files or a folder gaining a file (`tsukuri/max-files-per-folder`).
  */
 async function readScope(fileGroups: Map<string, string[]>, files: string[]): Promise<iVerifyScope> {
   if (files.length > 0) {
@@ -182,7 +180,6 @@ async function readScope(fileGroups: Map<string, string[]>, files: string[]): Pr
     return {
       scopeArgs: dirs.map((dir) => `--filter=./${dir}`),
       description: `files in ${dirs.join(', ')}`,
-      shouldUseLintCache: true,
     };
   }
 
@@ -192,16 +189,15 @@ async function readScope(fileGroups: Map<string, string[]>, files: string[]): Pr
 
   if (fileOutsideWorkspaces) {
     console.log(`[verify] ${fileOutsideWorkspaces} changed outside every workspace; checking the whole workspace.`);
-    return { scopeArgs: ['--recursive'], description: 'workspace', shouldUseLintCache: true };
+    return { scopeArgs: ['--recursive'], description: 'workspace' };
   }
 
   const selectors = [...filters, ...(changedSinceRef ? [`...[${changedSinceRef}]`] : [])];
-  if (selectors.length === 0) return { scopeArgs: ['--recursive'], description: 'workspace', shouldUseLintCache: false };
+  if (selectors.length === 0) return { scopeArgs: ['--recursive'], description: 'workspace' };
 
   return {
     scopeArgs: [...selectors.map((selector) => `--filter=${selector}`), `--filter=!${await readRootWorkspaceName()}`],
     description: selectors.join(' '),
-    shouldUseLintCache: true,
   };
 }
 
@@ -360,14 +356,13 @@ function createOxlintStep(targets: string[]): iVerifyStep[] {
 }
 
 function createEslintSteps(scope: iVerifyScope, fileGroups: Map<string, string[]>): iVerifyStep[] {
-  const cacheArgs = scope.shouldUseLintCache ? ESLINT_CACHE_ARGS : [];
   if (fileGroups.size === 0) {
-    return [{ name: 'eslint', args: [...scope.scopeArgs, NO_SORT_ARG, '--stream', 'run', 'lint:eslint', ...cacheArgs] }];
+    return [{ name: 'eslint', args: [...scope.scopeArgs, NO_SORT_ARG, '--stream', 'run', 'lint:eslint'] }];
   }
 
   return [...fileGroups.entries()].map(([dir, relativeFiles]) => ({
     name: `eslint ${dir}`,
-    args: [`--filter=./${dir}`, 'exec', 'eslint', '--fix', '--no-warn-ignored', ...cacheArgs, ...relativeFiles],
+    args: [`--filter=./${dir}`, 'exec', 'eslint', '--fix', '--no-warn-ignored', ...relativeFiles],
   }));
 }
 

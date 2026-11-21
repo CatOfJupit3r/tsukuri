@@ -11,6 +11,9 @@ export type BadgeId = (typeof badgeIdEnumwaii)['~type'];
 
 export const BadgeIdSchema = emToZodSchema(badgeIdEnumwaii);
 
+/** Shown for a badge that defines no icon of its own. */
+export const DEFAULT_BADGE_ICON = '🎖️';
+
 export interface iBadgeMeta {
   id: BadgeId;
   label: string;

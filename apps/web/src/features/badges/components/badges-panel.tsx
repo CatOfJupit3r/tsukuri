@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader } from '#~/components/ui
 import { useMyAchievements } from '#~/features/achievements/hooks/use-my-achievements';
 
 import { useBadges } from '../hooks/use-badges';
+import { isBadgeUnlocked } from '../utils/is-badge-unlocked';
 import { BadgeCard } from './badge-card';
 import { BadgesSkeleton } from './badges-skeleton';
 import { BadgesTitle } from './badges-title';
@@ -47,8 +48,6 @@ export function BadgesPanel() {
     return <BadgesError hasBadgesFailed={Boolean(errorBadges)} hasAchievementsFailed={Boolean(errorAchievements)} />;
   }
 
-  const unlockedAchievementIds = new Set(myAchievements?.map((a) => a.id) ?? []);
-
   return (
     <Card>
       <CardHeader>
@@ -58,11 +57,7 @@ export function BadgesPanel() {
       <CardContent>
         <div className="grid gap-4 md:grid-cols-3">
           {allBadges?.map((badge) => (
-            <BadgeCard
-              key={badge.id}
-              badge={badge}
-              isUnlocked={!badge.requiresAchievement || unlockedAchievementIds.has(badge.requiresAchievement)}
-            />
+            <BadgeCard key={badge.id} badge={badge} isUnlocked={isBadgeUnlocked({ badge, myAchievements })} />
           ))}
         </div>
       </CardContent>

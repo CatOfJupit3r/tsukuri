@@ -21,7 +21,12 @@ describe('project names', () => {
 
 describe('project name in shipped lint configs', () => {
   const lintConfigFiles = globSync(
-    ['configs/lint-config/src/**/*.mjs', '{apps,packages}/*/{eslint,oxlint}.config.mjs', 'oxlint.config.mjs'],
+    [
+      'configs/lint-config/src/**/*.mjs',
+      '{apps,packages}/*/{eslint,oxlint}.config.mjs',
+      'variants/*/apps/*/{eslint,oxlint}.config.mjs',
+      'oxlint.config.mjs',
+    ],
     { cwd: REPOSITORY_ROOT },
   );
 
@@ -32,5 +37,12 @@ describe('project name in shipped lint configs', () => {
     });
 
     expect(messages.filter((message) => message.fatal)).toEqual([]);
+  });
+
+  it.each(lintConfigFiles)('%s keeps the tsukuri plugin namespace literal for a hyphenated project name', (file) => {
+    const content = readFileSync(path.join(REPOSITORY_ROOT, file), 'utf8');
+    const countNamespaceUses = (text: string) => text.split('tsukuri').length - 1;
+
+    expect(countNamespaceUses(applyProjectName(content, 'my-app'))).toBe(countNamespaceUses(content));
   });
 });

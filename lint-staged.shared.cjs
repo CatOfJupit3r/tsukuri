@@ -7,8 +7,8 @@
 const path = require('node:path');
 
 const OXLINT_COMMAND = 'oxlint -c oxlint.config.mjs --fix --no-error-on-unmatched-pattern';
-const ESLINT_COMMAND =
-  'eslint --fix --no-warn-ignored --cache --cache-strategy content --cache-location node_modules/.cache/eslint/';
+// Uncached: ESLint's cache keys a file by its own content, so it would hide a folder that gained a file.
+const ESLINT_COMMAND = 'eslint --fix --no-warn-ignored';
 const PRETTIER_COMMAND = `prettier --write --ignore-path ${JSON.stringify(path.join(__dirname, '.gitignore'))} --ignore-path ${JSON.stringify(path.join(__dirname, '.prettierignore'))}`;
 
 /**

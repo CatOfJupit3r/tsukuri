@@ -45,7 +45,7 @@ Options besides `rootDir` and `additionalIgnores`:
 - [`src/convention-rules.mjs`](src/convention-rules.mjs): the size and shape conventions listed in AGENTS.md
   ("Lint Conventions"), such as folder size, complexity, depth and forbidden `export default`.
 - [`src/lint-limits.mjs`](src/lint-limits.mjs): the limits those conventions use.
-- [`src/rules`](src/rules): the local rules `tsukuri/max-files-per-folder` and `tsukuri/no-in-narrowing`.
+- [`src/rules`](src/rules): the local rule `tsukuri/max-files-per-folder`.
 - [`src/oxlint.mjs`](src/oxlint.mjs): the oxlint translation, the rules ESLint keeps because oxlint's port behaves
   differently, and the rules only oxlint runs.
 

@@ -5,6 +5,7 @@ import { Skeleton } from '#~/components/ui/feedback/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '#~/components/ui/layout/card';
 import { useMyAchievements } from '#~/features/achievements/hooks/use-my-achievements';
 import { useBadges } from '#~/features/badges/hooks/use-badges';
+import { isBadgeUnlocked } from '#~/features/badges/utils/is-badge-unlocked';
 
 import { useUpdateUserBadge } from '../hooks/use-update-user-badge';
 import { useUserProfile } from '../hooks/use-user-profile';
@@ -60,7 +61,6 @@ export function BadgePicker() {
     );
   }
 
-  const unlockedAchievementIds = new Set(myAchievements?.map((a) => a.id) ?? []);
   const selectedBadge = profile?.selectedBadge;
 
   return (
@@ -80,7 +80,7 @@ export function BadgePicker() {
             <BadgeOption
               key={badge.id}
               badge={badge}
-              isUnlocked={!badge.requiresAchievement || unlockedAchievementIds.has(badge.requiresAchievement)}
+              isUnlocked={isBadgeUnlocked({ badge, myAchievements })}
               isSelected={selectedBadge === badge.id}
               isDisabled={isPending}
               onSelect={() => updateUserBadge({ badgeId: badge.id })}
