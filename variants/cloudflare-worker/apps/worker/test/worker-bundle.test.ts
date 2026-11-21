@@ -20,7 +20,7 @@ function exampleVars(overrides: Record<string, string> = {}) {
 /** Builds the tsdown bundle and runs it in workerd, the way `wrangler dev` and a deployment do. Hands the running Worker to `check` and always disposes it. */
 async function withRunningWorker(
   overrides: Record<string, string>,
-  check: (worker: Awaited<ReturnType<typeof unstable_startWorker>>) => Promise<void>,
+  check: (worker: Awaited<ReturnType<typeof unstable_startWorker>>) => Promise<unknown>,
 ) {
   const worker = await unstable_startWorker({
     config: path.resolve(import.meta.dirname, '../wrangler.jsonc'),
