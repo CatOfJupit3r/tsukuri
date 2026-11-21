@@ -61,9 +61,23 @@ describe('lint-config import scanner', () => {
     ['require call', "const x = require('pkg-a');"],
     ['import equals require', "import x = require('pkg-a');"],
     ['import.meta.resolve', "import.meta.resolve('pkg-a');"],
+    ['require.resolve call', "require.resolve('pkg-a');"],
+    ['createRequire alias call', "const req = createRequire(import.meta.url);\nreq('pkg-a');"],
+    ['createRequire alias resolve call', "const req = createRequire(import.meta.url);\nreq.resolve('pkg-a');"],
+    ['import type', "type X = typeof import('pkg-a');"],
   ])('finds the package named by a %s', (_form, source) => {
     const sourceFile = ts.createSourceFile('source.ts', source, ts.ScriptTarget.Latest);
 
     expect(readImportSpecifiers(sourceFile)).toEqual(['pkg-a']);
+  });
+
+  it('ignores a string argument to an unrelated function and strings in comments', () => {
+    const sourceFile = ts.createSourceFile(
+      'source.ts',
+      "// require('pkg-b')\nconst other = 'pkg-c';\nunrelated('pkg-a');\nobject.resolve('pkg-d');",
+      ts.ScriptTarget.Latest,
+    );
+
+    expect(readImportSpecifiers(sourceFile)).toEqual([]);
   });
 });

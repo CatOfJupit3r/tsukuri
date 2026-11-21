@@ -13,6 +13,9 @@ export const LINT_CONFIG_SOURCE_EXTENSIONS = ['.mjs', '.js', '.cjs', '.ts', '.mt
 /** Calls that load a package by a string argument, next to dynamic `import()` and `import.meta.resolve()`. */
 export const PACKAGE_LOADING_FUNCTION_NAMES = ['importPlugin', 'require'];
 
+/** Factory whose result (and that result's `.resolve`) loads a package by a string argument. */
+export const REQUIRE_FACTORY_FUNCTION_NAME = 'createRequire';
+
 export const NON_PACKAGE_SPECIFIER_PATTERN = /^(?:[./#]|node:)/;
 
 export const installedPackageSchema = z.object({ peerDependencies: z.record(z.string(), z.string()).default({}) });
