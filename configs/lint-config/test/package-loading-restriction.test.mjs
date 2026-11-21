@@ -41,6 +41,9 @@ describe('lint-config package loading restriction', () => {
     ['module.require', "module.require('globals');"],
     ['importPlugin as a value', 'const load = importPlugin;'],
     ['importPlugin with an identifier', 'await importPlugin(pluginName);'],
+    ['default import of node:module', "import nodeModule from 'node:module';"],
+    ['namespace import of module', "import * as nodeModule from 'module';"],
+    ['importPlugin with a number', 'await importPlugin(5);'],
     ['importPlugin with a template expression', 'await importPlugin(`plugin-${name}`);'],
   ])('reports a %s in a lint-config source with the static import message', (_form, code) => {
     const [message] = lint(code, SOURCE_FILE_NAME);
@@ -59,6 +62,7 @@ describe('lint-config package loading restriction', () => {
     ['a template computed key with an expression', 'const rule = { [`${NAMESPACE}/rule`]: 1 };'],
     ['a numeric computed access', 'const first = array[0];'],
     ['a string computed access', "const value = options['key'];"],
+    ['an ordinary node:path import', "import path from 'node:path';"],
     ['importPlugin with a string literal', "await importPlugin('eslint-plugin-example');"],
   ])('allows %s in a lint-config source', (_form, code) => {
     expect(lint(code, SOURCE_FILE_NAME)).toEqual([]);
