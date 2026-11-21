@@ -132,7 +132,7 @@ export const webModule = defineModule({
         'class-variance-authority': '0.7.1',
         clsx: '2.1.1',
         'date-fns': '4.4.0',
-        enumwaii: '1.2.0',
+        enumwaii: '2.0.0',
         'lodash-es': 'catalog:',
         nuqs: '2.9.0',
         react: '19.2.7',

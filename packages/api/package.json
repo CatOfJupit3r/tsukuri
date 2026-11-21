@@ -35,7 +35,7 @@
     "@startername/server-contract": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "^0.45.2",
-    "enumwaii": "1.2.0",
+    "enumwaii": "2.0.0",
     "ioredis": "5.11.1",
     "pg": "^8.16.3",
     "reflect-metadata": "0.2.2",
