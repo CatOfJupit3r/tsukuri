@@ -17,4 +17,16 @@ describe('Hono adapter', () => {
 
     expect((await app.request('/no-such-route')).status).toBe(404);
   });
+
+  it('refuses a state-changing request from a foreign origin with a 403', async () => {
+    const app = createApp(await startApi());
+
+    const response = await app.request('/rpc/index/healthCheck', {
+      method: 'POST',
+      headers: { Origin: 'https://evil.example.com' },
+      body: JSON.stringify({}),
+    });
+
+    expect(response.status).toBe(403);
+  });
 });

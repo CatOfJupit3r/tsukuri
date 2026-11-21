@@ -5,7 +5,7 @@ description: Design Postgres or SQLite schemas, migrations, and typed repository
 
 # Drizzle ORM
 
-A project runs on one database: the `postgres` module (`pg`) or the `sqlite` module (built-in `node:sqlite`). Both put the same files at the same paths, so repositories, services and tests are written once and compile against whichever is installed:
+A project runs on one database: the `postgres` module (`pg`; a shared pool on Node, or one pool per request through Hyperdrive on a Cloudflare Worker), the `sqlite` module (built-in `node:sqlite`, Node only) or the `d1` module (Cloudflare D1 on a Worker, with the SQLite tables). All of them put the same files at the same paths, so repositories, services and tests are written once and compile against whichever is installed:
 
 - `#~/features/database/database.service` (`DatabaseService`, `getDb()`), `database-error.guard` (`DatabaseErrorGuard.isUniqueViolation`), `database-migrator`, `schema.helpers` and `database.constants` (`DATABASE_DIALECT`, `MIGRATIONS_FOLDER`).
 - `<feature>.schema.ts` table files. A module that owns tables ships them once per database, and a glue module per database (for example `better-auth-postgres` and `better-auth-sqlite`) installs the set that matches the project.
@@ -19,7 +19,7 @@ Keep each feature's tables in `packages/api/src/features/<feature>/<name>.schema
 - Use `idColumn` / `idPrimaryKey` from `#~/features/database/schema.helpers` for ids (uuid on Postgres, random UUID text on SQLite); SQLite also has `timestampColumn` and `booleanColumn`. Prefer `$defaultFn(() => new Date())` for SQLite timestamps, `defaultNow()` on Postgres.
 - Generate migrations with `pnpm run db:generate` and apply them with `pnpm run db:migrate` (root aliases for the `@startername/api` scripts; Postgres also has `db:push` and `db:studio`). Commit both the SQL file and the migration metadata.
 - The runtime connection reads `env.POSTGRES_URL` or `env.SQLITE_PATH` (`#~/constants/env`), loaded from the root `.env`. The default SQLite file is `data/startername.db` at the project root.
-- Integration tests run on an in-memory database built from `generatedDatabaseSchema` (PGlite with drizzle-kit `pushSchema`, or `:memory:` SQLite with drizzle-kit `generateSQLiteMigration`), and every table is emptied after each test (`test/helpers/postgres-memory.ts` or `test/helpers/sqlite-memory.ts`, plus `test/helpers/setup/database.setup.ts`). A schema change needs no test-side migration.
+- Integration tests run on an in-memory database built from `generatedDatabaseSchema` (PGlite with drizzle-kit `pushSchema`; `:memory:` SQLite or a local D1 from wrangler, both with drizzle-kit `generateSQLiteMigration`), and every table is emptied after each test (`test/helpers/postgres-memory.ts`, `test/helpers/sqlite-memory.ts` or the D1 setup, plus `test/helpers/setup/database.setup.ts`). A schema change needs no test-side migration.
 - Keep Better Auth's `users`, `sessions`, `accounts`, and `verifications` schemas in `features/auth/auth.schema.ts` in sync with `@better-auth/drizzle-adapter`; the adapter's `provider` is `DATABASE_DIALECT`.
 
 ## Deriving repository response types

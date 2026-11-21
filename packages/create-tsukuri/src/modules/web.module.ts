@@ -61,6 +61,7 @@ const WEB_SOURCE_FILES = [
   'utils/is-on-client.ts',
   'utils/query-helpers.ts',
   'utils/seo.ts',
+  'utils/server-render-fetch.types.ts',
 ];
 
 export const webModule = defineModule({
@@ -74,7 +75,11 @@ export const webModule = defineModule({
     ...WEB_ROOT_FILES.map((file) => ({ source: `${WEB_WORKSPACE}/${file}` })),
     { source: 'scripts/verify-styles.ts' },
     { source: `${WEB_WORKSPACE}/public` },
-    { source: `${WEB_WORKSPACE}/test` },
+    // Ships with the module that provides the util it tests.
+    {
+      source: `${WEB_WORKSPACE}/test`,
+      exclude: ['utils/server-render-secret-fetch.test.ts', 'utils/server-env.test.ts'],
+    },
     ...WEB_SOURCE_FILES.map((file) => ({ source: `${WEB_WORKSPACE}/src/${file}` })),
   ],
   packageJson: [
@@ -116,7 +121,6 @@ export const webModule = defineModule({
         '@tanstack/react-hotkeys': '0.10.0',
         '@tanstack/react-form-devtools': '0.2.30',
         '@tanstack/react-pacer': '0.22.1',
-        '@tanstack/react-ranger': '0.0.5',
         '@tanstack/react-query': '5.101.2',
         '@tanstack/react-query-devtools': '5.101.2',
         '@tanstack/react-router': '1.170.17',
@@ -127,7 +131,7 @@ export const webModule = defineModule({
         'date-fns': '4.4.0',
         enumwaii: '1.2.0',
         'lodash-es': 'catalog:',
-        nuqs: '2.9.0',
+        nuqs: '2.10.2',
         react: '19.2.7',
         'react-day-picker': '10.0.2',
         'react-dom': '19.2.7',

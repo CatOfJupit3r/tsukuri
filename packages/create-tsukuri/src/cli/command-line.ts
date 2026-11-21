@@ -1,3 +1,5 @@
+import type { iModuleOptionValues } from '#~/engine/module-option-resolver';
+import { moduleOptionIdsEnumwaii } from '#~/enums/module-option-ids.enums';
 import { promptIdsEnumwaii } from '#~/enums/prompt-ids.enums';
 import type { SkillId } from '#~/enums/skill-ids.enums';
 
@@ -9,6 +11,7 @@ export const CREATE_COMMAND = 'pnpm create tsukuri';
 export interface iCommandLineInput {
   directory: string;
   answers: iPromptAnswers;
+  options: iModuleOptionValues;
   excludedSkills: readonly SkillId[];
   shouldInitGit: boolean;
   shouldInstall: boolean;
@@ -27,6 +30,11 @@ export function renderCreateCommandLine(input: iCommandLineInput) {
     const answer = input.answers.get(promptId);
     if (answer === undefined) continue;
     parts.push(`--${promptId}`, answer.length > 0 ? answer.join(',') : NONE_FLAG_VALUE);
+  }
+
+  for (const optionId of moduleOptionIdsEnumwaii.values) {
+    const value = input.options.get(optionId);
+    if (value !== undefined) parts.push(`--${optionId}`, value);
   }
 
   if (input.excludedSkills.length > 0) parts.push('--exclude-skills', input.excludedSkills.join(','));

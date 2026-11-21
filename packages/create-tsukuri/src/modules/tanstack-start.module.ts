@@ -7,7 +7,13 @@ import { WEB_WORKSPACE } from './web.module';
 
 const START_VARIANT = `${WEB_WORKSPACE}/variants/tanstack-start`;
 
-const START_BACKEND_FILES = ['src/load-env.ts', 'src/routes/api/$.ts', 'src/utils/backend-url.ts'];
+const START_BACKEND_FILES = [
+  'src/load-env.ts',
+  'src/routes/api/$.ts',
+  'src/utils/forward-request-to-api.ts',
+  'src/utils/backend-url.ts',
+  'test/api-route.test.ts',
+];
 
 export const tanstackStartModule = defineModule({
   id: MODULE_IDS.TANSTACK_START,
@@ -16,7 +22,7 @@ export const tanstackStartModule = defineModule({
   description: 'The Start app serves the shared API under /api, with no separate server app',
   category: MODULE_CATEGORIES.BACKEND,
   requires: [MODULE_IDS.WEB_SSR, MODULE_IDS.API],
-  provides: [CAPABILITIES.BACKEND_TARGET],
+  provides: [CAPABILITIES.BACKEND_TARGET, CAPABILITIES.NODE_RUNTIME],
   files: START_BACKEND_FILES.map((file) => ({
     source: `${START_VARIANT}/${file}`,
     target: `${WEB_WORKSPACE}/${file}`,

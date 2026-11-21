@@ -1,0 +1,10 @@
+## Cloudflare Worker
+
+- `apps/worker` runs the shared API in a Cloudflare Worker with Hono: it adds CORS and request logging, then hands every request to `ApiRequestHandler`. Add routes as API features in `packages/api`, not here.
+- The API's dependency injection needs decorator metadata, which wrangler's own bundler does not emit, so `pnpm --filter=worker run bundle` builds `dist/worker.mjs` with tsdown and `wrangler.jsonc` serves it as is (`no_bundle`). `pnpm --filter=worker run dev` runs `wrangler dev`, which rebuilds on changes and reads the root `.env`.
+- `wrangler.jsonc` and `src/generated/worker-bindings.ts` are generated from the installed modules' bindings ({{#module "d1"}}`DB` for D1, {{/module}}{{#module "cloudflare-kv"}}`KV` for KV, {{/module}}{{#module "postgres-hyperdrive"}}`HYPERDRIVE` for Postgres, {{/module}}...). The Worker registers each binding in the container on its first request, under the token its module's services inject. Workers run on `nodejs_compat`, and string vars and secrets reach `process.env`, so the API's env schema works unchanged.
+- Code that runs on the Worker cannot open TCP connections or reuse an I/O object across requests: use the bindings, and keep request-bound resources per request.
+{{#module "d1"}}
+- Apply D1 migrations with `pnpm run db:migrate` (local) or `pnpm --filter=worker run db:migrate:remote`; generate them with `pnpm run db:generate`.
+{{/module}}
+- For a deployment, replace the `local` ids in `wrangler.jsonc` with the ids of the Cloudflare resources and set secrets with `wrangler secret put`.

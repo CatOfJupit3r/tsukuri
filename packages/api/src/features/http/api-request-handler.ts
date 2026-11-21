@@ -5,17 +5,26 @@ import { RPCHandler } from '@orpc/server/fetch';
 import { ZodToJsonSchemaConverter } from '@orpc/zod';
 import { em } from 'enumwaii';
 import { randomUUID } from 'node:crypto';
-import { singleton } from 'tsyringe';
+import { inject, singleton } from 'tsyringe';
+
+import { INTERNAL_RENDER_SECRET_HEADER } from '@startername/common/constants/internal-render-secret';
+import { errorCodes, errorMessages } from '@startername/common/generated/error-codes';
 
 import { appRouter } from '#~/app-router';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
 import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
+import type { iWaitUntil } from '#~/features/request-context/request-context.storage';
 import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
 import { generatedHttpHandlers } from '#~/generated/http-handlers';
 import { createApiContext } from '#~/lib/api-context';
 import { getORPCErrorMetadata, isORPCError, shouldLogORPCError } from '#~/lib/orpc-error-wrapper';
 
+import { CLIENT_IP_HEADER } from './client-ip.constants';
 import type { iHttpHandle } from './http-handler.types';
+import { RequestOriginGuard } from './request-origin.guard';
+import type { iServerRenderAuthenticator } from './server-render-authenticator';
+import { SERVER_RENDER_AUTHENTICATOR_TOKEN } from './server-render-authenticator';
+import { ServerRenderRequestRegistry } from './server-render-request.registry';
 
 const orpcTransportsEnumwaii = em(['API', 'RPC']);
 
@@ -23,7 +32,17 @@ const ORPC_TRANSPORTS = orpcTransportsEnumwaii.enum;
 type ORPCTransport = (typeof orpcTransportsEnumwaii)['~type'];
 
 const RPC_PREFIX = '/rpc';
+const FORBIDDEN_STATUS = 403;
 const PATH_SEPARATOR = '/';
+
+export interface iApiRequestOptions {
+  /** The runtime's way to finish work after responding (Workers' `ExecutionContext.waitUntil`). */
+  waitUntil?: iWaitUntil;
+  /** The address the adapter observed for the connection; handlers read it from `CLIENT_IP_HEADER`. */
+  clientIp?: string;
+  /** Set only by the server render handing its own request to this process; read-only session lookups then skip the per-IP rate limit. */
+  isServerRender?: boolean;
+}
 
 interface iMountedHttpHandler {
   path: string;
@@ -49,6 +68,9 @@ export class ApiRequestHandler implements iWithLogger {
   constructor(
     loggerFactory: LoggerFactory,
     private readonly requestContext: RequestContextStorage,
+    private readonly requestOriginGuard: RequestOriginGuard,
+    private readonly serverRenderRequestRegistry: ServerRenderRequestRegistry,
+    @inject(SERVER_RENDER_AUTHENTICATOR_TOKEN) private readonly serverRenderAuthenticator: iServerRenderAuthenticator,
   ) {
     this.logger = loggerFactory.create('API');
     this.openApiHandler = new OpenAPIHandler(appRouter, {
@@ -64,8 +86,36 @@ export class ApiRequestHandler implements iWithLogger {
     });
   }
 
-  public async handle(request: Request) {
-    return this.requestContext.run({ requestId: randomUUID() }, async () => this.route(request));
+  public async handle(request: Request, options: iApiRequestOptions = {}) {
+    if (!this.requestOriginGuard.isAllowed(request)) {
+      return Response.json(
+        {
+          code: errorCodes.REQUEST_ORIGIN_NOT_ALLOWED,
+          message: errorMessages.get(errorCodes.REQUEST_ORIGIN_NOT_ALLOWED),
+        },
+        { status: FORBIDDEN_STATUS },
+      );
+    }
+
+    const isServerRender = options.isServerRender === true || this.serverRenderAuthenticator.isAuthentic(request);
+    const forwardedRequest = this.withTrustedHeaders(request, options.clientIp);
+    if (isServerRender) this.serverRenderRequestRegistry.mark(forwardedRequest);
+
+    return this.requestContext.run({ requestId: randomUUID(), waitUntil: options.waitUntil }, async () =>
+      this.route(forwardedRequest),
+    );
+  }
+
+  /**
+   * Replaces whatever a client sent in `CLIENT_IP_HEADER` with the address the adapter observed, and drops the
+   * render secret so nothing past this point can read or echo it.
+   */
+  private withTrustedHeaders(request: Request, clientIp: string | undefined) {
+    const headers = new Headers(request.headers);
+    headers.delete(INTERNAL_RENDER_SECRET_HEADER);
+    if (clientIp === undefined) headers.delete(CLIENT_IP_HEADER);
+    else headers.set(CLIENT_IP_HEADER, clientIp);
+    return new Request(request, { headers });
   }
 
   private async route(request: Request): Promise<Response | null> {

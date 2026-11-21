@@ -2,10 +2,13 @@ import { parse } from 'yaml';
 
 import { createGeneratorContainer } from '#~/di/container';
 import { ConnectionPointGenerator } from '#~/engine/connection-points/connection-point-generator';
+import { MAX_WORKER_NAME_LENGTH, WRANGLER_CONFIG } from '#~/engine/connection-points/connection-point.constants';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import { HTTP_METHODS } from '#~/enums/http-methods.enums';
 import { WEB_SLOTS } from '#~/enums/web-slots.enums';
+import { WORKER_BINDING_NAMES, WORKER_BINDING_TYPES, WRANGLER_BINDING_SECTIONS } from '#~/enums/worker-bindings.enums';
+import type { iConnectionPointContributionInput } from '#~/manifest/connection-point.schema';
 import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
 
@@ -23,7 +26,21 @@ const generator = createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT, manife
 
 async function generate(...inputs: iModuleManifestInput[]) {
   const modules = inputs.map((input) => moduleManifestSchema.parse(input));
-  return generator.generate(modules, { installedModules: modules.map((manifest) => manifest.id) });
+  return generator.generate(modules, { installedModules: modules.map((manifest) => manifest.id), projectName: 'acme' });
+}
+
+const WORKER_WORKSPACE = 'apps/worker';
+const D1_BINDING = {
+  kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
+  workspace: WORKER_WORKSPACE,
+  binding: WORKER_BINDING_NAMES.DB,
+  type: WORKER_BINDING_TYPES.D1_DATABASE,
+  token: { name: 'D1_DATABASE_TOKEN', from: '#~/d1' },
+} satisfies iConnectionPointContributionInput;
+
+function wranglerConfig(result: Awaited<ReturnType<typeof generate>>): unknown {
+  const content = fileContent(result, `${WORKER_WORKSPACE}/wrangler.jsonc`);
+  return JSON.parse(content.slice(content.indexOf('\n') + 1));
 }
 
 function fileContent(result: Awaited<ReturnType<typeof generate>>, filePath: string) {
@@ -307,6 +324,96 @@ describe('ConnectionPointGenerator', () => {
     expect(slots).toContain("import { UserMenu } from '#~/features/auth/components/user-menu';");
     expect(slots).toContain('  HEADER_ACTIONS: [UserMenu],');
     expect(slots).toContain('  HEADER_NAVIGATION: [],');
+  });
+
+  it('registers each Worker binding under its token and declares it in wrangler.jsonc', async () => {
+    const result = await generate(
+      createManifest(ALPHA, {
+        contributions: [
+          {
+            kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
+            workspace: WORKER_WORKSPACE,
+            binding: WORKER_BINDING_NAMES.DB,
+            type: WORKER_BINDING_TYPES.D1_DATABASE,
+            token: { name: 'D1_DATABASE_TOKEN', from: '@startername/api/features/database/d1-database.token' },
+            entry: { database_name: 'startername', database_id: 'local' },
+          },
+        ],
+      }),
+      createManifest(BETA, {
+        contributions: [
+          {
+            kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
+            workspace: WORKER_WORKSPACE,
+            binding: WORKER_BINDING_NAMES.KV,
+            type: WORKER_BINDING_TYPES.KV_NAMESPACE,
+            token: { name: 'KV_NAMESPACE_TOKEN', from: '@startername/api/features/cloudflare-kv/kv-namespace.token' },
+            entry: { id: 'local' },
+          },
+        ],
+      }),
+    );
+
+    const bindings = fileContent(result, 'apps/worker/src/generated/worker-bindings.ts');
+    expect(bindings).toContain("import type { D1Database, KVNamespace } from '@cloudflare/workers-types';");
+    expect(bindings).toContain('  DB: D1Database;\n  KV: KVNamespace;');
+    expect(bindings).toContain("  [D1_DATABASE_TOKEN, 'DB'],\n  [KV_NAMESPACE_TOKEN, 'KV'],");
+
+    expect(wranglerConfig(result)).toEqual({
+      ...WRANGLER_CONFIG,
+      name: 'acme',
+      d1_databases: [{ binding: 'DB', database_name: 'startername', database_id: 'local' }],
+      kv_namespaces: [{ binding: 'KV', id: 'local' }],
+    });
+  });
+
+  it.each([
+    ['my.app_v2', 'my-app-v2'],
+    [`${'a'.repeat(MAX_WORKER_NAME_LENGTH - 1)}_b`, 'a'.repeat(MAX_WORKER_NAME_LENGTH - 1)],
+  ])('names the Worker of project %s %s, as Cloudflare accepts', async (projectName, workerName) => {
+    const modules = [moduleManifestSchema.parse(createManifest(ALPHA, { contributions: [D1_BINDING] }))];
+    const result = await generator.generate(modules, { installedModules: [ALPHA], projectName });
+
+    expect(wranglerConfig(result)).toEqual(expect.objectContaining({ name: workerName }));
+  });
+
+  it.each(['3d-app', '___', '42'])(
+    'refuses project %s as a Worker name instead of renaming it further',
+    async (projectName) => {
+      const modules = [moduleManifestSchema.parse(createManifest(ALPHA, { contributions: [D1_BINDING] }))];
+
+      await expect(generator.generate(modules, { installedModules: [ALPHA], projectName })).rejects.toThrow(
+        expect.objectContaining({ code: GENERATOR_ERROR_CODES.INVALID_PROJECT_NAME }),
+      );
+    },
+  );
+
+  it('deploys the Worker with NODE_ENV production so development tools stay off', async () => {
+    const modules = [moduleManifestSchema.parse(createManifest(ALPHA, { contributions: [D1_BINDING] }))];
+    const result = await generator.generate(modules, { installedModules: [ALPHA], projectName: 'acme' });
+
+    expect(wranglerConfig(result)).toEqual(expect.objectContaining({ vars: { NODE_ENV: 'production' } }));
+  });
+
+  it('keeps every binding section out of the base wrangler keys a module cannot override', () => {
+    const baseKeys = Object.keys(WRANGLER_CONFIG);
+
+    expect(Object.values(WRANGLER_BINDING_SECTIONS).filter((section) => baseKeys.includes(section))).toEqual([]);
+  });
+
+  it('rejects two modules adding the same Worker binding', async () => {
+    await expect(
+      generate(
+        createManifest(ALPHA, { contributions: [D1_BINDING] }),
+        createManifest(BETA, { contributions: [D1_BINDING] }),
+      ),
+    ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
+  });
+
+  it('keeps the binding name out of the module-specific entry', () => {
+    const manifest = createManifest(ALPHA, { contributions: [{ ...D1_BINDING, entry: { binding: 'OTHER' } }] });
+
+    expect(moduleManifestSchema.safeParse(manifest).success).toBe(false);
   });
 
   it('generates nothing but a recursive build script when no module contributes', async () => {

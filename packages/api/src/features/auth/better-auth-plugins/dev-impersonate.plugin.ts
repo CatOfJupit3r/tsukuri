@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { errorCodes, errorMessages } from '@startername/common/generated/error-codes';
 
 import { env } from '#~/constants/env';
-import { NODE_ENVIRONMENTS } from '#~/constants/node-environments.enums';
+import { NODE_ENVIRONMENT_META } from '#~/constants/node-environments.enums';
 
 const getDate = (seconds: number) => new Date(Date.now() + seconds * 1000);
 
@@ -55,7 +55,7 @@ export const devImpersonatePlugin = () =>
           },
         },
         async (ctx) => {
-          if (env.NODE_ENV === NODE_ENVIRONMENTS.PRODUCTION) {
+          if (!NODE_ENVIRONMENT_META.get(env.NODE_ENV).allowsDevelopmentTools) {
             throw APIError.fromStatus('FORBIDDEN', {
               message: errorMessages.get(errorCodes.DEV_IMPERSONATION_NOT_ALLOWED),
             });

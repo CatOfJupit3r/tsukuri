@@ -2,14 +2,12 @@
  * Cache TTL (Time To Live) constants in seconds
  *
  * Use these constants to ensure consistent cache expiration across the application.
- * Adjust values based on your data freshness requirements.
+ * Adjust values based on your data freshness requirements, and keep each at 60 seconds or more: Cloudflare KV
+ * refuses shorter expiries, so a shorter entry would never be cached on a Worker.
  */
 export const CACHE_TTL = {
   /** Static data that rarely changes during runtime (1 hour) */
   STATIC: 3600,
-
-  /** Lists with pagination - short duration (30 seconds) */
-  LIST_SHORT: 30,
 
   /** Lists with pagination - medium duration (1 minute) */
   LIST_MEDIUM: 60,

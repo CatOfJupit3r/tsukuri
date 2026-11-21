@@ -1,13 +1,23 @@
 import { templatePath } from '#~/constants/template-path';
+import { WEB_APP_ORIGIN_EXAMPLE } from '#~/constants/web-app-origin';
 import { CAPABILITIES } from '#~/enums/capabilities.enums';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
+import type { iEnvVariableContribution } from '#~/manifest/connection-point.schema';
 import { defineModule } from '#~/manifest/define-module';
 
-const SERVER_WORKSPACE = 'apps/server';
-const SERVER_PACKAGE_NAME = 'server';
+export const SERVER_WORKSPACE = 'apps/server';
+export const SERVER_PACKAGE_NAME = 'server';
+
+/** The web app origin Hono answers CORS requests for; every Hono backend reads it. */
+export const CORS_ORIGIN_VARIABLE = {
+  kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
+  name: 'CORS_ORIGIN',
+  schema: "z.url().or(z.literal('')).default('')",
+  example: WEB_APP_ORIGIN_EXAMPLE,
+} satisfies Omit<iEnvVariableContribution, 'workspace' | 'imports'>;
 
 export const nodeHonoModule = defineModule({
   id: MODULE_IDS.NODE_HONO,
@@ -16,7 +26,7 @@ export const nodeHonoModule = defineModule({
   description: 'Hono on Node.js serving the shared API',
   category: MODULE_CATEGORIES.BACKEND,
   requires: [MODULE_IDS.API],
-  provides: [CAPABILITIES.BACKEND_TARGET, CAPABILITIES.REMOTE_BACKEND],
+  provides: [CAPABILITIES.BACKEND_TARGET, CAPABILITIES.REMOTE_BACKEND, CAPABILITIES.NODE_RUNTIME],
   files: [
     { source: `${SERVER_WORKSPACE}/.gitignore` },
     { source: `${SERVER_WORKSPACE}/.lintstagedrc.cjs` },
@@ -106,13 +116,7 @@ export const nodeHonoModule = defineModule({
       schema: "z.string().default('localhost')",
       example: 'localhost',
     },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: SERVER_WORKSPACE,
-      name: 'CORS_ORIGIN',
-      schema: "z.url().or(z.literal('')).default('')",
-      example: 'http://localhost:3030',
-    },
+    { ...CORS_ORIGIN_VARIABLE, workspace: SERVER_WORKSPACE },
     { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: SERVER_PACKAGE_NAME },
     { kind: CONNECTION_POINT_KINDS.BUILD_TASK, filter: SERVER_PACKAGE_NAME },
   ],

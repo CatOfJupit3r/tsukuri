@@ -1,7 +1,7 @@
 import { usernameClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
-import { getBackendURL, getForwardedRequestHeaders } from '#~/utils/backend-url';
+import { getBackendURL, getForwardedRequestHeaders, getServerRenderFetch } from '#~/utils/backend-url';
 
 const createAuthInstance = () =>
   createAuthClient({
@@ -9,6 +9,7 @@ const createAuthInstance = () =>
     baseURL: getBackendURL('/auth'),
     fetchOptions: {
       throw: true,
+      customFetchImpl: getServerRenderFetch(),
     },
   });
 

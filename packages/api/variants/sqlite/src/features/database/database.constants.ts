@@ -1,4 +1,4 @@
-import { DATABASE_DIALECTS } from './database-dialects.enums';
+import { DATABASE_DIALECTS } from '#~/features/database/database-dialects.enums';
 
 export const DATABASE_DIALECT = DATABASE_DIALECTS.SQLITE;
 

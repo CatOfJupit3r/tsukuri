@@ -3,6 +3,7 @@ import { inject, injectable } from 'tsyringe';
 import { MODULE_MANIFESTS_TOKEN } from '#~/di/tokens';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { ModuleOptionId } from '#~/enums/module-option-ids.enums';
 import type { iModuleManifest, iModuleManifestInput } from '#~/manifest/module-manifest.schema';
 import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 
@@ -35,7 +36,19 @@ export class ModuleRegistry {
       this.modules.set(parsed.data.id, parsed.data);
     }
 
+    const optionOwners = new Map<ModuleOptionId, ModuleId>();
     for (const manifest of this.modules.values()) {
+      for (const option of manifest.options) {
+        const owner = optionOwners.get(option.id);
+        if (owner) {
+          throw new GeneratorError(
+            GENERATOR_ERROR_CODES.INVALID_MANIFEST,
+            `Modules "${owner}" and "${manifest.id}" both declare the option "${option.id}"`,
+          );
+        }
+        optionOwners.set(option.id, manifest.id);
+      }
+
       for (const referenced of [...manifest.requires, ...manifest.conflicts]) {
         if (this.modules.has(referenced)) continue;
         throw new GeneratorError(

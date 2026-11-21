@@ -3,6 +3,7 @@ import z from 'zod';
 import { CONNECTION_POINT_KINDS, connectionPointKindSchema } from '#~/enums/connection-point-kinds.enums';
 import { httpMethodSchema } from '#~/enums/http-methods.enums';
 import { webSlotSchema } from '#~/enums/web-slots.enums';
+import { workerBindingNameSchema, workerBindingTypeSchema } from '#~/enums/worker-bindings.enums';
 
 const workspaceSchema = z.string().min(1);
 const identifierSchema = z.string().regex(/^[A-Za-z_$][\w$]*$/, 'Must be a valid TypeScript identifier');
@@ -118,6 +119,25 @@ export const envVariableContributionSchema = z.object({
   imports: z.array(namedImportSchema).default([]),
   /** Value written to the generated `.env.example`. */
   example: z.string().default(''),
+  /** Written as a `#` comment above the variable in `.env.example`. */
+  comment: z.string().optional(),
+});
+
+/**
+ * A Cloudflare binding the Worker registers in the container under `token` and declares in its generated
+ * `wrangler.jsonc`, in the section of its type, as `{ binding, ...entry }`.
+ */
+export const workerBindingContributionSchema = z.object({
+  kind: z.literal(CONNECTION_POINT_KINDS.WORKER_BINDING),
+  workspace: workspaceSchema,
+  binding: workerBindingNameSchema,
+  type: workerBindingTypeSchema,
+  token: namedImportSchema,
+  /** The binding's settings besides its name, such as a D1 `database_name`. */
+  entry: z
+    .record(z.string(), z.unknown())
+    .refine((entry) => !Object.hasOwn(entry, 'binding'), 'The binding name is set by `binding`, not by `entry`')
+    .default({}),
 });
 
 export const composeServiceContributionSchema = z.object({
@@ -168,6 +188,7 @@ export const connectionPointContributionSchema = z.discriminatedUnion('kind', [
   webRootPreloadContributionSchema,
   webDevtoolsPluginContributionSchema,
   envVariableContributionSchema,
+  workerBindingContributionSchema,
   composeServiceContributionSchema,
   ciStepContributionSchema,
   devTaskContributionSchema,
@@ -193,6 +214,7 @@ export type iConnectionPointContributionInput =
   | iWebRootPreloadContribution
   | iWebDevtoolsPluginContribution
   | iWithDefaults<iEnvVariableContribution, 'imports' | 'example'>
+  | iWithDefaults<iWorkerBindingContribution, 'entry'>
   | iWithDefaults<iComposeServiceContribution, 'volumes'>
   | iWithDefaults<iCiStepContribution, 'env'>
   | iDevTaskContribution
@@ -209,6 +231,7 @@ export type iWebRootPreloadContribution = z.output<typeof webRootPreloadContribu
 export type iWebDevtoolsPluginContribution = z.output<typeof webDevtoolsPluginContributionSchema>;
 export type iDiRegistrationContribution = z.output<typeof diRegistrationContributionSchema>;
 export type iEnvVariableContribution = z.output<typeof envVariableContributionSchema>;
+export type iWorkerBindingContribution = z.output<typeof workerBindingContributionSchema>;
 export type iComposeServiceContribution = z.output<typeof composeServiceContributionSchema>;
 export type iCiStepContribution = z.output<typeof ciStepContributionSchema>;
 export type iDevTaskContribution = z.output<typeof devTaskContributionSchema>;

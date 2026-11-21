@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { index, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 import { booleanColumn, idColumn, idPrimaryKey, timestampColumn } from '#~/features/database/schema.helpers';
 
@@ -79,6 +79,18 @@ export const verifications = sqliteTable(
     index('verifications_identifier_idx').on(table.identifier),
     index('verifications_expires_at_idx').on(table.expiresAt),
   ],
+);
+
+/** Better Auth's rate limit counters, used when no strongly consistent key-value store holds them. */
+export const rateLimits = sqliteTable(
+  'rate_limits',
+  {
+    id: idPrimaryKey(),
+    key: text('key').notNull(),
+    count: integer('count').notNull(),
+    lastRequest: integer('last_request').notNull(),
+  },
+  (table) => [uniqueIndex('rate_limits_key_uidx').on(table.key)],
 );
 
 export const usersRelations = relations(users, ({ many }) => ({

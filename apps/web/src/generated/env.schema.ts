@@ -3,6 +3,7 @@
 import z from 'zod';
 
 export const generatedEnvShape = {
+  INTERNAL_RENDER_SECRET: z.string().min(32),
   VITE_HOST: z.string().default('localhost'),
   VITE_PORT: z.coerce.number().default(3030),
   VITE_SERVER_URL: z.url(),

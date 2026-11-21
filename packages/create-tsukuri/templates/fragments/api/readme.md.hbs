@@ -1,0 +1,12 @@
+## Request Origins
+
+Two variables name the web app that calls the API, and they answer different questions:
+
+- `CORS_ORIGIN` tells the browser which origin may read the API's responses. It is the `Access-Control-Allow-Origin` header Hono sends (one origin, with credentials). It only affects what the browser lets a page do; it does not stop a request from reaching the server.
+- `TRUSTED_ORIGINS` is the server-side guard against cross-site writes. A POST, PUT, PATCH or DELETE whose `Origin` header is neither the API's own origin nor listed here gets a 403 (`REQUEST_ORIGIN_NOT_ALLOWED`). It is a comma-separated list, and each entry has to match the request's `Origin` exactly: `https://app.example.com` does not match `https://www.app.example.com` and there are no wildcards.
+
+`create` writes the web app's origin into both variables in `.env` and `.env.example`, so a fresh project answers its own web app without a 403 and without CORS errors. `add` only regenerates `.env.example` and never touches your `.env`: after adding a module, copy the variables it introduced from `.env.example` into `.env` and set `CORS_ORIGIN` and `TRUSTED_ORIGINS` to your web app's origin. Keep them equal while one web app is the only caller. Change one without the other when:
+
+- the API is public and read-only for other sites: put their origin in `CORS_ORIGIN` only, so browsers may read responses, while writes from that origin stay refused;
+- a desktop or mobile app sends its own `Origin` (for example `tauri://localhost` or `capacitor://localhost`): add it to `TRUSTED_ORIGINS`, since `CORS_ORIGIN` accepts a single origin;
+- a preview deployment gets a new URL per branch: list each preview origin in `TRUSTED_ORIGINS` (wildcards are not supported), or serve previews from the API's own origin.

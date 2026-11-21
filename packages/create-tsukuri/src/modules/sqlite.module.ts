@@ -5,12 +5,11 @@ import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { SKILL_IDS } from '#~/enums/skill-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
-import { API_WORKSPACE } from './api.module';
+import { API_FILTER, API_WORKSPACE } from './api.module';
 import { DATABASE_MIGRATE_SCRIPT } from './postgres.module';
 
 /** SQLite files live next to the Postgres ones in this repository and take their paths in a project. */
 export const SQLITE_VARIANT = `${API_WORKSPACE}/variants/sqlite`;
-const API_FILTER = '--filter=@startername/api';
 
 /** Database files both dialects share. */
 const SHARED_DATABASE_FILES = ['database-dialects.enums.ts', 'connect-database.task.ts', 'migrate-database.ts'];
@@ -22,7 +21,8 @@ export const sqliteModule = defineModule({
   description: 'SQLite on the built-in node:sqlite through Drizzle, with drizzle-kit migrations',
   category: MODULE_CATEGORIES.DATABASE,
   requires: [MODULE_IDS.API],
-  provides: [CAPABILITIES.DATABASE],
+  requiresCapabilities: [CAPABILITIES.NODE_RUNTIME],
+  provides: [CAPABILITIES.DATABASE, CAPABILITIES.SQLITE_DIALECT],
   files: [
     { source: `${SQLITE_VARIANT}/drizzle.config.ts`, target: `${API_WORKSPACE}/drizzle.config.ts` },
     { source: `${SQLITE_VARIANT}/src/features/database`, target: `${API_WORKSPACE}/src/features/database` },

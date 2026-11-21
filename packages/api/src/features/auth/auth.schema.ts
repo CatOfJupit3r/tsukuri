@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, index, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { bigint, boolean, index, integer, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 import { idColumn, idPrimaryKey } from '#~/features/database/schema.helpers';
 
@@ -79,6 +79,18 @@ export const verifications = pgTable(
     index('verifications_identifier_idx').on(table.identifier),
     index('verifications_expires_at_idx').on(table.expiresAt),
   ],
+);
+
+/** Better Auth's rate limit counters, used when no strongly consistent key-value store holds them. */
+export const rateLimits = pgTable(
+  'rate_limits',
+  {
+    id: idPrimaryKey(),
+    key: text('key').notNull(),
+    count: integer('count').notNull(),
+    lastRequest: bigint('last_request', { mode: 'number' }).notNull(),
+  },
+  (table) => [uniqueIndex('rate_limits_key_uidx').on(table.key)],
 );
 
 export const usersRelations = relations(users, ({ many }) => ({

@@ -1,0 +1,11 @@
+{
+  "name": "@startername/api-variants",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check-types": "tsgo --noEmit -p sqlite && tsgo --noEmit -p d1 && tsgo --noEmit -p postgres-hyperdrive && tsgo --noEmit -p cloudflare-kv && tsgo --noEmit -p cloudflare-worker"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "catalog:"
+  }
+}

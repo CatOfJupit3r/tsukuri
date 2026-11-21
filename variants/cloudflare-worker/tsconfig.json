@@ -1,0 +1,21 @@
+{
+  "extends": [
+    "../../tsconfig.base.json",
+    "@startername/swc-config/tsconfig.decorators.json"
+  ],
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "node",
+      "vitest/globals"
+    ]
+  },
+  "files": [
+    "../../packages/common/src/globals.d.ts"
+  ],
+  "include": [
+    "apps/worker/src/**/*.ts",
+    "apps/worker/test/**/*.ts",
+    "apps/worker/*.config.ts"
+  ]
+}

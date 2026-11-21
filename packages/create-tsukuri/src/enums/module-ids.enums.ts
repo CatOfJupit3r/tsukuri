@@ -5,8 +5,13 @@ export const moduleIdsEnumwaii = em({
   BASE: 'base',
   API: 'api',
   NODE_HONO: 'node-hono',
+  CLOUDFLARE_WORKER: 'cloudflare-worker',
   POSTGRES: 'postgres',
   SQLITE: 'sqlite',
+  D1: 'd1',
+  CLOUDFLARE_KV: 'cloudflare-kv',
+  POSTGRES_NODE: 'postgres-node',
+  POSTGRES_HYPERDRIVE: 'postgres-hyperdrive',
   VALKEY: 'valkey',
   BETTER_AUTH: 'better-auth',
   EXAMPLE_DOMAIN: 'example-domain',
@@ -22,6 +27,7 @@ export const moduleIdsEnumwaii = em({
   WEB_REMOTE_BACKEND: 'web-remote-backend',
   WEB_SSR_REMOTE_BACKEND: 'web-ssr-remote-backend',
   BETTER_AUTH_WEB: 'better-auth-web',
+  SSR_RENDER_SECRET: 'ssr-render-secret',
   EXAMPLE_DOMAIN_WEB: 'example-domain-web',
 });
 

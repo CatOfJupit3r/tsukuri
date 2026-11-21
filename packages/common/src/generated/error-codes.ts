@@ -4,6 +4,7 @@ import { em } from 'enumwaii';
 
 const errorCodesEnumwaii = em([
   'INTERNAL_SERVER_ERROR',
+  'REQUEST_ORIGIN_NOT_ALLOWED',
   'UNAUTHORIZED',
   'USER_NOT_FOUND',
   'DEV_IMPERSONATION_NOT_ALLOWED',
@@ -23,6 +24,7 @@ export type ErrorCode = (typeof errorCodesEnumwaii)['~type'];
 
 export const errorMessages = errorCodesEnumwaii.derive(
   [errorCodes.INTERNAL_SERVER_ERROR, "An unexpected server error occurred"],
+  [errorCodes.REQUEST_ORIGIN_NOT_ALLOWED, "Requests that change data must come from a trusted origin"],
   [errorCodes.UNAUTHORIZED, "User is not authenticated"],
   [errorCodes.USER_NOT_FOUND, "User not found"],
   [errorCodes.DEV_IMPERSONATION_NOT_ALLOWED, "Dev impersonation is not allowed in production"],

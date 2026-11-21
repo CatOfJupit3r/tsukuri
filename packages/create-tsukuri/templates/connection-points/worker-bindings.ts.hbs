@@ -1,0 +1,36 @@
+// {{header}}
+
+{{#if types.length}}
+import type { {{types}} } from '@cloudflare/workers-types';
+{{/if}}
+import type { DependencyContainer, InjectionToken } from 'tsyringe';
+{{#if imports.length}}
+
+{{#each imports}}
+import { {{names}} } from '{{from}}';
+{{/each}}
+{{/if}}
+
+/** The bindings listed in `wrangler.jsonc`, as the Worker receives them in `fetch`. */
+{{#if bindings.length}}
+export interface iWorkerBindings {
+{{#each bindings}}
+  {{binding}}: {{type}};
+{{/each}}
+}
+{{else}}
+export type iWorkerBindings = Record<never, never>;
+{{/if}}
+
+const GENERATED_BINDINGS: readonly (readonly [InjectionToken<unknown>, keyof iWorkerBindings])[] = [
+{{#each bindings}}
+  [{{token.name}}, '{{binding}}'],
+{{/each}}
+];
+
+/** Registers every binding under the token the services of its module inject. */
+export function registerWorkerBindings(container: DependencyContainer, bindings: iWorkerBindings) {
+  for (const [token, name] of GENERATED_BINDINGS) {
+    container.registerInstance(token, bindings[name]);
+  }
+}

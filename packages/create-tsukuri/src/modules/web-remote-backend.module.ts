@@ -33,5 +33,10 @@ export const webSsrRemoteBackendModule = defineModule({
   description: 'Backend URLs for server rendering against a separate API server',
   category: MODULE_CATEGORIES.BASE,
   autoInclude: { modules: [MODULE_IDS.WEB_SSR], capabilities: [CAPABILITIES.REMOTE_BACKEND] },
-  files: [{ source: `${WEB_WORKSPACE}/src/utils/backend-url.ts` }],
+  files: [
+    { source: `${WEB_WORKSPACE}/src/utils/backend-url.ts` },
+    { source: `${WEB_WORKSPACE}/src/utils/server-env.ts` },
+    { source: `${WEB_WORKSPACE}/src/utils/server-render-secret-fetch.ts` },
+    { source: `${WEB_WORKSPACE}/test/utils/server-render-secret-fetch.test.ts` },
+  ],
 });

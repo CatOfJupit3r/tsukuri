@@ -1,9 +1,11 @@
+import { CAPABILITIES } from '#~/enums/capabilities.enums';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
-const API_WORKSPACE = 'packages/api';
+import { API_WORKSPACE } from './api.module';
+
 const VALKEY_VOLUME = 'valkey-data';
 
 export const valkeyModule = defineModule({
@@ -13,7 +15,12 @@ export const valkeyModule = defineModule({
   description: 'Valkey (Redis) as the key-value store behind caching and auth sessions',
   category: MODULE_CATEGORIES.INFRASTRUCTURE,
   requires: [MODULE_IDS.API],
-  files: [{ source: `${API_WORKSPACE}/src/features/valkey` }],
+  // ioredis needs TCP sockets.
+  requiresCapabilities: [CAPABILITIES.NODE_RUNTIME],
+  files: [
+    { source: `${API_WORKSPACE}/src/features/valkey` },
+    { source: `${API_WORKSPACE}/test/unit/valkey-key-value-store.test.ts` },
+  ],
   packageJson: [
     {
       workspace: API_WORKSPACE,

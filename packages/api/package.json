@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "imports": {
-    "#~/*": "./src/*.js"
+    "#~/*": "./src/*.js",
+    "#test/*": "./test/*.js"
   },
   "exports": {
     "./*": "./src/*.ts"
@@ -45,7 +46,9 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.4",
+    "@cloudflare/workers-types": "catalog:",
+    "@electric-sql/pglite": "catalog:",
+    "@electric-sql/pglite-socket": "catalog:",
     "@startername/lint-config": "workspace:*",
     "@startername/prettier-config": "workspace:*",
     "@startername/swc-config": "workspace:*",
@@ -64,6 +67,7 @@
     "prettier": "catalog:",
     "typescript": "catalog:",
     "unplugin-swc": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
   }
 }

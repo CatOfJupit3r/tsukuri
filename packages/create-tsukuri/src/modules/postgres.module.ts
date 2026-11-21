@@ -5,12 +5,14 @@ import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { SKILL_IDS } from '#~/enums/skill-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
-const API_WORKSPACE = 'packages/api';
-const API_FILTER = '--filter=@startername/api';
+import { API_FILTER, API_WORKSPACE } from './api.module';
+
 /** Both dialects ship a `DatabaseMigrator` at the same path, so `db:migrate` is the same script. */
 export const DATABASE_MIGRATE_SCRIPT =
   'node --env-file-if-exists=../../.env --conditions=workspace-source --import @swc-node/register/esm-register ./src/features/database/migrate-database.ts';
 const POSTGRES_VOLUME = 'postgres-data';
+/** The compose Postgres, which `POSTGRES_URL` points at by default. */
+export const LOCAL_POSTGRES_URL = 'postgresql://postgres:postgres@localhost:5432/startername';
 
 export const postgresModule = defineModule({
   id: MODULE_IDS.POSTGRES,
@@ -22,7 +24,8 @@ export const postgresModule = defineModule({
   provides: [CAPABILITIES.DATABASE],
   files: [
     { source: `${API_WORKSPACE}/drizzle.config.ts` },
-    { source: `${API_WORKSPACE}/src/features/database` },
+    // The service comes from the glue module of the runtime: a Node pool, or Hyperdrive on a Worker.
+    { source: `${API_WORKSPACE}/src/features/database`, exclude: ['database.service.ts'] },
     { source: `${API_WORKSPACE}/test/helpers/postgres-memory.ts` },
     { source: `${API_WORKSPACE}/test/helpers/setup/database.setup.ts` },
   ],
@@ -49,7 +52,7 @@ export const postgresModule = defineModule({
         pg: '^8.16.3',
       },
       devDependencies: {
-        '@electric-sql/pglite': '0.5.4',
+        '@electric-sql/pglite': 'catalog:',
         '@swc-node/register': 'catalog:',
         '@types/pg': '^8.15.5',
         dotenv: 'catalog:',
@@ -59,6 +62,7 @@ export const postgresModule = defineModule({
   ],
   pnpmWorkspace: {
     catalog: {
+      '@electric-sql/pglite': '0.5.17',
       '@swc-node/register': '1.11.1',
       dotenv: '17.4.2',
     },
@@ -69,8 +73,8 @@ export const postgresModule = defineModule({
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: API_WORKSPACE,
       name: 'POSTGRES_URL',
-      schema: "z.string().default('postgresql://postgres:postgres@localhost:5432/startername')",
-      example: 'postgresql://postgres:postgres@localhost:5432/startername',
+      schema: `z.string().default('${LOCAL_POSTGRES_URL}')`,
+      example: LOCAL_POSTGRES_URL,
     },
     {
       kind: CONNECTION_POINT_KINDS.STARTUP_TASK,

@@ -1,8 +1,7 @@
 import { injectable } from 'tsyringe';
 
+import { DatabaseService } from '#~/features/database/database.service';
 import type { iStartupTask } from '#~/features/startup/startup-task.types';
-
-import { DatabaseService } from './database.service';
 
 @injectable()
 export class ConnectDatabaseTask implements iStartupTask {

@@ -2,9 +2,12 @@ import { copyFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { createGeneratorContainer } from '#~/di/container';
+import type { iModuleOptionValues } from '#~/engine/module-option-resolver';
 import { ProjectGenerator } from '#~/engine/project-generator';
 import type { ModuleId } from '#~/enums/module-ids.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
+import { MODULE_OPTION_IDS } from '#~/enums/module-option-ids.enums';
+import { ORIGIN_GUARD_MODES } from '#~/enums/origin-guard-modes.enums';
 
 import { runCommand } from '../helpers/run-command';
 import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
@@ -12,6 +15,8 @@ import { REPOSITORY_ROOT, useTempDir } from '../helpers/temp-dir';
 interface iProjectCase {
   name: string;
   modules: ModuleId[];
+  /** Module options besides their defaults. */
+  options?: iModuleOptionValues;
   /** Extra commands that must pass after verify, e.g. a production build. */
   commands: string[];
 }
@@ -39,16 +44,33 @@ const PROJECT_CASES: iProjectCase[] = [
     modules: [MODULE_IDS.NODE_HONO, MODULE_IDS.SQLITE, ...SERVER_FEATURES],
     commands: ['pnpm run db:generate', 'pnpm run db:migrate', 'pnpm run build'],
   },
+  {
+    name: 'Cloudflare Worker on D1 and KV with the SPA, refusing requests without an Origin',
+    modules: [
+      MODULE_IDS.CLOUDFLARE_WORKER,
+      MODULE_IDS.D1,
+      MODULE_IDS.CLOUDFLARE_KV,
+      MODULE_IDS.WEB_SPA,
+      ...SERVER_FEATURES,
+    ],
+    options: new Map([[MODULE_OPTION_IDS.ORIGIN_GUARD, ORIGIN_GUARD_MODES.STRICT]]),
+    commands: ['pnpm run db:generate', 'pnpm run db:migrate', 'pnpm run build'],
+  },
+  {
+    name: 'Cloudflare Worker on Postgres through Hyperdrive',
+    modules: [MODULE_IDS.CLOUDFLARE_WORKER, MODULE_IDS.POSTGRES, ...SERVER_FEATURES],
+    commands: ['pnpm --filter=worker run build'],
+  },
 ];
 
 describe('generated projects', () => {
   const createTempDir = useTempDir();
 
-  it.each(PROJECT_CASES)('$name installs, passes verify and builds', async ({ modules, commands }) => {
+  it.each(PROJECT_CASES)('$name installs, passes verify and builds', async ({ modules, options, commands }) => {
     const targetDir = path.join(await createTempDir(), 'acme');
     await createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT })
       .resolve(ProjectGenerator)
-      .create({ targetDir, projectName: 'acme', modules });
+      .create({ targetDir, projectName: 'acme', modules, options });
     await copyFile(path.join(targetDir, '.env.example'), path.join(targetDir, '.env'));
 
     for (const command of ['pnpm install --no-frozen-lockfile', 'pnpm run verify --tests', ...commands]) {

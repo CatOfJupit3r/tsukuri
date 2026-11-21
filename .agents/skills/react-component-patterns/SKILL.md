@@ -156,7 +156,7 @@ If a component needs both heavy orchestration and a large render tree, that is t
 Primitives live in `apps/web/src/components/ui`, grouped by role. Import each one from its own file (`#~/components/ui/<group>/<file>`); there are no barrels.
 
 - **button/**: `button/button` (`Button`, `tooltip` prop), `button/constants` (`buttonVariants`)
-- **controls/**: `input`, `textarea`, `label`, `checkbox`, `switch`, `toggle`, `radio-group`, `ranger` (slider), `time-picker`, `calendar`, `editable`
+- **controls/**: `input`, `textarea`, `label`, `checkbox`, `switch`, `toggle`, `radio-group`, `slider`, `time-picker`, `calendar`, `editable`
 - **display/**: `avatar`, `avatar-group`, `badge-overflow`, `date-chip`, `logo`, `render-slot`, `timeline`, `visually-hidden`
 - **feedback/**: `alert`, `badge`, `empty`, `empty-state`, `progress`, `skeleton`
 - **layout/**: `accordion`, `breadcrumb`, `card`, `item`, `navigation-menu`, `scroll-area`, `separator`, `stepper`, `tabs`, `scroll-spy/*`

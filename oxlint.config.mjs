@@ -3,7 +3,7 @@ import { globSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const WORKSPACE_OXLINT_CONFIG_GLOBS = ['apps/*/oxlint.config.mjs', 'packages/*/oxlint.config.mjs'];
+const WORKSPACE_OXLINT_CONFIG_GLOBS = ['apps/*/oxlint.config.mjs', 'packages/*/oxlint.config.mjs', 'variants/*/oxlint.config.mjs'];
 
 const rootDirectory = import.meta.dirname;
 

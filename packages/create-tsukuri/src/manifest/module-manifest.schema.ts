@@ -4,6 +4,7 @@ import { capabilitySchema } from '#~/enums/capabilities.enums';
 import { markdownDocumentSchema } from '#~/enums/markdown-documents.enums';
 import { moduleCategorySchema } from '#~/enums/module-categories.enums';
 import { moduleIdSchema } from '#~/enums/module-ids.enums';
+import { moduleOptionIdSchema } from '#~/enums/module-option-ids.enums';
 import { skillIdSchema } from '#~/enums/skill-ids.enums';
 
 import { connectionPointContributionSchema, connectionPointHostSchema } from './connection-point.schema';
@@ -44,6 +45,28 @@ export const pnpmWorkspaceContributionSchema = z.object({
   onlyBuiltDependencies: z.array(z.string()).default([]),
   minimumReleaseAgeExclude: z.array(z.string()).default([]),
 });
+
+/** One answer to a module option; choosing it adds its contributions to the module. */
+export const moduleOptionChoiceSchema = z.object({
+  value: z.string().regex(/^[a-z][a-z0-9-]*$/, 'Choice values are kebab-case'),
+  label: z.string().min(1),
+  hint: z.string().optional(),
+  contributions: z.array(connectionPointContributionSchema).default([]),
+});
+
+/** A choice made at create time (prompt or flag) and kept in the module record. */
+export const moduleOptionSchema = z
+  .object({
+    id: moduleOptionIdSchema,
+    message: z.string().min(1),
+    defaultValue: z.string(),
+    /** Modules that must be selected for the option to be asked; empty means always. */
+    appliesWithModules: z.array(moduleIdSchema).default([]),
+    choices: z.array(moduleOptionChoiceSchema).min(2),
+  })
+  .refine((option) => option.choices.some((choice) => choice.value === option.defaultValue), {
+    message: 'The default must be one of the choices',
+  });
 
 export const markdownFragmentSchema = z.object({
   document: markdownDocumentSchema,
@@ -88,6 +111,7 @@ export const moduleManifestSchema = z.object({
   markdown: z.array(markdownFragmentSchema).default([]),
   contributions: z.array(connectionPointContributionSchema).default([]),
   hosts: z.array(connectionPointHostSchema).default([]),
+  options: z.array(moduleOptionSchema).default([]),
 });
 
 export type iModuleManifest = z.output<typeof moduleManifestSchema>;
@@ -95,6 +119,8 @@ export type iModuleFileEntry = z.output<typeof moduleFileEntrySchema>;
 export type iPackageJsonContribution = z.output<typeof packageJsonContributionSchema>;
 export type iPnpmWorkspaceContribution = z.output<typeof pnpmWorkspaceContributionSchema>;
 export type iMarkdownFragment = z.output<typeof markdownFragmentSchema>;
+export type iModuleOption = z.output<typeof moduleOptionSchema>;
+export type iModuleOptionChoice = z.output<typeof moduleOptionChoiceSchema>;
 
 type iWithDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -103,7 +129,7 @@ type iWithDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  * Written out instead of `z.input` so enum-backed fields keep their enumwaii types.
  */
 export type iModuleManifestInput = iWithDefaults<
-  Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions' | 'autoInclude'>,
+  Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions' | 'autoInclude' | 'options'>,
   'isAlwaysIncluded' | 'requires' | 'requiresCapabilities' | 'conflicts' | 'provides' | 'skills' | 'markdown' | 'hosts'
 > & {
   files?: iWithDefaults<iModuleFileEntry, 'exclude'>[];
@@ -114,4 +140,8 @@ export type iModuleManifestInput = iWithDefaults<
   pnpmWorkspace?: Partial<iPnpmWorkspaceContribution>;
   contributions?: iConnectionPointContributionInput[];
   autoInclude?: Partial<NonNullable<iModuleManifest['autoInclude']>>;
+  options?: (Omit<iModuleOption, 'choices' | 'appliesWithModules'> & {
+    appliesWithModules?: iModuleOption['appliesWithModules'];
+    choices: (Omit<iModuleOptionChoice, 'contributions'> & { contributions?: iConnectionPointContributionInput[] })[];
+  })[];
 };

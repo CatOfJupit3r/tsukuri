@@ -2,6 +2,8 @@
 
 import type { DependencyContainer, InjectionToken } from 'tsyringe';
 
+import { SERVER_RENDER_AUTHENTICATOR_TOKEN } from '#~/features/http/server-render-authenticator';
+import { InternalRenderSecretAuthenticator } from '#~/features/render-secret/internal-render-secret.authenticator';
 import { AUTH_USER_REPOSITORY_TOKEN } from '#~/features/auth/auth.tokens';
 import { DrizzleAuthUserRepository } from '#~/features/auth/drizzle-auth-user.repository';
 import { KEY_VALUE_STORE_TOKEN } from '#~/features/cache/key-value-store';
@@ -12,6 +14,7 @@ import { USER_ACHIEVEMENT_REPOSITORY_TOKEN } from '#~/features/achievements/achi
 import { DrizzleUserAchievementRepository } from '#~/features/achievements/drizzle-user-achievement.repository';
 
 const GENERATED_BINDINGS: [InjectionToken<unknown>, InjectionToken<unknown>][] = [
+  [SERVER_RENDER_AUTHENTICATOR_TOKEN, InternalRenderSecretAuthenticator],
   [AUTH_USER_REPOSITORY_TOKEN, DrizzleAuthUserRepository],
   [KEY_VALUE_STORE_TOKEN, ValkeyKeyValueStore],
   [USER_PROFILE_REPOSITORY_TOKEN, DrizzleUserProfileRepository],

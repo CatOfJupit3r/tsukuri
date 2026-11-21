@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react';
 
-import { Ranger } from '#~/components/ui/controls/ranger';
-import type { iRangerProps } from '#~/components/ui/controls/ranger';
+import { Slider } from '#~/components/ui/controls/slider';
+import type { iSliderProps } from '#~/components/ui/controls/slider';
 import { FieldDescription, FieldError, FieldLabel } from '#~/components/ui/form/field-primitives';
 import { useFieldContext } from '#~/components/ui/form/form-contexts';
 import { useFieldPresentation } from '#~/components/ui/form/form-fields/use-field-presentation';
 
-interface iRangerFieldProps extends Omit<iRangerProps, 'value' | 'onChange'> {
+interface iSliderFieldProps extends Omit<iSliderProps, 'value' | 'onChange'> {
   label: string;
   description?: ReactNode;
   valueFormatter?: (value: number) => string;
 }
 
-export function RangerField({ label, description, valueFormatter, ...rangerProps }: iRangerFieldProps) {
+export function SliderField({ label, description, valueFormatter, ...sliderProps }: iSliderFieldProps) {
   const field = useFieldContext<number>();
   const presentation = useFieldPresentation(Boolean(description));
 
@@ -24,13 +24,13 @@ export function RangerField({ label, description, valueFormatter, ...rangerProps
         <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
         <span className="text-sm font-medium text-foreground">{displayValue}</span>
       </div>
-      <Ranger
+      <Slider
         id={field.name}
         value={field.state.value}
         onChange={field.handleChange}
         onBlur={field.handleBlur}
         aria-label={label}
-        {...rangerProps}
+        {...sliderProps}
         aria-describedby={presentation.describedBy}
         aria-invalid={presentation.isInvalid}
       />

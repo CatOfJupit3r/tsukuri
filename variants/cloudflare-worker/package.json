@@ -1,0 +1,43 @@
+{
+  "name": "@startername/cloudflare-worker-variant",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#~/app": "server/src/app.js",
+    "#~/constants/env": "server/src/constants/env.js",
+    "#~/*": "./apps/worker/src/*.js"
+  },
+  "scripts": {
+    "check-types": "tsgo --noEmit",
+    "lint": "pnpm run lint:oxlint && pnpm run lint:eslint",
+    "lint:oxlint": "oxlint -c oxlint.config.mjs --fix",
+    "lint:eslint": "eslint . --fix"
+  },
+  "prettier": "@startername/prettier-config",
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@startername/api": "workspace:*",
+    "@startername/lint-config": "workspace:*",
+    "@startername/prettier-config": "workspace:*",
+    "@startername/swc-config": "workspace:*",
+    "@startername/vitest-config": "workspace:*",
+    "@startername/workspace-source": "workspace:*",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "eslint": "catalog:",
+    "hono": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
+    "prettier": "catalog:",
+    "reflect-metadata": "0.2.2",
+    "server": "workspace:*",
+    "tsdown": "catalog:",
+    "tsyringe": "4.10.0",
+    "typescript": "catalog:",
+    "unplugin-swc": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:",
+    "zod": "catalog:"
+  }
+}
