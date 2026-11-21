@@ -44,6 +44,9 @@ Options besides `rootDir` and `additionalIgnores`:
   Enumwaii preset, naming conventions, no `index.ts` files, no import cycles).
 - [`src/convention-rules.mjs`](src/convention-rules.mjs): the size and shape conventions listed in AGENTS.md
   ("Lint Conventions"), such as folder size, complexity, depth and forbidden `export default`.
+- [`src/convention-restricted-syntax.constants.mjs`](src/convention-restricted-syntax.constants.mjs): the syntax bans
+  (re-exports, bare `void`, boolean defaults, inline object types, intersection aliases, `enum`, empty `catch`) that
+  `SHARED_RESTRICTED_SYNTAX` hands to `no-restricted-syntax`; each has a failing and a passing fixture in `test/rules`.
 - [`src/lint-limits.mjs`](src/lint-limits.mjs): the limits those conventions use.
 - [`src/rules`](src/rules): the local rules `tsukuri/max-files-per-folder` and `tsukuri/no-in-narrowing`.
 - [`src/oxlint.mjs`](src/oxlint.mjs): the oxlint translation, the rules ESLint keeps because oxlint's port behaves
