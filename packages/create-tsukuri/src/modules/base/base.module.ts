@@ -90,6 +90,7 @@ export const baseModule = defineModule({
         type: 'module',
         private: true,
         description: 'Shared ESLint and oxlint configuration for startername monorepo',
+        prettier: '@startername/prettier-config',
         exports: {
           './eslint': './src/eslint.mjs',
           './oxlint-workspaces': './src/oxlint-workspaces.mjs',
@@ -120,6 +121,7 @@ export const baseModule = defineModule({
         'eslint-plugin-sonarjs': '4.2.2',
       },
       devDependencies: {
+        '@startername/prettier-config': 'workspace:*',
         vitest: 'catalog:',
       },
       peerDependencies: {

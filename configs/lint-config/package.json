@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "description": "Shared ESLint and oxlint configuration for startername monorepo",
+  "prettier": "@startername/prettier-config",
   "exports": {
     "./eslint": "./src/eslint.mjs",
     "./oxlint-workspaces": "./src/oxlint-workspaces.mjs"
@@ -40,6 +41,7 @@
     "typescript": "catalog:"
   },
   "devDependencies": {
+    "@startername/prettier-config": "workspace:*",
     "vitest": "catalog:"
   }
 }
