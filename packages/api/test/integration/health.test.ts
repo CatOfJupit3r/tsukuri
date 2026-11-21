@@ -2,9 +2,8 @@ import { container } from 'tsyringe';
 
 import { errorCodes } from '@startername/common/generated/error-codes';
 
-import { env } from '#~/constants/env';
 import { ApiRequestHandler } from '#~/features/http/api-request-handler';
-import { REQUEST_ORIGIN_MODE_META } from '#~/features/http/request-origin-modes.enums';
+import { generatedEnvShape } from '#~/generated/env.schema';
 
 const BASE_URL = 'http://localhost';
 
@@ -43,14 +42,16 @@ describe('API request handler', () => {
     expect(await response?.json()).toEqual(expect.objectContaining({ code: errorCodes.REQUEST_ORIGIN_NOT_ALLOWED }));
   });
 
-  it('lets a state-changing request without an Origin through only when the configured mode allows it', async () => {
+  it('lets a state-changing request without an Origin through in the default lenient mode', async () => {
     const response = await handler().handle(
       new Request(`${BASE_URL}/rpc/index/healthCheck`, { method: 'POST', body: JSON.stringify({}) }),
     );
 
-    expect(response?.status).toBe(
-      REQUEST_ORIGIN_MODE_META.get(env.REQUEST_ORIGIN_MODE).allowsMissingOrigin ? 200 : 403,
-    );
+    expect(response?.status).toBe(200);
+  });
+
+  it('defaults REQUEST_ORIGIN_MODE to lenient when the env does not set it', () => {
+    expect(generatedEnvShape.REQUEST_ORIGIN_MODE.parse(undefined)).toBe('lenient');
   });
 
   it('returns null for paths no route serves, so adapters can fall through', async () => {

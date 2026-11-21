@@ -1,4 +1,5 @@
 import { templatePath } from '#~/constants/template-path';
+import { WEB_APP_ORIGIN_EXAMPLE } from '#~/constants/web-app-origin';
 import { CAPABILITIES } from '#~/enums/capabilities.enums';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
@@ -15,7 +16,7 @@ export const CORS_ORIGIN_VARIABLE = {
   kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
   name: 'CORS_ORIGIN',
   schema: "z.url().or(z.literal('')).default('')",
-  example: 'http://localhost:3030',
+  example: WEB_APP_ORIGIN_EXAMPLE,
 } satisfies Omit<iEnvVariableContribution, 'workspace' | 'imports'>;
 
 export const nodeHonoModule = defineModule({

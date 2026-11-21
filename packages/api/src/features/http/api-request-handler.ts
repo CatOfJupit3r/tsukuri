@@ -18,6 +18,7 @@ import { generatedHttpHandlers } from '#~/generated/http-handlers';
 import { createApiContext } from '#~/lib/api-context';
 import { getORPCErrorMetadata, isORPCError, shouldLogORPCError } from '#~/lib/orpc-error-wrapper';
 
+import { CLIENT_IP_HEADER } from './client-ip.constants';
 import type { iHttpHandle } from './http-handler.types';
 import { RequestOriginGuard } from './request-origin.guard';
 
@@ -33,6 +34,8 @@ const PATH_SEPARATOR = '/';
 export interface iApiRequestOptions {
   /** The runtime's way to finish work after responding (Workers' `ExecutionContext.waitUntil`). */
   waitUntil?: iWaitUntil;
+  /** The address the adapter observed for the connection; handlers read it from `CLIENT_IP_HEADER`. */
+  clientIp?: string;
 }
 
 interface iMountedHttpHandler {
@@ -87,8 +90,16 @@ export class ApiRequestHandler implements iWithLogger {
     }
 
     return this.requestContext.run({ requestId: randomUUID(), waitUntil: options.waitUntil }, async () =>
-      this.route(request),
+      this.route(this.withClientIp(request, options.clientIp)),
     );
+  }
+
+  /** Replaces whatever a client sent in `CLIENT_IP_HEADER` with the address the adapter observed. */
+  private withClientIp(request: Request, clientIp: string | undefined) {
+    const headers = new Headers(request.headers);
+    if (clientIp === undefined) headers.delete(CLIENT_IP_HEADER);
+    else headers.set(CLIENT_IP_HEADER, clientIp);
+    return new Request(request, { headers });
   }
 
   private async route(request: Request): Promise<Response | null> {

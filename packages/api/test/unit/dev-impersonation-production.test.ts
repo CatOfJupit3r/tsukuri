@@ -18,7 +18,7 @@ describe('dev impersonation under production config', () => {
 
   it('answers 404 on the impersonation route without touching auth', async () => {
     const response = await handleDevImpersonateRequest(
-      new Request(`http://localhost${DEV_IMPERSONATE_PATH}/any-user-id`),
+      new Request(`http://localhost${DEV_IMPERSONATE_PATH}/any-user-id`, { method: 'POST' }),
     );
 
     expect(response.status).toBe(404);

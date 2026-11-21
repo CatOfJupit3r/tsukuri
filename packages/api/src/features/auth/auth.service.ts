@@ -20,10 +20,13 @@ import { KEY_VALUE_STORE_TOKEN } from '#~/features/cache/key-value-store';
 import { DATABASE_DIALECT } from '#~/features/database/database.constants';
 import { DatabaseService } from '#~/features/database/database.service';
 import { EventBus } from '#~/features/events/event-bus';
+import { CLIENT_IP_HEADER } from '#~/features/http/client-ip.constants';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
 import type { iWithLogger, LoggerType } from '#~/features/logger/logger.types';
+import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
 
 import { AuthPasswordHasher } from './auth-password-hasher';
+import { AUTH_SESSION_STORES } from './auth-session-stores.enums';
 import { UserAfterRegisteredListener } from './auth.listeners';
 import { devImpersonatePlugin } from './better-auth-plugins/dev-impersonate.plugin';
 
@@ -45,6 +48,7 @@ export class AuthService implements iWithLogger {
     loggerFactory: LoggerFactory,
     private readonly databaseService: DatabaseService,
     private readonly eventBus: EventBus,
+    private readonly requestContextStorage: RequestContextStorage,
     private readonly passwordHasher: AuthPasswordHasher,
     @inject(KEY_VALUE_STORE_TOKEN) private readonly keyValueStore: iKeyValueStore,
   ) {
@@ -63,8 +67,13 @@ export class AuthService implements iWithLogger {
   }
 
   private createInstance(database: ReturnType<DatabaseService['getDb']>) {
-    const hasSharedStore = this.keyValueStore.isConnected && this.keyValueStore.isStronglyConsistent;
-    const hasEventuallyConsistentStore = this.keyValueStore.isConnected && !this.keyValueStore.isStronglyConsistent;
+    const isStoreConnected = this.keyValueStore.isConnected;
+    const isStoreStronglyConsistent = isStoreConnected && this.keyValueStore.isStronglyConsistent;
+    // A strongly consistent store (Valkey) is always the session store. An eventually consistent one (KV) only
+    // caches sessions when the project chose the KV session cache; by default the database alone holds them.
+    const isSessionStoreUsed =
+      isStoreConnected && (isStoreStronglyConsistent || env.AUTH_SESSION_STORE === AUTH_SESSION_STORES.KV_CACHE);
+    const isSessionAlsoInDatabase = isSessionStoreUsed && !isStoreStronglyConsistent;
 
     return betterAuth({
       database: drizzleAdapter(database, {
@@ -87,14 +96,14 @@ export class AuthService implements iWithLogger {
         username(),
         ...(NODE_ENVIRONMENT_META.get(env.NODE_ENV).allowsDevelopmentTools ? [devImpersonatePlugin()] : []),
       ],
-      secondaryStorage: this.keyValueStore.isConnected ? this.createSecondaryStorage() : undefined,
-      // An eventually consistent store (KV) may not show a write elsewhere for a minute, so sessions and
-      // verifications are also kept in the database, which stays their source of truth.
-      session: { storeSessionInDatabase: hasEventuallyConsistentStore },
-      verification: { storeInDatabase: hasEventuallyConsistentStore },
+      secondaryStorage: isSessionStoreUsed ? this.createSecondaryStorage() : undefined,
+      // The database stays the source of truth, so the cache never holds the only copy. A revoked or signed-out
+      // session can still be read from an eventually consistent cache for about a minute.
+      session: { storeSessionInDatabase: isSessionAlsoInDatabase },
+      verification: { storeInDatabase: isSessionAlsoInDatabase },
       rateLimit: {
         // Counters change on every request: only a strongly consistent shared store can hold them.
-        storage: hasSharedStore ? 'secondary-storage' : 'database',
+        storage: isStoreStronglyConsistent ? 'secondary-storage' : 'database',
       },
       emailAndPassword: {
         enabled: true,
@@ -108,6 +117,10 @@ export class AuthService implements iWithLogger {
       },
       basePath: AUTH_BASE_PATH,
       advanced: {
+        // Rate limits key on the address the adapter observed, or on `TRUSTED_IP_HEADER` behind a proxy that sets it.
+        ipAddress: { ipAddressHeaders: [env.TRUSTED_IP_HEADER ?? CLIENT_IP_HEADER] },
+        // Pruning of expired rate-limit rows runs inside the request lifetime, while the request's connections are open.
+        backgroundTasks: { handler: (promise) => this.runInBackground(promise) },
         database: {
           generateId: 'uuid',
         },
@@ -130,6 +143,12 @@ export class AuthService implements iWithLogger {
         },
       },
     });
+  }
+
+  private runInBackground(promise: Promise<unknown>) {
+    const waitUntil = this.requestContextStorage.current()?.waitUntil;
+    if (waitUntil) waitUntil(promise);
+    else void promise.catch((error: unknown) => this.logger.error('Background auth task failed', { error }));
   }
 
   private createSecondaryStorage() {

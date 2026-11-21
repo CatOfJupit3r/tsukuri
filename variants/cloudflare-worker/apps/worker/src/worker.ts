@@ -11,7 +11,11 @@ import { registerWorkerBindings } from '#~/generated/worker-bindings';
 
 /** Work the API starts while answering (closing a request's connections, ...) finishes after the response. */
 function workerRequestOptions(context: Context) {
-  return { waitUntil: (promise: Promise<unknown>) => context.executionCtx.waitUntil(promise) };
+  return {
+    waitUntil: (promise: Promise<unknown>) => context.executionCtx.waitUntil(promise),
+    // Cloudflare sets this header itself and drops any value a client sends.
+    clientIp: context.req.header('cf-connecting-ip'),
+  };
 }
 
 /**

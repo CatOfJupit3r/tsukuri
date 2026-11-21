@@ -5,6 +5,8 @@ import type { ModuleId } from '#~/enums/module-ids.enums';
 import type { SkillId } from '#~/enums/skill-ids.enums';
 import type { iProjectRecord } from '#~/record/project-record.schema';
 
+import { ENV_EXAMPLE_FILE } from './connection-points/connection-point.constants';
+import { LocalEnvRenderer } from './local-env-renderer';
 import { ModuleOptionResolver } from './module-option-resolver';
 import type { iModuleOptionValues } from './module-option-resolver';
 import { ModuleResolver } from './module-resolver';
@@ -30,6 +32,7 @@ export class ProjectGenerator {
     private readonly writer: ProjectWriter,
     private readonly targetGuard: ProjectTargetGuard,
     private readonly optionResolver: ModuleOptionResolver,
+    private readonly localEnvRenderer: LocalEnvRenderer,
   ) {}
 
   /** Resolves the selection into a module record, then composes and writes it into an empty folder. */
@@ -56,7 +59,11 @@ export class ProjectGenerator {
     };
 
     const project = await this.compose(record);
-    await this.writer.writeNew(targetDir, project);
+    const envExample = project.get(ENV_EXAMPLE_FILE);
+    const localFiles: Record<string, string> = envExample
+      ? { '.env': this.localEnvRenderer.render(envExample.content.toString('utf8')) }
+      : {};
+    await this.writer.writeNew(targetDir, project, localFiles);
     return { resolved, record, project };
   }
 

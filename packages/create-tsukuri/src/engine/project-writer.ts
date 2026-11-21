@@ -22,7 +22,7 @@ export class ProjectWriter {
    * Writes the project into `targetDir`, which must be missing or empty. When anything fails,
    * everything written so far is removed again.
    */
-  public async writeNew(targetDir: string, project: VirtualProject) {
+  public async writeNew(targetDir: string, project: VirtualProject, localFiles: Readonly<Record<string, string>> = {}) {
     const existing = await listDirectory(targetDir);
     if (existing && existing.length > 0) {
       throw new GeneratorError(
@@ -38,6 +38,9 @@ export class ProjectWriter {
         const absolute = path.join(targetDir, ...filePath.split('/'));
         await mkdir(path.dirname(absolute), { recursive: true });
         await writeFile(absolute, file.content);
+      }
+      for (const [filePath, content] of Object.entries(localFiles)) {
+        await writeFile(path.join(targetDir, ...filePath.split('/')), content);
       }
     } catch (error) {
       await this.rollback(targetDir, isCreatedHere);

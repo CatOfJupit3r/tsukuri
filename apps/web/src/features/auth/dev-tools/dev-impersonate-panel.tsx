@@ -9,7 +9,7 @@ const listAllUsersQueryOptions = tanstackRPC.auth.devToolsListAllUsers.queryOpti
 
 async function fetchImpersonate(userId: string) {
   const response = await fetch(getBackendURL(`/dev-tools/impersonate/${userId}`), {
-    method: 'GET',
+    method: 'POST',
     headers: getForwardedRequestHeaders(),
     credentials: 'include',
   });

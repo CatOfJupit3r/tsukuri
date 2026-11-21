@@ -60,6 +60,8 @@ export const moduleOptionSchema = z
     id: moduleOptionIdSchema,
     message: z.string().min(1),
     defaultValue: z.string(),
+    /** Modules that must be selected for the option to be asked; empty means always. */
+    appliesWithModules: z.array(moduleIdSchema).default([]),
     choices: z.array(moduleOptionChoiceSchema).min(2),
   })
   .refine((option) => option.choices.some((choice) => choice.value === option.defaultValue), {
@@ -138,7 +140,8 @@ export type iModuleManifestInput = iWithDefaults<
   pnpmWorkspace?: Partial<iPnpmWorkspaceContribution>;
   contributions?: iConnectionPointContributionInput[];
   autoInclude?: Partial<NonNullable<iModuleManifest['autoInclude']>>;
-  options?: (Omit<iModuleOption, 'choices'> & {
+  options?: (Omit<iModuleOption, 'choices' | 'appliesWithModules'> & {
+    appliesWithModules?: iModuleOption['appliesWithModules'];
     choices: (Omit<iModuleOptionChoice, 'contributions'> & { contributions?: iConnectionPointContributionInput[] })[];
   })[];
 };

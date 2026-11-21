@@ -119,6 +119,8 @@ export const envVariableContributionSchema = z.object({
   imports: z.array(namedImportSchema).default([]),
   /** Value written to the generated `.env.example`. */
   example: z.string().default(''),
+  /** Written as a `#` comment above the variable in `.env.example`. */
+  comment: z.string().optional(),
 });
 
 /**

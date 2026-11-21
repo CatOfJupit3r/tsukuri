@@ -18,17 +18,23 @@ export class ModuleOptionResolver {
   /** The values a module records: the requested ones, and the default for every other option. */
   public valuesFor(manifest: iModuleManifest, requested: iModuleOptionValues) {
     return Object.fromEntries(
-      manifest.options.map((option) => {
-        const value = requested.get(option.id) ?? option.defaultValue;
-        this.assertChoice(option, value);
-        return [option.id, value];
-      }),
+      manifest.options.map((option) => [option.id, this.valueOf(option, requested.get(option.id))]),
     );
   }
 
   /** Every option the selected modules ask for, so `create` can prompt for them. */
   public optionsOf(modules: readonly iModuleManifest[]) {
-    return modules.flatMap((manifest) => manifest.options);
+    const selectedIds = new Set(modules.map((manifest) => manifest.id));
+    return modules
+      .flatMap((manifest) => manifest.options)
+      .filter((option) => option.appliesWithModules.every((id) => selectedIds.has(id)));
+  }
+
+  /** The recorded or requested value, else the default; always one of the option's choices. */
+  private valueOf(option: iModuleOption, recordedValue: string | undefined) {
+    const value = recordedValue ?? option.defaultValue;
+    this.assertChoice(option, value);
+    return value;
   }
 
   public assertChoice(option: iModuleOption, value: string) {
@@ -49,8 +55,7 @@ export class ModuleOptionResolver {
       const recorded = recordedById.get(manifest.id) ?? {};
       const chosen = manifest.options.flatMap((option) => {
         const parsed = recordedOptionValueSchema.safeParse(recorded[option.id]);
-        const value = parsed.success ? parsed.data : option.defaultValue;
-        this.assertChoice(option, value);
+        const value = this.valueOf(option, parsed.success ? parsed.data : undefined);
         return option.choices.find((choice) => choice.value === value)?.contributions ?? [];
       });
       return { ...manifest, contributions: [...manifest.contributions, ...chosen] };

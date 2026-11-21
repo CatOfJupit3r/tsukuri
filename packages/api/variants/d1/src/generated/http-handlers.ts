@@ -6,5 +6,5 @@ import { handleDevImpersonateRequest } from '#~/features/auth/dev-impersonate.ht
 /** Request handlers the installed modules serve outside the API router, by path prefix. */
 export const generatedHttpHandlers = [
   { path: '/auth', methods: ['GET', 'POST'], handle: handleAuthRequest },
-  { path: '/dev-tools/impersonate', methods: ['GET'], handle: handleDevImpersonateRequest },
+  { path: '/dev-tools/impersonate', methods: ['POST'], handle: handleDevImpersonateRequest },
 ] as const;

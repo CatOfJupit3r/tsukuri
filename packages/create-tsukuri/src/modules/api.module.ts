@@ -1,4 +1,5 @@
 import { templatePath } from '#~/constants/template-path';
+import { WEB_APP_ORIGIN_EXAMPLE } from '#~/constants/web-app-origin';
 import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
@@ -253,7 +254,9 @@ export const apiModule = defineModule({
       // Comma-separated web app origins that call the API from another origin; empty when they share its origin.
       schema:
         "z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean))",
-      example: 'http://localhost:3030',
+      example: WEB_APP_ORIGIN_EXAMPLE,
+      comment:
+        'Origins allowed to send requests that change data (matched exactly, no wildcards). Leave it empty when the web app shares the API origin.',
     },
     {
       kind: CONNECTION_POINT_KINDS.ERROR_CODE,

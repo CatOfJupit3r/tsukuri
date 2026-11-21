@@ -10,7 +10,7 @@ import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_OPTION_IDS } from '#~/enums/module-option-ids.enums';
 import { ORIGIN_GUARD_MODES } from '#~/enums/origin-guard-modes.enums';
 import { baseModule } from '#~/modules/base.module';
-import type { iProjectRecord } from '#~/record/project-record.schema';
+import { projectRecordSchema } from '#~/record/project-record.schema';
 
 import { createManifest, testModuleId } from '../helpers/manifests';
 import { RecordingRunner, ScriptedPrompter, optionValues } from '../helpers/scripted-prompter';
@@ -93,7 +93,7 @@ describe('create command module options', () => {
     expect(optionValues(prompt)).toEqual([ORIGIN_GUARD_MODES.LENIENT, ORIGIN_GUARD_MODES.STRICT]);
     expect(prompt?.initial).toBe(ORIGIN_GUARD_MODES.LENIENT);
 
-    const record = JSON.parse(read(cwd, 'starter.json')) as iProjectRecord;
+    const record = projectRecordSchema.parse(JSON.parse(read(cwd, 'starter.json')));
     expect(record.modules.find((module) => module.id === GUARDED)?.options).toEqual({
       [MODULE_OPTION_IDS.ORIGIN_GUARD]: ORIGIN_GUARD_MODES.STRICT,
     });

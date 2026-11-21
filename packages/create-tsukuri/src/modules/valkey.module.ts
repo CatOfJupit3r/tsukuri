@@ -17,7 +17,10 @@ export const valkeyModule = defineModule({
   requires: [MODULE_IDS.API],
   // ioredis needs TCP sockets.
   requiresCapabilities: [CAPABILITIES.NODE_RUNTIME],
-  files: [{ source: `${API_WORKSPACE}/src/features/valkey` }],
+  files: [
+    { source: `${API_WORKSPACE}/src/features/valkey` },
+    { source: `${API_WORKSPACE}/test/unit/valkey-key-value-store.test.ts` },
+  ],
   packageJson: [
     {
       workspace: API_WORKSPACE,

@@ -2,6 +2,7 @@ import { singleton } from 'tsyringe';
 
 import type { iKeyValueStore } from '#~/features/cache/key-value-store';
 import { SMALLEST_EXPIRY_SECONDS } from '#~/features/cache/key-value-store';
+import { UnexpectedServerError } from '#~/lib/orpc-error-wrapper';
 
 import { ValkeyService } from './valkey.service';
 
@@ -26,8 +27,16 @@ export class ValkeyKeyValueStore implements iKeyValueStore {
   }
 
   public async set(key: string, value: string, ttlSeconds?: number) {
-    if (ttlSeconds) await this.valkeyService.getClient().set(key, value, 'EX', ttlSeconds);
-    else await this.valkeyService.getClient().set(key, value);
+    if (ttlSeconds === undefined) {
+      await this.valkeyService.getClient().set(key, value);
+      return;
+    }
+    if (ttlSeconds < this.minimumTtlSeconds) {
+      throw new UnexpectedServerError(
+        `Valkey keeps keys for at least ${this.minimumTtlSeconds} second, so "${key}" cannot expire after ${ttlSeconds}`,
+      );
+    }
+    await this.valkeyService.getClient().set(key, value, 'EX', ttlSeconds);
   }
 
   public async delete(key: string) {

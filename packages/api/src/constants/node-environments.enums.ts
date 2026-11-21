@@ -15,6 +15,6 @@ interface iNodeEnvironmentMeta {
 
 export const NODE_ENVIRONMENT_META = nodeEnvironmentsEnumwaii.derive<iNodeEnvironmentMeta>()(
   [NODE_ENVIRONMENTS.DEVELOPMENT, { allowsDevelopmentTools: true }],
-  [NODE_ENVIRONMENTS.TEST, { allowsDevelopmentTools: true }],
+  [NODE_ENVIRONMENTS.TEST, { allowsDevelopmentTools: false }],
   [NODE_ENVIRONMENTS.PRODUCTION, { allowsDevelopmentTools: false }],
 );

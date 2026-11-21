@@ -5,13 +5,16 @@ import z from 'zod';
 import { nodeEnvironmentSchema, NODE_ENVIRONMENTS } from '#~/constants/node-environments.enums';
 import { requestOriginModeSchema, REQUEST_ORIGIN_MODES } from '#~/features/http/request-origin-modes.enums';
 import { authCookieSameSiteSchema, AUTH_COOKIE_SAME_SITES } from '#~/features/auth/auth-cookie-same-site.enums';
+import { authSessionStoreSchema, AUTH_SESSION_STORES } from '#~/features/auth/auth-session-stores.enums';
 
 export const generatedEnvShape = {
   NODE_ENV: nodeEnvironmentSchema.default(NODE_ENVIRONMENTS.PRODUCTION),
   TRUSTED_ORIGINS: z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean)),
   REQUEST_ORIGIN_MODE: requestOriginModeSchema.default(REQUEST_ORIGIN_MODES.LENIENT),
   BETTER_AUTH_SECRET: z.string().min(32),
+  TRUSTED_IP_HEADER: z.string().transform((header) => header || undefined).optional(),
   BETTER_AUTH_URL: z.url(),
   AUTH_COOKIE_SECURE: z.stringbool().default(false),
   AUTH_COOKIE_SAME_SITE: authCookieSameSiteSchema.default(AUTH_COOKIE_SAME_SITES.LAX),
+  AUTH_SESSION_STORE: authSessionStoreSchema.default(AUTH_SESSION_STORES.DATABASE),
 };

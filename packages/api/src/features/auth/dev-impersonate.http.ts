@@ -14,8 +14,8 @@ const SESSION_COOKIE_PATTERN = /better-auth\.session_token=([^;]+);/;
 const userIdSchema = z.string().min(1);
 
 /**
- * `GET /dev-tools/impersonate/:userId` creates a session for that user. It exists only while `NODE_ENV`
- * allows development tools; everywhere else it answers 404.
+ * `POST /dev-tools/impersonate/:userId` creates a session for that user. It is a POST so the request origin guard
+ * covers it. It exists only while `NODE_ENV` is `development`; everywhere else it answers 404.
  */
 export async function handleDevImpersonateRequest(request: Request) {
   if (!NODE_ENVIRONMENT_META.get(env.NODE_ENV).allowsDevelopmentTools) return new Response(null, { status: 404 });

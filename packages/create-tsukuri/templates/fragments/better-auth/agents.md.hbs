@@ -3,6 +3,12 @@
 - Better Auth runs inside the API under `/auth/*` (`packages/api/src/features/auth`). It stores users, sessions, accounts and verifications through `DatabaseService`{{#module "valkey"}}, keeps sessions in Valkey,{{/module}} and puts the signed-in session on the API context.
 - Guard procedures with `protectedProcedure` (`#~/features/auth/auth.procedures`): its handlers always see `context.session`; `publicProcedure` handlers get `context.session` or `null`.
 - Configure it with `BETTER_AUTH_SECRET` (32+ characters), `BETTER_AUTH_URL` (the public URL of the API), `AUTH_COOKIE_SECURE` and `AUTH_COOKIE_SAME_SITE` in the root `.env`. Cross-origin cookies need `AUTH_COOKIE_SECURE=true` with `AUTH_COOKIE_SAME_SITE=none` over HTTPS.
+- Production refuses to start while `BETTER_AUTH_SECRET` is still the placeholder from `.env.example`; `create` writes a random secret into your local `.env`.
+- Rate limits key on the address the backend observed (the socket address on Node, `cf-connecting-ip` on a Worker); a forged `X-Forwarded-For` changes nothing. Behind a proxy that sets the real client address, set `TRUSTED_IP_HEADER` to that header's name.
+- `POST /dev-tools/impersonate/:userId` exists only while `NODE_ENV=development`; everywhere else it answers 404.
+{{#module "cloudflare-kv"}}
+- `AUTH_SESSION_STORE` picks where sessions are read on Cloudflare KV. `database` (default) keeps them only in the database, so a revoked or signed-out session stops working immediately. `kv-cache` also caches them in KV for faster edge reads, but KV is eventually consistent: a revoked or signed-out session can stay valid for about 60 seconds.
+{{/module}}
 {{#module "better-auth-web"}}
 - The web client lives in `apps/web/src/features/auth`: `auth-client.service.ts` for sign-in and sign-up, `useMe` for the current user, and the `_auth_only` route layout that sends signed-out visitors to `/auth`. In development the devtools panel can impersonate any user.
 {{/module}}
