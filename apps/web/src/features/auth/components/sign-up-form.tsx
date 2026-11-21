@@ -5,7 +5,11 @@ import { useAppForm } from '#~/components/ui/form/field';
 
 import { useRegister } from '../hooks/use-register';
 
-export function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => unknown }) {
+interface iSignUpFormProps {
+  onSwitchToSignIn: () => unknown;
+}
+
+export function SignUpForm({ onSwitchToSignIn }: iSignUpFormProps) {
   const { mutate } = useRegister();
 
   const form = useAppForm({

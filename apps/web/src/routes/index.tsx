@@ -27,7 +27,11 @@ const FEATURES = [
   },
 ];
 
-function FeatureCard({ feature }: { feature: (typeof FEATURES)[number] }) {
+interface iFeatureCardProps {
+  feature: (typeof FEATURES)[number];
+}
+
+function FeatureCard({ feature }: iFeatureCardProps) {
   return (
     <Card>
       <CardContent className="pt-6">

@@ -35,7 +35,16 @@ function invalid(message: string): never {
   throw new GeneratorError(GENERATOR_ERROR_CODES.INVALID_ARGUMENTS, message);
 }
 
-function parseWith<T>(raw: string, schema: { safeParse: (value: unknown) => { success: boolean; data?: T } }) {
+interface iSafeParseResult<T> {
+  success: boolean;
+  data?: T;
+}
+
+interface iSafeParseSchema<T> {
+  safeParse: (value: unknown) => iSafeParseResult<T>;
+}
+
+function parseWith<T>(raw: string, schema: iSafeParseSchema<T>) {
   const parsed = schema.safeParse(raw);
   if (!parsed.success || parsed.data === undefined) invalid(`"${raw}" is not a known id`);
   return parsed.data;

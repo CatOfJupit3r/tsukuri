@@ -1,11 +1,14 @@
 import { useMutation } from '@tanstack/react-query';
 
 import { toastError, toastSuccess } from '#~/components/toastifications/create-jsx-toasts';
+import { reportDetachedError } from '#~/utils/report-detached-error';
 import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 export const regeneratePublicCodeMutationOptions = tanstackRPC.user.regeneratePublicCode.mutationOptions({
   onSuccess: (_data, _variables, _context, ctx) => {
-    void ctx.client.invalidateQueries({ queryKey: tanstackRPC.user.getUserProfile.queryKey() });
+    void ctx.client
+      .invalidateQueries({ queryKey: tanstackRPC.user.getUserProfile.queryKey() })
+      .catch(reportDetachedError);
     toastSuccess('Invite code regenerated successfully');
   },
   onError: () => {

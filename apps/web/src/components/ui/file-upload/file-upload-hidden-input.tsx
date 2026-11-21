@@ -7,9 +7,9 @@ interface iFileUploadHiddenInputProps
   extends
     Pick<iFileUploadContextValue, 'dropzoneId' | 'inputId' | 'inputRef' | 'labelId'>,
     Pick<iFileUploadProps, 'accept' | 'label' | 'name'> {
-  isDisabled: boolean;
-  isMultiple: boolean;
-  isRequired: boolean;
+  isDisabled?: boolean;
+  isMultiple?: boolean;
+  isRequired?: boolean;
   onInputChange: (event: ChangeEvent<HTMLInputElement>) => unknown;
 }
 

@@ -275,14 +275,14 @@ export type iDiRegistrationContribution = z.output<typeof diRegistrationContribu
 export type iEnvVariableContribution = z.output<typeof envVariableContributionSchema>;
 export type iEnvShapeContribution = z.output<typeof envShapeContributionSchema>;
 export type iWorkerBindingContribution = z.output<typeof workerBindingContributionSchema>;
-type iWorkerBindingContributionInput = Omit<iWorkerBindingContribution, 'wrangler'> & {
+interface iWorkerBindingContributionInput extends Omit<iWorkerBindingContribution, 'wrangler'> {
   wrangler: iWithDefaults<iWorkerBindingContribution['wrangler'], 'entry'>;
-};
+}
 export type iComposeServiceContribution = z.output<typeof composeServiceContributionSchema>;
 export type iCiStepContribution = z.output<typeof ciStepContributionSchema>;
 export type iCiJobContribution = z.output<typeof ciJobContributionSchema>;
-type iCiJobContributionInput = Omit<iCiJobContribution, 'steps'> & {
+interface iCiJobContributionInput extends Omit<iCiJobContribution, 'steps'> {
   steps: iWithDefaults<iCiJobContribution['steps'][number], 'env'>[];
-};
+}
 export type iDevTaskContribution = z.output<typeof devTaskContributionSchema>;
 export type iBuildTaskContribution = z.output<typeof buildTaskContributionSchema>;

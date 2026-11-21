@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { USE_ME_QUERY_KEYS } from '#~/features/auth/hooks/use-me';
 import { getBackendURL, getForwardedRequestHeaders } from '#~/utils/backend-url';
+import { reportDetachedError } from '#~/utils/report-detached-error';
 import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 const listAllUsersQueryOptions = tanstackRPC.auth.devToolsListAllUsers.queryOptions();
@@ -24,9 +25,11 @@ const impersonateMutationOptions = mutationOptions({
     console.error('Impersonation error:', error);
   },
   onSuccess: (_, __, ___, ctx) => {
-    void ctx.client.refetchQueries({
-      queryKey: USE_ME_QUERY_KEYS(),
-    });
+    void ctx.client
+      .refetchQueries({
+        queryKey: USE_ME_QUERY_KEYS(),
+      })
+      .catch(reportDetachedError);
   },
 });
 
@@ -64,7 +67,7 @@ export function DevImpersonatePanel() {
           onChange={(event) => {
             const userId = event.target.value;
             if (!userId) return;
-            void mutate(userId);
+            void mutate(userId).catch(reportDetachedError);
           }}
         >
           <option value="" disabled>

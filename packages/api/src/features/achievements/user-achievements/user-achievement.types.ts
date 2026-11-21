@@ -4,7 +4,7 @@ import type { userAchievements } from '#~/features/achievements/user-achievement
 
 type UserAchievementRow = typeof userAchievements.$inferSelect;
 
-export type iUserAchievementRecordResponse = Omit<UserAchievementRow, 'achievementId' | 'data'> & {
+export interface iUserAchievementRecordResponse extends Omit<UserAchievementRow, 'achievementId' | 'data'> {
   achievementId: UserAchievementId;
   data?: Record<string, unknown>;
-};
+}

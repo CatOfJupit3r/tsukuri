@@ -31,8 +31,8 @@ export function ResponsiveConfirmDialog({
   confirmLabel,
   cancelLabel = 'Cancel',
   onConfirm,
-  isDestructive = false,
-  isPending = false,
+  isDestructive,
+  isPending,
   children,
   ...rootProps
 }: iResponsiveConfirmDialogProps) {

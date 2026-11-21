@@ -4,9 +4,9 @@ import type { userProfiles } from '#~/features/user/user-profile.schema';
 
 type UserProfileRow = typeof userProfiles.$inferSelect;
 
-export type iUserProfileResponse = Omit<UserProfileRow, 'selectedBadge'> & {
+export interface iUserProfileResponse extends Omit<UserProfileRow, 'selectedBadge'> {
   selectedBadge?: BadgeId | null;
-};
+}
 
 export interface iUpsertUserProfileInput {
   bio?: string;

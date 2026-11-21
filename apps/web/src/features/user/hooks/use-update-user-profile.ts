@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toastSuccess } from '#~/components/toastifications/create-jsx-toasts';
 import { toastORPCError } from '#~/components/toastifications/orpc-toasts';
 import type { ORPCOutputs } from '#~/utils/orpc';
+import { reportDetachedError } from '#~/utils/report-detached-error';
 import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 export type UserProfileQueryReturnType = ORPCOutputs['user']['getUserProfile'];
@@ -27,7 +28,7 @@ export const updateUserProfileMutationOptions = tanstackRPC.user.updateUserProfi
     if (context?.previous) {
       ctx.client.setQueryData<UserProfileQueryReturnType>(key, context.previous);
     } else {
-      void ctx.client.invalidateQueries({ queryKey: key });
+      void ctx.client.invalidateQueries({ queryKey: key }).catch(reportDetachedError);
     }
 
     toastORPCError('Failed to update profile', error);

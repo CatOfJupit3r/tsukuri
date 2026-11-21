@@ -2,7 +2,11 @@ import { USER_THEME } from '#~/components/themes/constants';
 import { useTheme } from '#~/components/themes/use-theme';
 import { cn } from '#~/lib/utils';
 
-export function Logo({ className }: { className?: string }) {
+interface iLogoProps {
+  className?: string;
+}
+
+export function Logo({ className }: iLogoProps) {
   const { userTheme } = useTheme();
   return (
     <img

@@ -13,7 +13,7 @@ export function useFormAutosave<TFormData, TChangedData = Partial<TFormData>>({
   onSave,
   selectFields,
   transformData,
-  onlyChanged = true,
+  shouldIncludeUnchanged,
   debounce = 0,
   localDraft,
   isConflictError = () => false,
@@ -24,7 +24,7 @@ export function useFormAutosave<TFormData, TChangedData = Partial<TFormData>>({
   const localDraftState = useFormAutosaveLocalDraft({ form, localDraft, setHasUnacknowledgedChanges });
   const { getSaveCandidate, getSelectedData } = useFormAutosaveCandidate({
     form,
-    isOnlyChanged: onlyChanged,
+    isOnlyChanged: !shouldIncludeUnchanged,
     lastSavedRef,
     selectFields,
     transformData,

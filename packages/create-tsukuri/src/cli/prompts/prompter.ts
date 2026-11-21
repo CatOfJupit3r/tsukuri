@@ -4,6 +4,29 @@ export interface iPromptOption<T> {
   hint?: string;
 }
 
+export interface iTextPromptOptions {
+  message: string;
+  defaultValue: string;
+  validate: (value: string) => string | undefined;
+}
+
+export interface iSelectPromptOptions<T> {
+  message: string;
+  options: iPromptOption<T>[];
+  initialValue?: T;
+}
+
+export interface iMultiselectPromptOptions<T> {
+  message: string;
+  options: iPromptOption<T>[];
+  initialValues: T[];
+}
+
+export interface iConfirmPromptOptions {
+  message: string;
+  initialValue: boolean;
+}
+
 export interface iSpinner {
   start: (message: string) => void;
   stop: (message: string) => void;
@@ -20,14 +43,10 @@ export interface iPrompter {
   info: (message: string) => void;
   warn: (message: string) => void;
   error: (message: string) => void;
-  text: (options: {
-    message: string;
-    defaultValue: string;
-    validate: (value: string) => string | undefined;
-  }) => Promise<string>;
-  select: <T>(options: { message: string; options: iPromptOption<T>[]; initialValue?: T }) => Promise<T>;
-  multiselect: <T>(options: { message: string; options: iPromptOption<T>[]; initialValues: T[] }) => Promise<T[]>;
-  confirm: (options: { message: string; initialValue: boolean }) => Promise<boolean>;
+  text: (options: iTextPromptOptions) => Promise<string>;
+  select: <T>(options: iSelectPromptOptions<T>) => Promise<T>;
+  multiselect: <T>(options: iMultiselectPromptOptions<T>) => Promise<T[]>;
+  confirm: (options: iConfirmPromptOptions) => Promise<boolean>;
   spinner: () => iSpinner;
 }
 

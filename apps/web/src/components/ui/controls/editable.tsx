@@ -10,7 +10,7 @@ interface iEditableContextValue {
   placeholder: string;
   draftValue: string;
   isEditing: boolean;
-  isDisabled: boolean;
+  isDisabled?: boolean;
   setDraftValue: (value: string) => void;
   beginEditing: () => void;
   cancelEditing: () => void;
@@ -33,7 +33,7 @@ interface iEditableProps extends Omit<ComponentProps<'div'>, 'onSubmit'> {
   value: string;
   placeholder?: string;
   isDisabled?: boolean;
-  isRequired?: boolean;
+  isOptional?: boolean;
   onSubmit: (value: string) => void;
   children: ReactNode;
 }
@@ -41,8 +41,8 @@ interface iEditableProps extends Omit<ComponentProps<'div'>, 'onSubmit'> {
 export function Editable({
   value,
   placeholder = '',
-  isDisabled = false,
-  isRequired = true,
+  isDisabled,
+  isOptional,
   onSubmit,
   children,
   className,
@@ -64,9 +64,9 @@ export function Editable({
 
   const submit = useCallback(() => {
     const nextValue = draftValue.trim();
-    if ((!isRequired || nextValue) && nextValue !== value) onSubmit(nextValue);
+    if ((isOptional || nextValue) && nextValue !== value) onSubmit(nextValue);
     setIsEditing(false);
-  }, [draftValue, isRequired, onSubmit, value]);
+  }, [draftValue, isOptional, onSubmit, value]);
 
   const contextValue = useMemo(
     () => ({

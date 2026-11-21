@@ -23,12 +23,15 @@ declare global {
 
 	type Prettify<T> = {
 			[K in keyof T]: T[K];
-	} & {};
+	};
 	type Mutable<T> = {
 			-readonly [P in keyof T]: T[P];
 	};
 	const __brand: unique symbol;
-	type Branded<T, Brand extends string> = T & { [__brand]: Brand };
+	interface iBrandMarker<Brand extends string> {
+		[__brand]: Brand;
+	}
+	type Branded<T, Brand extends string> = T & iBrandMarker<Brand>;
 }
 
 export {};

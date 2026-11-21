@@ -38,7 +38,7 @@ export function AvatarGroup({
   dir = 'ltr',
   size = 40,
   max,
-  isReverse = false,
+  isReverse,
   renderOverflow,
   className,
   children,
@@ -104,7 +104,7 @@ interface iAvatarGroupItemProps extends Omit<ComponentProps<'div'>, 'dir'>, Vari
   index: number;
   itemCount: number;
   size: number;
-  isReverse: boolean;
+  isReverse?: boolean;
 }
 
 function AvatarGroupItem({

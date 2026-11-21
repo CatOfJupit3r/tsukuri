@@ -27,9 +27,7 @@ export class SelectionPlanner {
   /** What a prompt can offer given the answers so far: conflicting modules are hidden, required ones locked. */
   public choicesFor(promptId: PromptId, selected: readonly ModuleId[]): iPromptChoices {
     const { category } = PROMPT_META.get(promptId);
-    const included = new Set(
-      this.resolver.resolve(selected, { shouldRequireCapabilities: false }).modules.map((m) => m.id),
-    );
+    const included = new Set(this.resolver.resolve(selected, { isPartialSelection: true }).modules.map((m) => m.id));
     const inCategory = this.registry.list().filter((manifest) => manifest.category === category);
 
     return {
@@ -52,7 +50,7 @@ export class SelectionPlanner {
         );
       }
     }
-    this.resolver.resolve([...selected, ...answer], { shouldRequireCapabilities: false });
+    this.resolver.resolve([...selected, ...answer], { isPartialSelection: true });
   }
 
   /** Skills shipped by the resolved modules, in module order. */

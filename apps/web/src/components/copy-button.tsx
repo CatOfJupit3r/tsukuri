@@ -18,7 +18,7 @@ export function CopyButton({
   value,
   successMessage = 'Copied to clipboard',
   errorMessage = 'Failed to copy',
-  disabled = false,
+  disabled,
   'aria-label': ariaLabel = 'Copy to clipboard',
 }: iCopyButtonProps) {
   const [copiedText, copyToClipboard] = useCopyToClipboard();

@@ -6,6 +6,7 @@ import type { iFileState, iStore } from '#~/components/ui/file-upload/file-uploa
 import type { iFileUploadCallbackProps, iFileUploadProps } from '#~/components/ui/file-upload/file-upload.types';
 import { validateIncomingFiles } from '#~/components/ui/file-upload/file-upload.validation';
 import { useFilesUpload } from '#~/components/ui/file-upload/hooks/use-files-upload';
+import { reportDetachedError } from '#~/utils/report-detached-error';
 
 const FILE_UPLOAD_INVALID_RESET_DELAY_MS = 2000;
 
@@ -13,7 +14,7 @@ interface iUseFileUploadHandlersProps extends Pick<iFileUploadProps, 'maxFiles' 
   acceptTypes: string[] | null;
   callbacksRef: RefObject<iFileUploadCallbackProps>;
   isControlled: boolean;
-  isDisabled: boolean;
+  isDisabled?: boolean;
   store: iStore;
 }
 
@@ -67,7 +68,7 @@ export function useFileUploadHandlers({
 
       if (callbacksRef.current.onUpload) {
         requestAnimationFrame(() => {
-          void onFilesUpload(acceptedFiles);
+          void onFilesUpload(acceptedFiles).catch(reportDetachedError);
         });
       }
     },

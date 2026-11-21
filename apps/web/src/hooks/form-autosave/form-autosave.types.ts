@@ -23,7 +23,7 @@ export interface iUseFormAutosaveOptions<TFormData, TChangedData = Partial<TForm
   debounce?: number;
   selectFields?: (data: TFormData) => TChangedData;
   transformData?: (changedData: Partial<TFormData>) => TChangedData;
-  onlyChanged?: boolean;
+  shouldIncludeUnchanged?: boolean;
   localDraft?: iFormAutosaveLocalDraftOptions<TFormData>;
   isConflictError?: (error: unknown) => boolean;
   createIdempotencyKey?: () => string;

@@ -14,7 +14,11 @@ export interface iBadgeOverflowProps<T = string> extends Omit<ComponentPropsWith
   renderOverflow?: (count: number) => ReactNode;
 }
 
-function OverflowBadge({ count }: { count: number }) {
+interface iOverflowBadgeProps {
+  count: number;
+}
+
+function OverflowBadge({ count }: iOverflowBadgeProps) {
   return (
     <span className="inline-flex h-5 shrink-0 items-center rounded-md border px-1.5 text-xs font-semibold">
       +{count}

@@ -102,10 +102,12 @@ type iWithDefaults<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  * What a manifest author writes: the validated shape with every defaulted field optional.
  * Written out instead of `z.input` so enum-backed fields keep their enumwaii types.
  */
-export type iModuleManifestInput = iWithDefaults<
+type iModuleManifestInputBase = iWithDefaults<
   Omit<iModuleManifest, 'files' | 'packageJson' | 'pnpmWorkspace' | 'contributions' | 'autoInclude'>,
   'isAlwaysIncluded' | 'requires' | 'requiresCapabilities' | 'conflicts' | 'provides' | 'skills' | 'markdown' | 'hosts'
-> & {
+>;
+
+export interface iModuleManifestInput extends iModuleManifestInputBase {
   files?: iWithDefaults<iModuleFileEntry, 'exclude'>[];
   packageJson?: iWithDefaults<
     iPackageJsonContribution,
@@ -114,4 +116,4 @@ export type iModuleManifestInput = iWithDefaults<
   pnpmWorkspace?: Partial<iPnpmWorkspaceContribution>;
   contributions?: iConnectionPointContributionInput[];
   autoInclude?: Partial<NonNullable<iModuleManifest['autoInclude']>>;
-};
+}

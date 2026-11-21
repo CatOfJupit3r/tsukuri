@@ -20,7 +20,7 @@ function areDependenciesEqual(previousDependencies: readonly unknown[], nextDepe
 export function useAdjustOnChange(
   dependencies: readonly unknown[],
   adjust: () => unknown,
-  { isRunOnMount = false }: iUseAdjustOnChangeOptions = {},
+  { isRunOnMount }: iUseAdjustOnChangeOptions = {},
 ) {
   const [previousDependencies, setPreviousDependencies] = useState<readonly unknown[] | null>(
     isRunOnMount ? null : dependencies,

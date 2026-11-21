@@ -4,6 +4,13 @@ import { authClientService } from '#~/features/auth/auth-client.service';
 import { toastBetterAuthError } from '#~/features/auth/auth-toasts';
 import { USE_ME_QUERY_KEYS } from '#~/features/auth/hooks/use-me';
 
+interface iRegisterCredentials {
+  email: string;
+  username: string;
+  name: string;
+  password: string;
+}
+
 export const useRegister = () => {
   const queryClient = useQueryClient();
 
@@ -12,17 +19,7 @@ export const useRegister = () => {
     isPending,
     isSuccess,
   } = useMutation({
-    mutationFn: async ({
-      email,
-      password,
-      name,
-      username,
-    }: {
-      email: string;
-      username: string;
-      name: string;
-      password: string;
-    }) =>
+    mutationFn: async ({ email, password, name, username }: iRegisterCredentials) =>
       authClientService.getInstance().signUp.email({
         email,
         name,

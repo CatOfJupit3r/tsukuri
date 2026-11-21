@@ -15,7 +15,7 @@ export function Button({
   className,
   variant,
   size,
-  asChild = false,
+  asChild,
   tooltip,
   children,
   render,

@@ -4,6 +4,11 @@ import { authClientService } from '#~/features/auth/auth-client.service';
 import { toastBetterAuthError } from '#~/features/auth/auth-toasts';
 import { USE_ME_QUERY_KEYS } from '#~/features/auth/hooks/use-me';
 
+interface iLoginCredentials {
+  username: string;
+  password: string;
+}
+
 export const useLogin = () => {
   const queryClient = useQueryClient();
 
@@ -12,7 +17,7 @@ export const useLogin = () => {
     isPending,
     isSuccess,
   } = useMutation({
-    mutationFn: async ({ username, password }: { username: string; password: string }) =>
+    mutationFn: async ({ username, password }: iLoginCredentials) =>
       authClientService.getInstance().signIn.username({
         username,
         password,

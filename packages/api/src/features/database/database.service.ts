@@ -9,11 +9,12 @@ import { generatedDatabaseSchema } from '#~/generated/database-schema';
 const testPostgresDbKey = Symbol.for('startername.test.postgres.db');
 
 type TestPostgresDatabase = NodePgDatabase<typeof generatedDatabaseSchema>;
-type TestPostgresGlobals = typeof globalThis & {
+type GlobalScope = typeof globalThis;
+interface iTestPostgresGlobals extends GlobalScope {
   [testPostgresDbKey]?: TestPostgresDatabase;
-};
+}
 
-const testGlobals = globalThis as TestPostgresGlobals;
+const testGlobals = globalThis as iTestPostgresGlobals;
 
 @singleton()
 export class DatabaseService {

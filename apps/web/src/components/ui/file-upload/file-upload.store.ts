@@ -43,7 +43,7 @@ interface iFileUploadStoreOptions {
   fileMap: Map<File, iFileState>;
   listeners: Set<() => unknown>;
   urlCache: WeakMap<File, string>;
-  isInvalid: boolean;
+  isInvalid?: boolean;
 }
 
 interface iFileUploadStoreContext extends Pick<iFileUploadStoreOptions, 'fileMap' | 'urlCache'> {
@@ -164,7 +164,7 @@ function reduceFileUploadState(
 export function createFileUploadStore({ fileMap, listeners, urlCache, isInvalid }: iFileUploadStoreOptions): iStore {
   let callbacks: iFileUploadStoreCallbacks = {};
   const context = { fileMap, urlCache, getCallbacks: () => callbacks };
-  let state: iStoreState = { files: fileMap, dragOver: false, invalid: isInvalid };
+  let state: iStoreState = { files: fileMap, dragOver: false, invalid: isInvalid === true };
 
   return {
     getState: () => state,
