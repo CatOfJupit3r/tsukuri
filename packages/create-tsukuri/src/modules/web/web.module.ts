@@ -67,6 +67,7 @@ const WEB_SOURCE_FILES = [
   'utils/forms',
   'utils/is-on-client.ts',
   'utils/query-helpers.ts',
+  'utils/report-detached-error.ts',
   'utils/seo.ts',
 ];
 

@@ -66,12 +66,8 @@ const isBoundary = (node, child) => {
   return !node.type.startsWith('TS') || BOUNDARY_NODE_TYPES.has(node.type);
 };
 
-const ANNOTATION_KIND = { PARAMETER: 'PARAMETER', RETURN: 'RETURN' };
-
-const REPORT_MESSAGE_IDS = {
-  [ANNOTATION_KIND.PARAMETER]: 'inlineParameterType',
-  [ANNOTATION_KIND.RETURN]: 'inlineReturnType',
-};
+/** Each kind is the id of the message the rule reports for it. */
+const ANNOTATION_KIND = { PARAMETER: 'inlineParameterType', RETURN: 'inlineReturnType' };
 
 const findSignatureOfParameter = (parameter) => {
   let owner = parameter.parent;
@@ -123,10 +119,8 @@ export const noInlineSignatureObjectTypeRule = {
       description: 'Disallow inline object types in function parameter and return annotations, at any nesting depth.',
     },
     messages: {
-      [REPORT_MESSAGE_IDS[ANNOTATION_KIND.PARAMETER]]:
-        'Declare the parameter type as a named interface instead of an inline object type.',
-      [REPORT_MESSAGE_IDS[ANNOTATION_KIND.RETURN]]:
-        'Declare the return type as a named interface instead of an inline object type.',
+      inlineParameterType: 'Declare the parameter type as a named interface instead of an inline object type.',
+      inlineReturnType: 'Declare the return type as a named interface instead of an inline object type.',
     },
     schema: [],
   },
@@ -135,7 +129,7 @@ export const noInlineSignatureObjectTypeRule = {
       TSTypeLiteral(node) {
         const kind = findSignatureAnnotationKind(node);
         if (kind) {
-          context.report({ node, messageId: REPORT_MESSAGE_IDS[kind] });
+          context.report({ node, messageId: kind });
         }
       },
     };
