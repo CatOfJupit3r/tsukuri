@@ -32,16 +32,20 @@ describe('EventBus', () => {
     expect(eventBus.emit(TEST_EVENTS.UNUSED, { value: 2 })).toBe(false);
   });
 
-  it('checks emitted and handled payloads against the token', () => {
-    // @ts-expect-error the payload does not match the token
-    expect(eventBus.emit(testEvent, { value: 'one' })).toBe(false);
+  it('checks emitted and handled payloads against the token at compile time', () => {
     const unchecked: unknown = { value: 1 };
-    // @ts-expect-error an unvalidated payload is not the token's payload
-    expect(eventBus.emit(testEvent, unchecked)).toBe(false);
-    // @ts-expect-error an unvalidated payload is not the token's payload
-    void eventBus.emitAsync(testEvent, unchecked);
-    // @ts-expect-error the handler expects another payload
-    eventBus.on(testEvent, ({ value }: { value: string }) => value);
+
+    // Never called: `check-types` fails when one of these calls stops being rejected.
+    expectTypeOf(async () => {
+      // @ts-expect-error the payload does not match the token
+      eventBus.emit(testEvent, { value: 'one' });
+      // @ts-expect-error an unvalidated payload is not the token's payload
+      eventBus.emit(testEvent, unchecked);
+      // @ts-expect-error an unvalidated payload is not the token's payload
+      await eventBus.emitAsync(testEvent, unchecked);
+      // @ts-expect-error the handler expects another payload
+      eventBus.on(testEvent, ({ value }: { value: string }) => value);
+    }).toBeFunction();
   });
 
   it('emitAsync runs handlers in parallel and waits for all of them', async () => {
@@ -86,6 +90,17 @@ describe('EventBus', () => {
     eventBus.emit(testEvent, { value: 3 });
 
     expect(results).toEqual([1]);
+  });
+
+  it('emitAsync calls on-handlers every time and once-handlers a single time when both are registered', async () => {
+    const results: string[] = [];
+    eventBus.on(testEvent, ({ value }) => results.push(`on:${value}`));
+    eventBus.once(testEvent, ({ value }) => results.push(`once:${value}`));
+
+    await eventBus.emitAsync(testEvent, { value: 1 });
+    await eventBus.emitAsync(testEvent, { value: 2 });
+
+    expect(results).toEqual(['on:1', 'once:1', 'on:2']);
   });
 
   it('stops calling a handler after off', () => {

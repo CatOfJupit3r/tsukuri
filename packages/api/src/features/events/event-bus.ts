@@ -5,11 +5,6 @@ import type { PayloadToken } from '@startername/common/helpers/payload-token.hel
 
 type iHandler<T> = (payload: T) => unknown;
 
-/** What `EventEmitter.rawListeners()` returns for a handler registered with `once`. */
-interface iOnceWrapper<T> {
-  listener: iHandler<T>;
-}
-
 @singleton()
 export class EventBus {
   private readonly emitter = new EventEmitter();
@@ -39,10 +34,10 @@ export class EventBus {
    * handler neither stops the others nor rejects.
    */
   public async emitAsync<T>(token: PayloadToken<T>, payload: NoInfer<T>) {
-    const rawHandlers = this.emitter.rawListeners(token.name) as (iHandler<T> | iOnceWrapper<T>)[];
-    if (rawHandlers.length === 0) return false;
+    const handlers = this.emitter.listeners(token.name);
+    if (handlers.length === 0) return false;
 
-    const handlers = rawHandlers.map((rawHandler) => this.consumeOnce(token, rawHandler));
+    this.consumeOnceHandlers(token);
     await Promise.allSettled(handlers.map(async (handler) => handler(payload)));
     return true;
   }
@@ -52,17 +47,24 @@ export class EventBus {
    * starts now, not at the first read, and ends cleanly when the signal aborts.
    */
   public stream<T>(token: PayloadToken<T>, signal?: AbortSignal): AsyncGenerator<T> {
-    return this.unwrapPayloads<T>(on(this.emitter, token.name, { signal }) as AsyncIterable<[T]>, signal);
+    return this.unwrapPayloads<T>(on(this.emitter, token.name, { signal }), signal);
   }
 
-  /** A `once` handler is unregistered before it runs, as `emit` does. */
-  private consumeOnce<T>(token: PayloadToken<T>, rawHandler: iHandler<T> | iOnceWrapper<T>) {
-    if (!('listener' in rawHandler)) return rawHandler;
-    this.emitter.removeListener(token.name, rawHandler.listener);
-    return rawHandler.listener;
+  /**
+   * Unregisters every `once` handler before they run, as `emit` does. `rawListeners` returns the wrapper Node
+   * puts around a `once` handler and `listeners` the handler itself, at the same positions, so they differ
+   * exactly for `once` registrations.
+   */
+  private consumeOnceHandlers<T>(token: PayloadToken<T>) {
+    const rawHandlers = this.emitter.rawListeners(token.name);
+    const handlers = this.emitter.listeners(token.name);
+    rawHandlers.forEach((rawHandler, index) => {
+      const handler = handlers[index];
+      if (handler && handler !== rawHandler) this.emitter.removeListener(token.name, handler);
+    });
   }
 
-  private async *unwrapPayloads<T>(emissions: AsyncIterable<[T]>, signal?: AbortSignal): AsyncGenerator<T> {
+  private async *unwrapPayloads<T>(emissions: ReturnType<typeof on>, signal?: AbortSignal): AsyncGenerator<T> {
     try {
       for await (const [payload] of emissions) yield payload;
     } catch (error) {

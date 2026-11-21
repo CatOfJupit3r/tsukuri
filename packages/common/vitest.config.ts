@@ -6,5 +6,6 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    typecheck: { enabled: true, checker: 'tsgo', include: ['test/**/*.test-d.ts'] },
   },
 });

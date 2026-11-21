@@ -1,7 +1,7 @@
 import type { EnumwaiiBrand } from 'enumwaii';
 
 /** A member of any enumwaii declaration: token names are never raw strings. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the brand's identity is invariant, so only `any` admits members of every declaration
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the brand's identity is invariant, so only `any` admits members of every declaration; replace with the widened brand type enumwaii exports once https://github.com/CatOfJupit3r/enumwaii/issues/52 ships
 export type PayloadTokenName = string & EnumwaiiBrand<any>;
 
 /**
