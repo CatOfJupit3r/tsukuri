@@ -112,7 +112,9 @@ describe('no-inline-signature-object-type', () => {
 
   it('reports an inline type inside a nested function type once, at the inner signature', () => {
     expect(lintMessages('function f(callback: (o: { a: string }) => void) { return callback; }')).toHaveLength(1);
-    expect(lintMessages('function f(callback: Array<(o: { a: string }) => void>) { return callback; }')).toHaveLength(1);
+    expect(lintMessages('function f(callback: Array<(o: { a: string }) => void>) { return callback; }')).toHaveLength(
+      1,
+    );
     expect(lintMessages('function f(): Promise<() => { a: string }> { return Promise.reject(); }')).toHaveLength(1);
   });
 
@@ -144,6 +146,8 @@ describe('no-inline-signature-object-type', () => {
     'function f(o: import("x").Foo<{ a: string }>) { return o; }',
     'function f(): `a-${Foo<{ a: string }>}` { return null; }',
     'declare function f(o: Readonly<Partial<{ a: string }>>): void;',
+    'function f(o: { [K in keyof iX]: { a: string } }) { return o; }',
+    'function f(): { [K in keyof iX]: { a: string } } { return null; }',
   ])('reports an inline object type inside any wrapper type of %s', (code) => {
     expect(lintMessages(code)).toHaveLength(1);
   });
@@ -158,7 +162,8 @@ describe('no-inline-signature-object-type', () => {
     'function f(o: unknown) { return o satisfies { a: string }; }',
     'function f(o: iX) { return o; }\ntype A = { a: string };',
     'function f(o: iX) { return o; }\ninterface iY { a: { b: string }; run: (o: iX) => void }',
-    'function f(o: { [K in keyof iX]: { a: string } }) { return o; }',
+    'function f(o: { [K in keyof iX]: iValue }) { return o; }',
+    'function f(o: { [K in keyof iX]: iX[K] }) { return o; }',
     'class C implements Foo<{ a: string }> { public x = 1; }',
     'function f(o: iX) { const v: { a: string } = o; return v; }',
   ])('does not report an inline object type behind a boundary in %s', (code) => {
@@ -170,10 +175,10 @@ describe('no-inline-signature-object-type', () => {
     expect(lintMessages('function f(): { a: string } | { b: string } { return null; }')).toHaveLength(2);
   });
 
-  it('does not report inline object types outside signature annotations, or inside mapped types', () => {
+  it('does not report inline object types outside signature annotations, or inside type aliases and interfaces', () => {
     expect(
       lintMessages(
-        'type A = Promise<{ a: string }>;\nconst v: Array<{ a: string }> = [];\ninterface iX { a: { b: string }; c: Array<{ d: string }> }\nfunction f(o: { [K in keyof iX]: { a: string } }) { return o; }',
+        'type A = Promise<{ a: string }>;\nconst v: Array<{ a: string }> = [];\ninterface iX { a: { b: string }; c: Array<{ d: string }> }',
       ),
     ).toHaveLength(0);
   });

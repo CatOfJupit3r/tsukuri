@@ -242,8 +242,9 @@ export const InfiniteSingleSelect = forwardRef(InfiniteSingleSelectRender) as iI
 
 export interface iInfiniteMultiSelectProps<TValue extends string = string> extends Omit<
   iInfiniteSelectBaseProps<TValue, true>,
-  'value' | 'defaultValue' | 'onChange' | 'isMulti'
+  'value' | 'defaultValue' | 'onChange' | 'isMulti' | 'closeMenuOnSelect'
 > {
+  shouldCloseMenuOnSelect?: boolean;
   value?: TValue[];
   defaultValue?: TValue[];
   onValueChange?: MultiSelectValueChangeHandler<TValue>;
@@ -282,7 +283,7 @@ function InfiniteMultiSelectRender<TValue extends string = string>(
     onValueChange,
     onOptionChange,
     items,
-    closeMenuOnSelect,
+    shouldCloseMenuOnSelect,
     ...rest
   }: iInfiniteMultiSelectProps<TValue>,
   ref: Ref<SelectInstance<iOptionType<TValue>, true, GroupBase<iOptionType<TValue>>>>,
@@ -307,7 +308,7 @@ function InfiniteMultiSelectRender<TValue extends string = string>(
       ref={ref}
       isMulti
       items={items}
-      closeMenuOnSelect={closeMenuOnSelect}
+      closeMenuOnSelect={shouldCloseMenuOnSelect === true}
       value={computedValue}
       defaultValue={computedDefaultValue}
       onChange={(selected, actionMeta) => {

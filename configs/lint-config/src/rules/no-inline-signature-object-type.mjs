@@ -5,7 +5,8 @@
  * `i`-prefixed interface instead.
  *
  * The walk goes from each literal up to the nearest signature annotation and stops at anything else, so a literal inside
- * another object type, a mapped type or a property annotation is not reported twice, and a literal inside a nested
+ * another object type or a property annotation is not reported twice, a literal used as the value type of a mapped type
+ * is reported while the mapped type itself stays allowed, and a literal inside a nested
  * function type is reported at that inner signature only.
  */
 const SIGNATURE_NODE_TYPES = new Set([
@@ -29,7 +30,6 @@ const PARAMETER_NODE_TYPES = new Set(['Identifier', 'ObjectPattern', 'ArrayPatte
  */
 const BOUNDARY_NODE_TYPES = new Set([
   'TSTypeLiteral',
-  'TSMappedType',
   'TSPropertySignature',
   'TSIndexSignature',
   'TSTypeParameter',
@@ -53,9 +53,15 @@ const BOUNDARY_NODE_TYPES = new Set([
 /** Nodes whose type arguments are part of a type, as opposed to type arguments of a call or instantiation expression. */
 const TYPE_ARGUMENT_OWNER_NODE_TYPES = new Set(['TSTypeReference', 'TSImportType', 'TSTypeQuery']);
 
-const isBoundary = (node) => {
+/** A mapped type ends the search, except when the walk arrives from its value type (`{ [K in keyof iX]: { a: string } }`). */
+const isMappedTypeBoundary = (node, child) => node.type === 'TSMappedType' && node.typeAnnotation !== child;
+
+const isBoundary = (node, child) => {
   if (node.type === 'TSTypeParameterInstantiation') {
     return !TYPE_ARGUMENT_OWNER_NODE_TYPES.has(node.parent.type);
+  }
+  if (node.type === 'TSMappedType') {
+    return isMappedTypeBoundary(node, child);
   }
   return !node.type.startsWith('TS') || BOUNDARY_NODE_TYPES.has(node.type);
 };
@@ -90,6 +96,7 @@ const getSignatureAnnotationKind = (annotation) => {
 };
 
 const findSignatureAnnotationKind = (literal) => {
+  let child = literal;
   let node = literal.parent;
   while (node) {
     if (node.type === 'TSTypeAnnotation') {
@@ -100,9 +107,10 @@ const findSignatureAnnotationKind = (literal) => {
       if (node.parent.type !== 'TSTypePredicate') {
         return null;
       }
-    } else if (isBoundary(node)) {
+    } else if (isBoundary(node, child)) {
       return null;
     }
+    child = node;
     node = node.parent;
   }
   return null;

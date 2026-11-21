@@ -8,6 +8,7 @@ import { Button } from '#~/components/ui/button/button';
 import { cn } from '#~/lib/utils';
 
 import { createCalendarClassNames } from './calendar.class-names';
+import type { DistributiveOmit } from './calendar.types';
 
 function CalendarRoot({ className, rootRef, ...props }: RootProps) {
   return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...props} />;
@@ -48,7 +49,7 @@ function Calendar({
   formatters,
   components,
   ...props
-}: ComponentProps<typeof DayPicker> & iCalendarExtraProps) {
+}: DistributiveOmit<ComponentProps<typeof DayPicker>, 'showOutsideDays'> & iCalendarExtraProps) {
   return (
     <DayPicker
       className={cn(

@@ -310,8 +310,9 @@ export const SingleSelect = forwardRef(SingleSelectRender) as iSingleSelectCompo
 
 export interface iMultiSelectProps<TValue extends string = string> extends Omit<
   MultiSelectBaseProps<TValue>,
-  'value' | 'defaultValue' | 'onChange' | 'isMulti'
+  'value' | 'defaultValue' | 'onChange' | 'isMulti' | 'closeMenuOnSelect'
 > {
+  shouldCloseMenuOnSelect?: boolean;
   value?: TValue[];
   defaultValue?: TValue[];
   onValueChange?: MultiSelectValueChangeHandler<TValue>;
@@ -330,7 +331,7 @@ function MultiSelectRender<TValue extends string = string>(
     onValueChange,
     onOptionChange,
     options,
-    closeMenuOnSelect,
+    shouldCloseMenuOnSelect,
     maxMenuHeight = MAX_MENU_HEIGHT,
     ...rest
   }: iMultiSelectProps<TValue>,
@@ -357,7 +358,7 @@ function MultiSelectRender<TValue extends string = string>(
       {...rest}
       ref={ref}
       isMulti
-      closeMenuOnSelect={closeMenuOnSelect}
+      closeMenuOnSelect={shouldCloseMenuOnSelect === true}
       options={options}
       maxMenuHeight={maxMenuHeight}
       value={computedValue}
