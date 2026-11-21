@@ -15,10 +15,10 @@ describe('HyperdrivePoolFactory', () => {
       loggerFactory,
     );
     const { close } = factory.open();
-    onSpy.mockRestore();
 
     const failure = new Error('connection reset');
     const idleErrorCall = onSpy.mock.calls.find(([event]) => event === 'error');
+    onSpy.mockRestore();
     expect(idleErrorCall).toBeDefined();
     Reflect.apply(idleErrorCall?.[1] ?? vi.fn(), undefined, [failure]);
 

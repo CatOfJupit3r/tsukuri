@@ -1,26 +1,14 @@
 import { generateSQLiteDrizzleJson, generateSQLiteMigration } from 'drizzle-kit/api';
-import type { DatabaseSync } from 'node:sqlite';
 import { container } from 'tsyringe';
 
 import { IN_MEMORY_DATABASE_PATH } from '#~/features/database/database.constants';
 import { drizzleNodeSqlite } from '#~/features/database/node-sqlite.driver';
-import type { NodeSqliteDatabase } from '#~/features/database/node-sqlite.driver';
 import { SqliteConnectionFactory } from '#~/features/database/sqlite-connection.factory';
 import { generatedDatabaseSchema } from '#~/generated/database-schema';
 
-const testSqliteDbKey = Symbol.for('startername.test.sqlite.db');
-const testSqliteConnectionKey = Symbol.for('startername.test.sqlite.connection');
-
-type TestSqliteGlobals = typeof globalThis & {
-  [testSqliteDbKey]?: NodeSqliteDatabase<typeof generatedDatabaseSchema>;
-  [testSqliteConnectionKey]?: DatabaseSync;
-};
-
-const testGlobals = globalThis as TestSqliteGlobals;
-
 /** An in-memory SQLite with the installed modules' tables, which `DatabaseService` picks up in tests. */
 export async function initializeTestSqlite() {
-  if (testGlobals[testSqliteDbKey]) return;
+  if (globalThis.starternameTestSqliteDb) return;
 
   const database = await container.resolve(SqliteConnectionFactory).open(IN_MEMORY_DATABASE_PATH);
   const statements = await generateSQLiteMigration(
@@ -29,13 +17,13 @@ export async function initializeTestSqlite() {
   );
   for (const statement of statements) database.exec(statement);
 
-  testGlobals[testSqliteConnectionKey] = database;
-  testGlobals[testSqliteDbKey] = drizzleNodeSqlite(database, { schema: generatedDatabaseSchema }).db;
+  globalThis.starternameTestSqliteConnection = database;
+  globalThis.starternameTestSqliteDb = drizzleNodeSqlite(database, { schema: generatedDatabaseSchema }).db;
 }
 
 /** Deletes every row while keeping the tables, so each test starts from an empty database. */
 export function clearTestSqliteTables() {
-  const database = testGlobals[testSqliteConnectionKey];
+  const database = globalThis.starternameTestSqliteConnection;
   if (!database) return;
 
   const tableNames = database

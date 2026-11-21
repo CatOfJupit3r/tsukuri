@@ -221,7 +221,10 @@ export const apiModule = defineModule({
     SKILL_IDS.SERVER_TESTING,
     SKILL_IDS.ORPC_CONTRACT_CREATION,
   ],
-  markdown: [{ document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/api/agents.md.hbs') }],
+  markdown: [
+    { document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/api/agents.md.hbs') },
+    { document: MARKDOWN_DOCUMENTS.README, source: templatePath('fragments/api/readme.md.hbs') },
+  ],
   contributions: [
     {
       kind: CONNECTION_POINT_KINDS.CONTRACT,

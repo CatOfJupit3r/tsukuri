@@ -77,6 +77,14 @@ describe('create command with the shipped modules', () => {
     }
   });
 
+  it('explains CORS_ORIGIN against TRUSTED_ORIGINS in the README and the AGENTS guide', async () => {
+    const { read } = await create(NODE_FLAGS);
+
+    expect(read('README.md')).toContain('## Request Origins');
+    expect(read('README.md')).toContain('no wildcards');
+    expect(read('AGENTS.md')).toContain('`CORS_ORIGIN` is a different setting');
+  });
+
   it('asks where Better Auth reads sessions only when a KV store is installed, and always records a choice', async () => {
     const node = await create(NODE_FLAGS);
     expect(node.prompter.prompts.find((prompt) => prompt.message === SESSION_STORE_MESSAGE)).toBeUndefined();

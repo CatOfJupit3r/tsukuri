@@ -12,11 +12,15 @@ import { {{names}} } from '{{from}}';
 {{/if}}
 
 /** The bindings listed in `wrangler.jsonc`, as the Worker receives them in `fetch`. */
+{{#if bindings.length}}
 export interface iWorkerBindings {
 {{#each bindings}}
   {{binding}}: {{type}};
 {{/each}}
 }
+{{else}}
+export type iWorkerBindings = Record<never, never>;
+{{/if}}
 
 const GENERATED_BINDINGS: readonly (readonly [InjectionToken<unknown>, keyof iWorkerBindings])[] = [
 {{#each bindings}}

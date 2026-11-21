@@ -53,13 +53,23 @@ describe('KvKeyValueStore', () => {
     const keyCount = DELETE_BATCH_SIZE * 2 + 1;
     const keys = Array.from({ length: keyCount }, (_unused, index) => `bulk:${index}`);
     await Promise.all(keys.map(async (key) => store.set(key, key)));
-    const deleteSpy = vi.spyOn(local.binding, 'delete');
+    // The local binding is a proxy that hands out a fresh method on every access, so a spy would never see the calls.
+    const deletedKeys: string[] = [];
+    const countingBinding = new Proxy(local.binding, {
+      get(target, property) {
+        const value: unknown = Reflect.get(target, property);
+        if (property !== 'delete') return value;
+        return async (key: string) => {
+          deletedKeys.push(key);
+          await target.delete(key);
+        };
+      },
+    });
 
-    await store.deleteMatching('bulk:*');
+    await new KvKeyValueStore(countingBinding).deleteMatching('bulk:*');
 
-    expect(deleteSpy).toHaveBeenCalledTimes(keyCount);
+    expect(deletedKeys).toHaveLength(keyCount);
     expect(await storedKeys()).toEqual([]);
-    deleteSpy.mockRestore();
   });
 
   it('treats a pattern without glob characters as one exact key, as Valkey does', async () => {
