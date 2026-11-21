@@ -4,10 +4,16 @@ export const CATALOG_REFERENCE = 'catalog:';
 
 export const ROOT_WORKSPACE = '.';
 
-export const LINT_TOOLCHAIN_WORKSPACES = ['configs/lint-config', 'configs/prettier-config'];
+/** Workspaces whose every dependency belongs to the lint and format toolchain. */
+export const LINT_CONFIG_WORKSPACE = 'configs/lint-config';
 
-/** Catalog entries the lint toolchain uses without `configs/lint-config` referencing them. */
-export const LINT_TOOLCHAIN_EXTRA_CATALOG_ENTRIES = ['@typescript/native-preview'];
+export const LINT_TOOLCHAIN_WORKSPACES = [LINT_CONFIG_WORKSPACE, 'configs/prettier-config'];
 
-/** Repository catalog entries that belong to the repository itself and that no module ships. */
-export const REPOSITORY_ONLY_CATALOG_ENTRIES: string[] = [];
+/** Lint tools the root workspace depends on directly, next to dependencies that are not lint tools. */
+export const ROOT_LINT_TOOL_NAMES = ['husky', 'lint-staged', 'oxlint', 'oxlint-tsgolint'];
+
+/** Stands in for a workspace package.json that does not exist in this repository. */
+export const NO_DEPENDENCIES = { dependencies: {}, devDependencies: {}, peerDependencies: {} };
+
+/** Root dependencies that release this repository and that no generated project receives. */
+export const ROOT_REPOSITORY_ONLY_DEPENDENCY_NAMES = ['@changesets/changelog-github', '@changesets/cli'];
