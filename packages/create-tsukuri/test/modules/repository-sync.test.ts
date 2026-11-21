@@ -1,18 +1,19 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { DEPENDENCY_FIELDS, PackageJsonMerger } from '#~/engine/merge/package-json-merger';
+import { PackageJsonMerger } from '#~/engine/merge/package-json-merger';
 import { PnpmWorkspaceMerger } from '#~/engine/merge/pnpm-workspace-merger';
 import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
 
-import { readRepositoryCatalog, readRepositoryPackageJson } from '../helpers/repository-files';
+import { listDependencies, readRepositoryCatalog, readRepositoryPackageJson } from '../helpers/repository-files';
 import {
   CATALOG_REFERENCE,
   EXACT_VERSION_PATTERN,
-  LINT_TOOLCHAIN_EXTRA_CATALOG_ENTRIES,
   LINT_TOOLCHAIN_WORKSPACES,
-  REPOSITORY_ONLY_CATALOG_ENTRIES,
+  NO_DEPENDENCIES,
+  ROOT_LINT_TOOL_NAMES,
+  ROOT_REPOSITORY_ONLY_DEPENDENCY_NAMES,
   ROOT_WORKSPACE,
 } from '../helpers/repository-sync.constants';
 import { REPOSITORY_ROOT } from '../helpers/temp-dir';
@@ -45,15 +46,11 @@ describe('module package.json contributions', () => {
   });
 
   const shippedDependencies = contributions.flatMap(({ moduleId, contribution }) =>
-    DEPENDENCY_FIELDS.flatMap((field) =>
-      Object.entries(contribution[field]).map(([name, version]) => ({
-        label: `${moduleId} ${contribution.workspace} ${field} ${name}`,
-        workspace: contribution.workspace,
-        field,
-        name,
-        version,
-      })),
-    ),
+    listDependencies(contribution).map((dependency) => ({
+      ...dependency,
+      label: `${moduleId} ${contribution.workspace} ${dependency.field} ${dependency.name}`,
+      workspace: contribution.workspace,
+    })),
   );
 
   it('ships every dependency version the repository package.json uses', () => {
@@ -66,6 +63,20 @@ describe('module package.json contributions', () => {
 
     expect(mismatches).toEqual([]);
   });
+
+  // Alternative modules ship different root dependencies, so the root is compared by name: whatever the repository
+  // root depends on must be shipped by some module.
+  it('ships every dependency the repository root package.json declares except the release tooling', () => {
+    const shippedRootNames = new Set(
+      shippedDependencies.filter(({ workspace }) => workspace === ROOT_WORKSPACE).map(({ name }) => name),
+    );
+    const missing = listDependencies(readRepositoryPackageJson(ROOT_WORKSPACE) ?? NO_DEPENDENCIES)
+      .filter(({ name }) => !shippedRootNames.has(name) && !ROOT_REPOSITORY_ONLY_DEPENDENCY_NAMES.includes(name))
+      .map(({ field, name }) => `${field} ${name}`);
+
+    expect(readRepositoryPackageJson(ROOT_WORKSPACE)).toBeDefined();
+    expect(missing).toEqual([]);
+  });
 });
 
 describe('pnpm catalog contributions', () => {
@@ -73,29 +84,29 @@ describe('pnpm catalog contributions', () => {
     expect(repositoryCatalog[name]).toBe(version);
   });
 
-  it('ships every repository catalog entry except the repository-only ones', () => {
-    const missing = Object.keys(repositoryCatalog).filter(
-      (name) => !(name in generatedCatalog) && !REPOSITORY_ONLY_CATALOG_ENTRIES.includes(name),
-    );
+  it('ships every repository catalog entry', () => {
+    const generatedCatalogNames = new Set(Object.keys(generatedCatalog));
+    const missing = Object.keys(repositoryCatalog).filter((name) => !generatedCatalogNames.has(name));
 
     expect(missing).toEqual([]);
   });
 });
 
 describe('lint and format toolchain pins', () => {
-  const toolchainDependencies = LINT_TOOLCHAIN_WORKSPACES.flatMap((workspace) =>
-    DEPENDENCY_FIELDS.flatMap((field) =>
-      Object.entries(readRepositoryPackageJson(workspace)?.[field] ?? {}).map(([name, version]) => ({
-        label: `${workspace} ${field} ${name}`,
-        name,
-        version,
-      })),
-    ),
+  const workspaceDependencies = LINT_TOOLCHAIN_WORKSPACES.flatMap((workspace) =>
+    listDependencies(readRepositoryPackageJson(workspace) ?? NO_DEPENDENCIES).map((dependency) => ({
+      ...dependency,
+      label: `${workspace} ${dependency.field} ${dependency.name}`,
+    })),
   );
-  const catalogEntries = [
-    ...toolchainDependencies.filter(({ version }) => version === CATALOG_REFERENCE).map(({ name }) => name),
-    ...LINT_TOOLCHAIN_EXTRA_CATALOG_ENTRIES,
-  ];
+  const rootDependencies = listDependencies(readRepositoryPackageJson(ROOT_WORKSPACE) ?? NO_DEPENDENCIES)
+    .filter(({ name }) => ROOT_LINT_TOOL_NAMES.includes(name))
+    .map((dependency) => ({ ...dependency, label: `${ROOT_WORKSPACE} ${dependency.field} ${dependency.name}` }));
+  const toolchainDependencies = [...workspaceDependencies, ...rootDependencies];
+
+  it('finds every named root lint tool in the repository root package.json', () => {
+    expect(rootDependencies.map(({ name }) => name).sort()).toEqual([...ROOT_LINT_TOOL_NAMES].sort());
+  });
 
   it.each(toolchainDependencies.filter(({ version }) => version !== CATALOG_REFERENCE))(
     '$label is an exact pin',
@@ -104,7 +115,7 @@ describe('lint and format toolchain pins', () => {
     },
   );
 
-  it.each(catalogEntries)('toolchain catalog entry %s is an exact pin', (name) => {
+  it.each(Object.keys(repositoryCatalog))('catalog entry %s is an exact pin', (name) => {
     expect(repositoryCatalog[name]).toMatch(EXACT_VERSION_PATTERN);
   });
 });
