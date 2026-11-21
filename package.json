@@ -46,7 +46,7 @@
     "commitizen": "4.3.2",
     "cz-git": "1.13.1",
     "husky": "9.1.7",
-    "lint-staged": "17.0.8",
+    "lint-staged": "17.6.1",
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "rimraf": "6.1.3",

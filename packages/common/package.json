@@ -60,7 +60,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "enumwaii": "1.2.0",
+    "enumwaii": "2.0.0",
     "zod": "catalog:"
   }
 }

@@ -89,7 +89,7 @@ export const apiModule = defineModule({
         '@orpc/zod': 'catalog:',
         '@startername/common': 'workspace:*',
         '@startername/server-contract': 'workspace:*',
-        enumwaii: '1.2.0',
+        enumwaii: '2.0.0',
         'reflect-metadata': '0.2.2',
         'safe-stable-stringify': '2.5.0',
         tsyringe: '4.10.0',
