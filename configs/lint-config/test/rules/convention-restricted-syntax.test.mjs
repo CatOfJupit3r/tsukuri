@@ -66,6 +66,20 @@ describe('convention restricted syntax', () => {
       expectViolation('const f = ({ a }: { a: string }) => a;', 'parameter type');
     });
 
+    it.each([
+      'function f(...items: { a: string }) { return items; }',
+      'function f([first]: { a: string }) { return first; }',
+      'class C { public run(options: { a: string }) { return options; } }',
+      'declare function f(options: { a: string }): void;',
+    ])('reports an inline parameter type in %s', (code) => {
+      expect(lintMessages(code).filter((message) => message.includes('parameter type'))).toHaveLength(1);
+    });
+
+    it('reports an inline return type of a class method and a declared function', () => {
+      expect(lintMessages('class C { public run(): { a: string } { return { a: "x" }; } }')).toHaveLength(1);
+      expect(lintMessages('declare function f(): { a: string };')).toHaveLength(1);
+    });
+
     it('reports an inline return type', () => {
       expectViolation('function f(): { a: string } { return { a: "x" }; }', 'return type');
     });
@@ -92,6 +106,10 @@ describe('convention restricted syntax', () => {
   describe('empty catch', () => {
     it('reports an empty catch block', () => {
       expectViolation('try { run(); } catch {}', 'empty catch');
+    });
+
+    it('reports a catch block that holds only a comment', () => {
+      expectViolation('try { run(); } catch { /* ignored */ }', 'empty catch');
     });
 
     it('allows a catch that handles the error', () => {
