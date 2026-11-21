@@ -10,17 +10,17 @@ import type { DropdownMenuItemVariant } from '#~/components/ui/overlay/dropdown-
 import { usePortalContainer } from '#~/components/ui/overlay/portal-container.context';
 import { cn } from '#~/lib/utils';
 
-interface iDropdownMenuProps extends DropdownMenuPrimitive.Trigger.Props {
-  asChild?: boolean;
-}
-
 function DropdownMenu({ ...props }: DropdownMenuPrimitive.Root.Props) {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
 }
 function DropdownMenuPortal({ ...props }: DropdownMenuPrimitive.Portal.Props) {
   return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
-function DropdownMenuTrigger({ asChild, children, render, ...props }: iDropdownMenuProps) {
+interface iDropdownMenuTriggerProps extends DropdownMenuPrimitive.Trigger.Props {
+  asChild?: boolean;
+}
+
+function DropdownMenuTrigger({ asChild, children, render, ...props }: iDropdownMenuTriggerProps) {
   return (
     <DropdownMenuPrimitive.Trigger
       data-slot="dropdown-menu-trigger"
@@ -30,11 +30,6 @@ function DropdownMenuTrigger({ asChild, children, render, ...props }: iDropdownM
       {asChild ? null : children}
     </DropdownMenuPrimitive.Trigger>
   );
-}
-
-interface iDropdownMenuContentProps extends DropdownMenuPrimitive.Item.Props {
-  inset?: boolean;
-  variant?: DropdownMenuItemVariant;
 }
 
 function DropdownMenuContent({
@@ -74,12 +69,17 @@ function DropdownMenuGroup({ ...props }: DropdownMenuPrimitive.Group.Props) {
   return <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />;
 }
 
+interface iDropdownMenuItemProps extends DropdownMenuPrimitive.Item.Props {
+  inset?: boolean;
+  variant?: DropdownMenuItemVariant;
+}
+
 function DropdownMenuItem({
   className,
   inset,
   variant = DROPDOWN_MENU_ITEM_VARIANTS.DEFAULT,
   ...props
-}: iDropdownMenuContentProps) {
+}: iDropdownMenuItemProps) {
   return (
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
@@ -92,10 +92,6 @@ function DropdownMenuItem({
       {...props}
     />
   );
-}
-
-interface iDropdownMenuCheckboxItemProps extends ComponentProps<'div'> {
-  inset?: boolean;
 }
 
 function DropdownMenuCheckboxItem({
@@ -148,7 +144,11 @@ function DropdownMenuRadioItem({ className, children, ...props }: DropdownMenuPr
   );
 }
 
-function DropdownMenuLabel({ className, inset, ...props }: iDropdownMenuCheckboxItemProps) {
+interface iDropdownMenuLabelProps extends ComponentProps<'div'> {
+  inset?: boolean;
+}
+
+function DropdownMenuLabel({ className, inset, ...props }: iDropdownMenuLabelProps) {
   return (
     <div
       data-slot="dropdown-menu-label"
@@ -158,10 +158,6 @@ function DropdownMenuLabel({ className, inset, ...props }: iDropdownMenuCheckbox
     />
   );
 }
-interface iDropdownMenuSeparatorProps extends DropdownMenuPrimitive.SubmenuTrigger.Props {
-  inset?: boolean;
-}
-
 function DropdownMenuSeparator({ className, ...props }: DropdownMenuPrimitive.Separator.Props) {
   return (
     <DropdownMenuPrimitive.Separator
@@ -184,7 +180,11 @@ function DropdownMenuSub({ ...props }: DropdownMenuPrimitive.SubmenuRoot.Props) 
   return <DropdownMenuPrimitive.SubmenuRoot data-slot="dropdown-menu-sub" {...props} />;
 }
 
-function DropdownMenuSubTrigger({ className, inset, children, ...props }: iDropdownMenuSeparatorProps) {
+interface iDropdownMenuSubTriggerProps extends DropdownMenuPrimitive.SubmenuTrigger.Props {
+  inset?: boolean;
+}
+
+function DropdownMenuSubTrigger({ className, inset, children, ...props }: iDropdownMenuSubTriggerProps) {
   return (
     <DropdownMenuPrimitive.SubmenuTrigger
       data-slot="dropdown-menu-sub-trigger"

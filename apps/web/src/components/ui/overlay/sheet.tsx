@@ -8,11 +8,6 @@ import { SHEET_SIDE_DATA_VALUES, SHEET_SIDES } from '#~/components/ui/overlay/sh
 import type { SheetSide } from '#~/components/ui/overlay/sheet.constants';
 import { cn } from '#~/lib/utils';
 
-interface iSheetProps extends SheetPrimitive.Popup.Props {
-  side?: SheetSide;
-  shouldHideCloseButton?: boolean;
-}
-
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
@@ -39,7 +34,18 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
   );
 }
 
-function SheetContent({ className, children, side = SHEET_SIDES.RIGHT, shouldHideCloseButton, ...props }: iSheetProps) {
+interface iSheetContentProps extends SheetPrimitive.Popup.Props {
+  side?: SheetSide;
+  shouldHideCloseButton?: boolean;
+}
+
+function SheetContent({
+  className,
+  children,
+  side = SHEET_SIDES.RIGHT,
+  shouldHideCloseButton,
+  ...props
+}: iSheetContentProps) {
   return (
     <SheetPortal>
       <SheetOverlay />

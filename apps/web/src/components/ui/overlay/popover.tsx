@@ -4,14 +4,14 @@ import type { ComponentProps, ReactElement } from 'react';
 import { usePortalContainer } from '#~/components/ui/overlay/portal-container.context';
 import { cn } from '#~/lib/utils';
 
-interface iPopoverProps extends PopoverPrimitive.Trigger.Props {
-  asChild?: boolean;
-}
-
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
-function PopoverTrigger({ asChild, children, render, ...props }: iPopoverProps) {
+interface iPopoverTriggerProps extends PopoverPrimitive.Trigger.Props {
+  asChild?: boolean;
+}
+
+function PopoverTrigger({ asChild, children, render, ...props }: iPopoverTriggerProps) {
   return (
     <PopoverPrimitive.Trigger
       data-slot="popover-trigger"

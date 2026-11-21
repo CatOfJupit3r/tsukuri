@@ -12,10 +12,6 @@ function TooltipProvider({ delayDuration = 0, ...props }: iTooltipProviderProps)
   return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delayDuration} {...props} />;
 }
 
-interface iTooltipProps extends TooltipPrimitive.Trigger.Props {
-  asChild?: boolean;
-}
-
 function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
   return (
     <TooltipProvider>
@@ -23,7 +19,11 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
     </TooltipProvider>
   );
 }
-function TooltipTrigger({ asChild, children, render, ...props }: iTooltipProps) {
+interface iTooltipTriggerProps extends TooltipPrimitive.Trigger.Props {
+  asChild?: boolean;
+}
+
+function TooltipTrigger({ asChild, children, render, ...props }: iTooltipTriggerProps) {
   return (
     <TooltipPrimitive.Trigger
       data-slot="tooltip-trigger"

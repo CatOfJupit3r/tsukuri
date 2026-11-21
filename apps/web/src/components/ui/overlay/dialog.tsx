@@ -5,10 +5,6 @@ import { LuX } from 'react-icons/lu';
 import { OVERLAY_BACKDROP_CLASS_NAME } from '#~/components/ui/overlay/overlay.constants';
 import { cn } from '#~/lib/utils';
 
-interface iDialogProps extends DialogPrimitive.Popup.Props {
-  shouldHideCloseButton?: boolean;
-}
-
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
@@ -35,7 +31,11 @@ function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) 
   );
 }
 
-function DialogContent({ className, children, shouldHideCloseButton, ...props }: iDialogProps) {
+interface iDialogContentProps extends DialogPrimitive.Popup.Props {
+  shouldHideCloseButton?: boolean;
+}
+
+function DialogContent({ className, children, shouldHideCloseButton, ...props }: iDialogContentProps) {
   return (
     <DialogPortal>
       <DialogOverlay />

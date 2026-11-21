@@ -23,7 +23,7 @@ export class PayloadToken<TPayload = never, TName extends PayloadTokenName = Pay
   /** Narrows an already validated message union to this token's message; parse raw input first. */
   public matches<TMessage extends iPayloadMessage<unknown>>(
     message: TMessage,
-  ): message is Extract<TMessage, { name: TName }> {
+  ): message is Extract<TMessage, Pick<iPayloadMessage<unknown, TName>, 'name'>> {
     return message.name === this.name;
   }
 }

@@ -14,6 +14,7 @@ import {
   MAX_LINES_PER_FUNCTION,
 } from './lint-limits.mjs';
 import { CONVENTION_SOURCE_EXTENSIONS, maxFilesPerFolderRule } from './rules/max-files-per-folder.mjs';
+import { noInlineSignatureObjectTypeRule } from './rules/no-inline-signature-object-type.mjs';
 import { noInNarrowingRule } from './rules/no-in-narrowing.mjs';
 
 const CONVENTION_RULES_SOURCE_FILES = [`**/*.{${CONVENTION_SOURCE_EXTENSIONS.join(',')}}`];
@@ -28,12 +29,14 @@ const LOCAL_PLUGIN = {
   rules: {
     'max-files-per-folder': maxFilesPerFolderRule,
     'no-in-narrowing': noInNarrowingRule,
+    'no-inline-signature-object-type': noInlineSignatureObjectTypeRule,
   },
 };
 
 const CONVENTION_RULES = {
   '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'explicit' }],
   [`${PLUGIN_NAMESPACE}/no-in-narrowing`]: 'error',
+  [`${PLUGIN_NAMESPACE}/no-inline-signature-object-type`]: 'error',
   'import-x/no-default-export': 'error',
   [`${PLUGIN_NAMESPACE}/max-files-per-folder`]: ['error', { max: MAX_FILES_PER_FOLDER }],
   'sonarjs/cognitive-complexity': ['error', MAX_COGNITIVE_COMPLEXITY],

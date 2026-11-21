@@ -10,10 +10,6 @@ import { Separator } from '#~/components/ui/layout/separator';
 import { cn } from '#~/lib/utils';
 import { getFormErrorMessages } from '#~/utils/forms/form-error';
 
-interface iFieldSetProps extends ComponentProps<'legend'> {
-  variant?: FieldLegendVariant;
-}
-
 function FieldSet({ className, ...props }: ComponentProps<'fieldset'>) {
   return (
     <fieldset
@@ -28,7 +24,11 @@ function FieldSet({ className, ...props }: ComponentProps<'fieldset'>) {
   );
 }
 
-function FieldLegend({ className, variant = FIELD_LEGEND_VARIANTS.LEGEND, ...props }: iFieldSetProps) {
+interface iFieldLegendProps extends ComponentProps<'legend'> {
+  variant?: FieldLegendVariant;
+}
+
+function FieldLegend({ className, variant = FIELD_LEGEND_VARIANTS.LEGEND, ...props }: iFieldLegendProps) {
   return (
     <legend
       data-slot="field-legend"
@@ -37,10 +37,6 @@ function FieldLegend({ className, variant = FIELD_LEGEND_VARIANTS.LEGEND, ...pro
       {...props}
     />
   );
-}
-
-interface iFieldGroupProps extends ComponentProps<'div'> {
-  children?: ReactNode;
 }
 
 function FieldGroup({ className, ...props }: ComponentProps<'div'>) {
@@ -148,7 +144,11 @@ function FieldDescription({ className, ...props }: ComponentProps<'p'>) {
   );
 }
 
-function FieldSeparator({ children, className, ...props }: iFieldGroupProps) {
+interface iFieldSeparatorProps extends ComponentProps<'div'> {
+  children?: ReactNode;
+}
+
+function FieldSeparator({ children, className, ...props }: iFieldSeparatorProps) {
   return (
     <div
       data-slot="field-separator"
