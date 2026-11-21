@@ -10,8 +10,8 @@ export const LINT_CONFIG_SOURCE_ROOT = path.join(LINT_CONFIG_ROOT, 'src');
 
 export const LINT_CONFIG_SOURCE_EXTENSIONS = ['.mjs', '.js', '.cjs', '.ts', '.mts', '.cts', '.jsx', '.tsx'];
 
-/** Calls that load a package by a string argument, next to dynamic `import()`. */
-export const PACKAGE_LOADING_FUNCTION_NAMES = ['importPlugin'];
+/** Calls that load a package by a string argument, next to dynamic `import()` and `import.meta.resolve()`. */
+export const PACKAGE_LOADING_FUNCTION_NAMES = ['importPlugin', 'require'];
 
 export const NON_PACKAGE_SPECIFIER_PATTERN = /^(?:[./#]|node:)/;
 
