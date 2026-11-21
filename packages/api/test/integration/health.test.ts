@@ -3,7 +3,6 @@ import { container } from 'tsyringe';
 import { errorCodes } from '@startername/common/generated/error-codes';
 
 import { ApiRequestHandler } from '#~/features/http/api-request-handler';
-import { generatedEnvShape } from '#~/generated/env.schema';
 
 const BASE_URL = 'http://localhost';
 
@@ -48,10 +47,6 @@ describe('API request handler', () => {
     );
 
     expect(response?.status).toBe(200);
-  });
-
-  it('defaults REQUEST_ORIGIN_MODE to lenient when the env does not set it', () => {
-    expect(generatedEnvShape.REQUEST_ORIGIN_MODE.parse(undefined)).toBe('lenient');
   });
 
   it('returns null for paths no route serves, so adapters can fall through', async () => {

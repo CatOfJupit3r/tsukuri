@@ -1,5 +1,7 @@
 import { singleton } from 'tsyringe';
 
+import { UnexpectedServerError } from '#~/lib/orpc-error-wrapper';
+
 /** A string key-value store with expiry; a module such as valkey binds one to `KEY_VALUE_STORE_TOKEN`. */
 export interface iKeyValueStore {
   /** False while no backing store is reachable; callers then skip caching instead of failing. */
@@ -20,6 +22,20 @@ export interface iKeyValueStore {
 
 /** Whole seconds, the smallest expiry Valkey (`SET ... EX`) and most stores take. */
 export const SMALLEST_EXPIRY_SECONDS = 1;
+
+/** Refuses an expiry shorter than the store's minimum, so callers raise it knowingly instead of the store rounding it. */
+export function assertExpiryAllowed(
+  store: Pick<iKeyValueStore, 'minimumTtlSeconds'>,
+  storeName: string,
+  key: string,
+  ttlSeconds: number,
+) {
+  if (ttlSeconds >= store.minimumTtlSeconds) return;
+  const unit = store.minimumTtlSeconds === SMALLEST_EXPIRY_SECONDS ? 'second' : 'seconds';
+  throw new UnexpectedServerError(
+    `${storeName} keeps keys for at least ${store.minimumTtlSeconds} ${unit}, so "${key}" cannot expire after ${ttlSeconds}`,
+  );
+}
 
 export const KEY_VALUE_STORE_TOKEN = Symbol.for('KeyValueStore');
 

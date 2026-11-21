@@ -34,6 +34,10 @@ import { devImpersonatePlugin } from './better-auth-plugins/dev-impersonate.plug
 const AUTH_BASE_PATH = '/auth';
 const SESSION_LOOKUP_PATH = '/get-session';
 
+/** Requests one address may make per window to an auth path without a rule of its own, such as a session lookup. */
+export const AUTH_RATE_LIMIT_MAX_REQUESTS = 100;
+const AUTH_RATE_LIMIT_WINDOW_SECONDS = 10;
+
 type iAuthInstance = ReturnType<AuthService['createInstance']>;
 
 @singleton()
@@ -106,6 +110,8 @@ export class AuthService implements iWithLogger {
       verification: { storeInDatabase: isSessionAlsoInDatabase },
       rateLimit: {
         enabled: NODE_ENVIRONMENT_META.get(env.NODE_ENV).hasRateLimits,
+        window: AUTH_RATE_LIMIT_WINDOW_SECONDS,
+        max: AUTH_RATE_LIMIT_MAX_REQUESTS,
         // Counters change on every request: only a strongly consistent shared store can hold them.
         storage: isStoreStronglyConsistent ? 'secondary-storage' : 'database',
         // The server render looks the session up for every page it renders on behalf of different visitors; those

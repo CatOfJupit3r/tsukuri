@@ -2,6 +2,7 @@ import type { KVNamespace } from '@cloudflare/workers-types';
 import { inject, singleton } from 'tsyringe';
 
 import type { iKeyValueStore } from '#~/features/cache/key-value-store';
+import { assertExpiryAllowed } from '#~/features/cache/key-value-store';
 import { UnexpectedServerError } from '#~/lib/orpc-error-wrapper';
 
 import {
@@ -34,11 +35,7 @@ export class KvKeyValueStore implements iKeyValueStore {
       await this.kvNamespace.put(key, value);
       return;
     }
-    if (ttlSeconds < this.minimumTtlSeconds) {
-      throw new UnexpectedServerError(
-        `KV keeps keys for at least ${this.minimumTtlSeconds} seconds, so "${key}" cannot expire after ${ttlSeconds}`,
-      );
-    }
+    assertExpiryAllowed(this, 'KV', key, ttlSeconds);
     await this.kvNamespace.put(key, value, { expirationTtl: ttlSeconds });
   }
 

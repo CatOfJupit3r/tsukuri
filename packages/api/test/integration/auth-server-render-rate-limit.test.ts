@@ -5,7 +5,7 @@ import { INTERNAL_RENDER_SECRET_HEADER } from '@startername/common/constants/int
 import { env } from '#~/constants/env';
 import { NODE_ENVIRONMENTS } from '#~/constants/node-environments.enums';
 import { AuthPasswordHasher } from '#~/features/auth/auth-password-hasher';
-import { AuthService } from '#~/features/auth/auth.service';
+import { AUTH_RATE_LIMIT_MAX_REQUESTS, AuthService } from '#~/features/auth/auth.service';
 import type { iKeyValueStore } from '#~/features/cache/key-value-store';
 import { KEY_VALUE_STORE_TOKEN } from '#~/features/cache/key-value-store';
 import { DatabaseService } from '#~/features/database/database.service';
@@ -20,7 +20,6 @@ import { RequestContextStorage } from '#~/features/request-context/request-conte
 
 const BASE_URL = 'http://localhost';
 const SESSION_LOOKUPS_BEYOND_THE_LIMIT = 120;
-const SESSION_LOOKUP_LIMIT = 100;
 const TOO_MANY_REQUESTS_STATUS = 429;
 
 function sessionLookup() {
@@ -114,7 +113,7 @@ describe('rate limits on session lookups', () => {
     });
 
     expect(statuses.filter((status) => status === TOO_MANY_REQUESTS_STATUS).length).toBe(
-      SESSION_LOOKUPS_BEYOND_THE_LIMIT - SESSION_LOOKUP_LIMIT,
+      SESSION_LOOKUPS_BEYOND_THE_LIMIT - AUTH_RATE_LIMIT_MAX_REQUESTS,
     );
   });
 
@@ -166,7 +165,7 @@ describe('rate limits on session lookups', () => {
         handler,
       );
 
-      expect(limitedCount(statuses)).toBe(SESSION_LOOKUPS_BEYOND_THE_LIMIT - SESSION_LOOKUP_LIMIT);
+      expect(limitedCount(statuses)).toBe(SESSION_LOOKUPS_BEYOND_THE_LIMIT - AUTH_RATE_LIMIT_MAX_REQUESTS);
     });
 
     it('keeps the limit on sign-in even when the request carries the shared secret', async () => {

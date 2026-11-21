@@ -15,9 +15,11 @@ export interface iHyperdriveSocketServer {
   /** What a Worker's `HYPERDRIVE` binding holds, pointing at the socket server. */
   hyperdrive: Hyperdrive;
   connectionCounts: () => iSocketConnectionCounts;
+  /** Drops every open connection and stops accepting new ones. */
+  stop: () => Promise<void>;
 }
 
-async function startHyperdriveSocketServer(): Promise<iHyperdriveSocketServer> {
+export async function startHyperdriveSocketServer(): Promise<iHyperdriveSocketServer> {
   const { $client } = await initializeTestPostgres();
   const server = new PGLiteSocketServer({
     db: $client,
@@ -46,12 +48,13 @@ async function startHyperdriveSocketServer(): Promise<iHyperdriveSocketServer> {
       },
     },
     connectionCounts: () => ({ opened, active: server.getStats().activeConnections }),
+    stop: async () => server.stop(),
   };
 }
 
 let hyperdriveSocketServer: Promise<iHyperdriveSocketServer> | undefined;
 
-/** One server per test process, in front of the same in-memory database the other module tests use. */
+/** The shared server: one per test process, in front of the same in-memory database the other module tests use. */
 export async function getHyperdriveSocketServer() {
   hyperdriveSocketServer ??= startHyperdriveSocketServer();
   return hyperdriveSocketServer;

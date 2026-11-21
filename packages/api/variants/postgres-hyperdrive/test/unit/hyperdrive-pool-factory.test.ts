@@ -1,47 +1,35 @@
-import type { Hyperdrive } from '@cloudflare/workers-types';
-import { Pool } from 'pg';
-import { container } from 'tsyringe';
+import { sql } from 'drizzle-orm';
 
 import { HyperdrivePoolFactory } from '#~/features/database/hyperdrive-pool.factory';
-import { Logger } from '#~/features/logger/logger';
+import type { Logger } from '#~/features/logger/logger';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
+import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
 
-/** A binding whose connection string points at a port nothing listens on. */
-class UnreachableHyperdrive implements Hyperdrive {
-  public readonly connectionString = 'postgresql://user:password@127.0.0.1:1/database';
+import { startHyperdriveSocketServer } from '../helpers/hyperdrive-socket-server';
 
-  public readonly host = '127.0.0.1';
+/** Keeps the messages of the loggers it hands out, so a test reads what was logged. */
+class RecordingLoggerFactory extends LoggerFactory {
+  public readonly errorMessages: string[] = [];
 
-  public readonly ip = '127.0.0.1';
-
-  public readonly port = 1;
-
-  public readonly user = 'user';
-
-  public readonly password = 'password';
-
-  public readonly database = 'database';
-
-  public connect(): never {
-    throw new Error('The pool connects through the connection string, not the socket.');
+  public override create(namespace: string): Logger {
+    const logger = super.create(namespace);
+    logger.error = (message) => {
+      this.errorMessages.push(message);
+    };
+    return logger;
   }
 }
 
 describe('HyperdrivePoolFactory', () => {
   it('logs an idle connection failure instead of letting it crash the isolate', async () => {
-    const errorSpy = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
-    const onSpy = vi.spyOn(Pool.prototype, 'on');
-    const factory = new HyperdrivePoolFactory(new UnreachableHyperdrive(), container.resolve(LoggerFactory));
-    const { close } = factory.open();
+    const server = await startHyperdriveSocketServer();
+    const loggerFactory = new RecordingLoggerFactory(new RequestContextStorage());
+    const { database, close } = new HyperdrivePoolFactory(server.hyperdrive, loggerFactory).open();
+    await database.execute(sql`select 1`);
 
-    const failure = new Error('connection reset');
-    const idleErrorCall = onSpy.mock.calls.find(([event]) => event === 'error');
-    onSpy.mockRestore();
-    expect(idleErrorCall).toBeDefined();
-    Reflect.apply(idleErrorCall?.[1] ?? vi.fn(), undefined, [failure]);
+    await server.stop();
 
-    expect(errorSpy).toHaveBeenCalledWith('Postgres connection failed while idle', { error: failure });
+    await expect.poll(() => loggerFactory.errorMessages).toContain('Postgres connection failed while idle');
     await close();
-    errorSpy.mockRestore();
   });
 });

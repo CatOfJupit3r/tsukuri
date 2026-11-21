@@ -1,4 +1,4 @@
-import { BETTER_AUTH_SECRET_VARIABLE } from '#~/constants/better-auth-secret';
+import { BETTER_AUTH_SECRET_EXAMPLE, BETTER_AUTH_SECRET_VARIABLE } from '#~/constants/better-auth-secret';
 import { templatePath } from '#~/constants/template-path';
 import {
   AUTH_SESSION_STORE_META,
@@ -122,7 +122,7 @@ export const betterAuthModule = defineModule({
       name: BETTER_AUTH_SECRET_VARIABLE,
       schema: 'z.string().min(32)',
       // `create` writes a random secret into the local `.env`; production refuses this placeholder.
-      example: 'replace-with-a-random-secret-of-32-chars',
+      example: BETTER_AUTH_SECRET_EXAMPLE,
     },
     {
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,

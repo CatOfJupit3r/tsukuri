@@ -12,6 +12,8 @@ import { LoggerFactory } from '#~/features/logger/logger.factory';
 import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
 
 const FORWARDED_ADDRESS = '198.51.100.9';
+/** What Better Auth keys on, under test, when no trusted header carries an address. */
+const UNTRUSTED_FALLBACK_ADDRESS = '127.0.0.1';
 
 /** An eventually consistent store, like Cloudflare KV, that remembers every write. */
 function createEventuallyConsistentStore() {
@@ -94,7 +96,7 @@ describe('AuthService trusted IP header', () => {
 
     const cookie = await signUp(authService, { 'X-Forwarded-For': FORWARDED_ADDRESS });
 
-    expect(await readSessionAddress(authService, cookie)).not.toBe(FORWARDED_ADDRESS);
+    expect(await readSessionAddress(authService, cookie)).toBe(UNTRUSTED_FALLBACK_ADDRESS);
   });
 
   it('counts the header TRUSTED_IP_HEADER names', async () => {

@@ -1,6 +1,6 @@
 // sort-imports-ignore
 import 'reflect-metadata';
-import type { Context, ExecutionContext } from 'hono';
+import type { ExecutionContext } from 'hono';
 import { container } from 'tsyringe';
 
 import { startApi } from '@startername/api/start-api';
@@ -8,15 +8,7 @@ import { startApi } from '@startername/api/start-api';
 import { createApp } from '#~/app';
 import type { iWorkerBindings } from '#~/generated/worker-bindings';
 import { registerWorkerBindings } from '#~/generated/worker-bindings';
-
-/** Work the API starts while answering (closing a request's connections, ...) finishes after the response. */
-function workerRequestOptions(context: Context) {
-  return {
-    waitUntil: (promise: Promise<unknown>) => context.executionCtx.waitUntil(promise),
-    // Cloudflare sets this header itself and drops any value a client sends.
-    clientIp: context.req.header('cf-connecting-ip'),
-  };
-}
+import { workerRequestOptions } from '#~/worker-request-options';
 
 /**
  * Bindings only reach `fetch`, and a Worker may not do I/O outside a request, so each isolate starts the

@@ -10,6 +10,7 @@ import { getHyperdriveSocketServer } from '../helpers/hyperdrive-socket-server';
 
 const CONCURRENT_REQUEST_COUNT = 8;
 const PARALLEL_QUERY_COUNT = 12;
+const QUERY_SETTLE_TIMEOUT_MILLISECONDS = 5000;
 
 async function serveRequest(requestId: string, handler: () => Promise<unknown>, waitUntil?: iWaitUntil) {
   await container.resolve(RequestContextStorage).run({ requestId, waitUntil }, handler);
@@ -102,6 +103,28 @@ describe('DatabaseService on a Worker', () => {
     });
 
     expect(connectionCounts().opened - before.opened).toBeLessThanOrEqual(CONNECTIONS_PER_REQUEST);
+    await expect.poll(() => connectionCounts().active).toBe(0);
+  });
+
+  it('lets background queries that already hold a connection finish after the response is ready', async () => {
+    const { connectionCounts } = await connectionCountsBefore();
+    const backgroundQueries: Promise<unknown>[] = [];
+
+    await serveRequest('background-queries', async () => {
+      const database = container.resolve(DatabaseService).getDb();
+      // Started and not awaited, like Better Auth's pruning of expired rate-limit rows.
+      for (let index = 0; index < CONNECTIONS_PER_REQUEST; index += 1) {
+        backgroundQueries.push(database.execute(sql`select pg_sleep(0.2)`).then((result) => result));
+      }
+    });
+
+    const outcomes = await Promise.race([
+      Promise.allSettled(backgroundQueries),
+      new Promise<never>((_, reject) => {
+        setTimeout(reject, QUERY_SETTLE_TIMEOUT_MILLISECONDS, new Error('hung'));
+      }),
+    ]);
+    expect(outcomes.map(({ status }) => status)).toEqual(Array(CONNECTIONS_PER_REQUEST).fill('fulfilled'));
     await expect.poll(() => connectionCounts().active).toBe(0);
   });
 });
