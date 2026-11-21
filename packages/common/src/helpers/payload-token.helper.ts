@@ -23,9 +23,14 @@ export class PayloadToken<TPayload = never, TName extends PayloadTokenName = Pay
   /** Narrows an already validated message union to this token's message; parse raw input first. */
   public matches<TMessage extends iPayloadMessage<unknown>>(
     message: TMessage,
-  ): message is Extract<TMessage, { name: TName }> {
+  ): message is Extract<TMessage, iNamedPayloadMessage<TName>> {
     return message.name === this.name;
   }
+}
+
+/** The name part of a message, used to pick one token's messages out of a union. */
+export interface iNamedPayloadMessage<TName extends string> {
+  name: TName;
 }
 
 /** A payload sent through a token, as it travels over a channel. */
