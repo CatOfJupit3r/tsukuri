@@ -99,6 +99,7 @@ export const baseModule = defineModule({
         },
       },
       scripts: {
+        'lint:eslint': 'eslint . --fix',
         test: 'vitest run',
       },
       dependencies: {

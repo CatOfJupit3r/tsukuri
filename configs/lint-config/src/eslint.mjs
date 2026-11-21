@@ -359,6 +359,7 @@ export const createBackendOxlintConfig = (options) => createOxlintConfigFromEsli
 
 const importPlugin = async (pluginName) => {
   try {
+    // eslint-disable-next-line no-restricted-syntax -- importPlugin is the one allowed dynamic import: optional plugins
     const plugin = await import(pluginName);
     return plugin.default;
   } catch (e) {
