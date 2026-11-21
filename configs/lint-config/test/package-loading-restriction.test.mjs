@@ -7,52 +7,67 @@ const RESTRICTION_RULE_ID = 'no-restricted-syntax';
 const SOURCE_FILE_NAME = 'src/example.mjs';
 const OTHER_FILE_NAME = 'test/example.mjs';
 
+const SELECTOR_ID_PATTERN = / \((\w+)\)$/;
+
+function readSelectorId(message) {
+  expect(message.ruleId).toBe(RESTRICTION_RULE_ID);
+  return SELECTOR_ID_PATTERN.exec(message.message)?.[1];
+}
+
 function lint(code, fileName) {
   return new Linter().verify(code, lintConfigWorkspaceConfig, fileName);
 }
 
 describe('lint-config package loading restriction', () => {
   it.each([
-    ['require call', "const globals = require('globals');"],
-    ['require.resolve call', "require.resolve('globals');"],
-    ['createRequire', "import { createRequire } from 'node:module';"],
-    ['import.meta.resolve', "import.meta.resolve('globals');"],
-    ['dynamic import', "await import('globals');"],
-    ['computed import.meta.resolve', "import.meta['resolve']('globals');"],
-    ['destructured import.meta', "const { resolve } = import.meta;\nresolve('globals');"],
-    ['assigned destructured import.meta', 'let resolve;\n({ resolve } = import.meta);'],
-    ['unknown import.meta property', 'const environment = import.meta.env;'],
-    ['computed import.meta property', 'const value = import.meta[name];'],
-    ['computed createRequire', "const create = nodeModule['createRequire'];"],
-    ['computed require call', "nodeModule['require']('globals');"],
-    ['member require call', "nodeModule.require('globals');"],
+    ['require call', 'LOADING_NAME_IDENTIFIER', "const globals = require('globals');"],
+    ['require.resolve call', 'LOADING_NAME_IDENTIFIER', "require.resolve('globals');"],
+    ['createRequire', 'LOADING_NAME_IDENTIFIER', "import { createRequire } from 'node:module';"],
+    ['import.meta.resolve', 'IMPORT_META', "import.meta.resolve('globals');"],
+    ['dynamic import', 'IMPORT_EXPRESSION', "await import('globals');"],
+    ['computed import.meta.resolve', 'IMPORT_META', "import.meta['resolve']('globals');"],
+    ['destructured import.meta', 'IMPORT_META', "const { resolve } = import.meta;\nresolve('globals');"],
+    ['assigned destructured import.meta', 'IMPORT_META', 'let resolve;\n({ resolve } = import.meta);'],
+    ['unknown import.meta property', 'IMPORT_META', 'const environment = import.meta.env;'],
+    ['computed import.meta property', 'IMPORT_META', 'const value = import.meta[name];'],
+    ['computed createRequire', 'COMPUTED_MEMBER_KEY', "const create = nodeModule['createRequire'];"],
+    ['computed require call', 'COMPUTED_MEMBER_KEY', "nodeModule['require']('globals');"],
+    ['member require call', 'CALLED_MEMBER', "nodeModule.require('globals');"],
     [
       'namespace createRequire',
+      'LOADING_MEMBER',
       "import * as nodeModule from 'node:module';\nnodeModule.createRequire(import.meta.url);",
     ],
-    ['destructured createRequire', 'const { createRequire } = nodeModule;'],
-    ['require passed as a value', 'load(require);'],
-    ['import.meta alias', "const meta = import.meta;\nmeta.resolve('globals');"],
-    ['import.meta as an argument', 'load(import.meta);'],
-    ['import.meta parameter default', "function load({ resolve } = import.meta) {\n  return resolve('globals');\n}"],
-    ['template literal createRequire key', 'const create = nodeModule[`createRequire`];'],
-    ['computed getBuiltinModule chain', "process.getBuiltinModule('node:module')[`createRequire`];"],
-    ['getBuiltinModule call', "process.getBuiltinModule('node:module');"],
-    ['module.require', "module.require('globals');"],
-    ['importPlugin as a value', 'const load = importPlugin;'],
-    ['importPlugin with an identifier', 'await importPlugin(pluginName);'],
-    ['default import of node:module', "import nodeModule from 'node:module';"],
-    ['namespace import of module', "import * as nodeModule from 'module';"],
-    ['namespace re-export of node:module', "export * as nodeModule from 'node:module';"],
-    ['default re-export of module', "export { default as nodeModule } from 'module';"],
-    ['named re-export of node:module', "export { createRequire } from 'node:module';"],
-    ['importPlugin with a number', 'await importPlugin(5);'],
-    ['importPlugin with a template expression', 'await importPlugin(`plugin-${name}`);'],
-  ])('reports a %s in a lint-config source with the static import message', (_form, code) => {
-    const [message] = lint(code, SOURCE_FILE_NAME);
+    ['destructured createRequire', 'DESTRUCTURED_NAME', 'const { createRequire } = nodeModule;'],
+    ['require passed as a value', 'LOADING_NAME_IDENTIFIER', 'load(require);'],
+    ['import.meta alias', 'IMPORT_META', "const meta = import.meta;\nmeta.resolve('globals');"],
+    ['import.meta as an argument', 'IMPORT_META', 'load(import.meta);'],
+    [
+      'import.meta parameter default',
+      'IMPORT_META',
+      "function load({ resolve } = import.meta) {\n  return resolve('globals');\n}",
+    ],
+    ['template literal createRequire key', 'COMPUTED_MEMBER_KEY', 'const create = nodeModule[`createRequire`];'],
+    [
+      'computed getBuiltinModule chain',
+      'COMPUTED_MEMBER_KEY',
+      "process.getBuiltinModule('node:module')[`createRequire`];",
+    ],
+    ['getBuiltinModule call', 'CALLED_MEMBER', "process.getBuiltinModule('node:module');"],
+    ['module.require', 'CALLED_MEMBER', "module.require('globals');"],
+    ['importPlugin as a value', 'IMPORT_PLUGIN_VALUE', 'const load = importPlugin;'],
+    ['importPlugin with an identifier', 'IMPORT_PLUGIN_ARGUMENT', 'await importPlugin(pluginName);'],
+    ['default import of node:module', 'MODULE_BUILTIN_IMPORT', "import nodeModule from 'node:module';"],
+    ['namespace import of module', 'MODULE_BUILTIN_IMPORT', "import * as nodeModule from 'module';"],
+    ['namespace re-export of node:module', 'MODULE_BUILTIN_IMPORT', "export * as nodeModule from 'node:module';"],
+    ['default re-export of module', 'MODULE_BUILTIN_IMPORT', "export { default as nodeModule } from 'module';"],
+    ['named re-export of node:module', 'MODULE_BUILTIN_IMPORT', "export { createRequire } from 'node:module';"],
+    ['importPlugin with a number', 'IMPORT_PLUGIN_ARGUMENT', 'await importPlugin(5);'],
+    ['importPlugin with a template expression', 'IMPORT_PLUGIN_ARGUMENT', 'await importPlugin(`plugin-${name}`);'],
+  ])('reports a %s in a lint-config source through the %s selector', (_form, selectorId, code) => {
+    const reportedSelectorIds = lint(code, SOURCE_FILE_NAME).map(readSelectorId);
 
-    expect(message.ruleId).toBe(RESTRICTION_RULE_ID);
-    expect(message.message).toContain('static import');
+    expect(reportedSelectorIds).toContain(selectorId);
   });
 
   it.each([

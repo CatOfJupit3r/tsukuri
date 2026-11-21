@@ -27,7 +27,7 @@ export interface iComposeOptions {
 }
 
 const PNPM_WORKSPACE_FILE = 'pnpm-workspace.yaml';
-const ROOT_WORKSPACE = '.';
+export const ROOT_WORKSPACE = '.';
 /** First bytes inspected when deciding whether a file is text. */
 const BINARY_SNIFF_LENGTH = 8000;
 

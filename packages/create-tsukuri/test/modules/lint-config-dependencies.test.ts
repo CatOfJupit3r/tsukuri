@@ -7,7 +7,9 @@ import {
   LINT_CONFIG_ROOT,
   LINT_CONFIG_SOURCE_EXTENSIONS,
   LINT_CONFIG_SOURCE_ROOT,
+  LINT_CONFIG_WORKSPACE_ESLINT_CONFIG,
   NON_PACKAGE_SPECIFIER_PATTERN,
+  PACKAGE_LOADING_FUNCTION_NAME,
 } from '../helpers/lint-config-dependencies.constants';
 import { readImportSpecifiers } from '../helpers/lint-config-import-scanner';
 import { readRepositoryPackageJson } from '../helpers/repository-files';
@@ -61,6 +63,13 @@ describe('lint-config import scanner', () => {
     const sourceFile = ts.createSourceFile('source.ts', source, ts.ScriptTarget.Latest);
 
     expect(readImportSpecifiers(sourceFile)).toEqual(['pkg-a']);
+  });
+
+  it('names the same package-loading function as the workspace ESLint restriction', () => {
+    const eslintConfigSource = readFileSync(LINT_CONFIG_WORKSPACE_ESLINT_CONFIG, 'utf8');
+
+    expect(eslintConfigSource).toContain(`callee.name='${PACKAGE_LOADING_FUNCTION_NAME}'`);
+    expect(eslintConfigSource).toContain(`Identifier[name=${PACKAGE_LOADING_FUNCTION_NAME}]`);
   });
 
   it('ignores a string argument to an unrelated function and strings in comments', () => {

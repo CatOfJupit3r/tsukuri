@@ -7,7 +7,7 @@ import type { iPnpmWorkspaceContribution } from '#~/manifest/module-manifest.sch
 
 import { GeneratorError } from '../generator-error';
 import type { iOwnedContribution, iPackageJson } from './package-json-merger';
-import { DEPENDENCY_FIELDS } from './package-json-merger';
+import { listDependencyEntries } from './package-json-merger';
 
 export interface iPnpmWorkspace {
   packages: string[];
@@ -91,11 +91,9 @@ export class PnpmWorkspaceMerger {
   /** Every `catalog:` dependency must have a catalog entry, or `pnpm install` fails later. */
   public assertCatalogCoverage(workspace: iPnpmWorkspace, packageJsons: Map<string, iPackageJson>) {
     const missing = [...packageJsons].flatMap(([workspaceDir, packageJson]) =>
-      DEPENDENCY_FIELDS.flatMap((field) =>
-        Object.entries((packageJson[field] ?? {}) as Record<string, string>)
-          .filter(([name, version]) => version === CATALOG_PROTOCOL && workspace.catalog[name] === undefined)
-          .map(([name]) => `${name} (${workspaceDir}/package.json ${field})`),
-      ),
+      listDependencyEntries(packageJson)
+        .filter(({ name, version }) => version === CATALOG_PROTOCOL && workspace.catalog[name] === undefined)
+        .map(({ field, name }) => `${name} (${workspaceDir}/package.json ${field})`),
     );
 
     if (missing.length > 0) {

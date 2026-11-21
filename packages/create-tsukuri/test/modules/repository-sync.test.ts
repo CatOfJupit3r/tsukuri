@@ -1,22 +1,23 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-
-import { PackageJsonMerger } from '#~/engine/merge/package-json-merger';
+import { listDependencyEntries, PackageJsonMerger } from '#~/engine/merge/package-json-merger';
 import { PnpmWorkspaceMerger } from '#~/engine/merge/pnpm-workspace-merger';
+import { ROOT_WORKSPACE } from '#~/engine/project-composer';
 import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
 
-import { listDependencies, readRepositoryCatalog, readRepositoryPackageJson } from '../helpers/repository-files';
+import {
+  listRepositoryDependencies,
+  readRepositoryCatalog,
+  readRepositoryPackageJson,
+  readRepositoryPackageJsonFile,
+} from '../helpers/repository-files';
 import {
   CATALOG_REFERENCE,
   EXACT_VERSION_PATTERN,
   LINT_TOOLCHAIN_WORKSPACES,
-  NO_DEPENDENCIES,
   ROOT_LINT_TOOL_NAMES,
   ROOT_REPOSITORY_ONLY_DEPENDENCY_NAMES,
-  ROOT_WORKSPACE,
+  WORKSPACE_REFERENCE_PATTERN,
 } from '../helpers/repository-sync.constants';
-import { REPOSITORY_ROOT } from '../helpers/temp-dir';
 
 /**
  * Manifests declare package.json and catalog contents explicitly, so everything they ship must stay in step with
@@ -40,13 +41,11 @@ describe('module package.json contributions', () => {
   const workspaces = [...composed.keys()].filter((workspace) => readRepositoryPackageJson(workspace) !== undefined);
 
   it.each(workspaces)('%s matches the repository package.json', (workspace) => {
-    const actual: unknown = JSON.parse(readFileSync(path.join(REPOSITORY_ROOT, workspace, 'package.json'), 'utf8'));
-
-    expect(composed.get(workspace)).toEqual(actual);
+    expect(composed.get(workspace)).toEqual(readRepositoryPackageJsonFile(workspace));
   });
 
   const shippedDependencies = contributions.flatMap(({ moduleId, contribution }) =>
-    listDependencies(contribution).map((dependency) => ({
+    listDependencyEntries(contribution).map((dependency) => ({
       ...dependency,
       label: `${moduleId} ${contribution.workspace} ${dependency.field} ${dependency.name}`,
       workspace: contribution.workspace,
@@ -70,12 +69,31 @@ describe('module package.json contributions', () => {
     const shippedRootNames = new Set(
       shippedDependencies.filter(({ workspace }) => workspace === ROOT_WORKSPACE).map(({ name }) => name),
     );
-    const missing = listDependencies(readRepositoryPackageJson(ROOT_WORKSPACE) ?? NO_DEPENDENCIES)
+    const missing = listRepositoryDependencies(ROOT_WORKSPACE)
       .filter(({ name }) => !shippedRootNames.has(name) && !ROOT_REPOSITORY_ONLY_DEPENDENCY_NAMES.includes(name))
       .map(({ field, name }) => `${field} ${name}`);
 
     expect(readRepositoryPackageJson(ROOT_WORKSPACE)).toBeDefined();
     expect(missing).toEqual([]);
+  });
+});
+
+describe('repository root package.json', () => {
+  const rootDependencies = listRepositoryDependencies(ROOT_WORKSPACE);
+
+  it.each(ROOT_REPOSITORY_ONLY_DEPENDENCY_NAMES)(
+    'repository-only dependency %s is still declared by the root',
+    (name) => {
+      expect(rootDependencies.map((dependency) => dependency.name)).toContain(name);
+    },
+  );
+
+  it.each(
+    rootDependencies.filter(
+      ({ version }) => version !== CATALOG_REFERENCE && !WORKSPACE_REFERENCE_PATTERN.test(version),
+    ),
+  )('root $field $name is an exact pin', ({ version }) => {
+    expect(version).toMatch(EXACT_VERSION_PATTERN);
   });
 });
 
@@ -98,12 +116,12 @@ describe('pnpm catalog contributions', () => {
 
 describe('lint and format toolchain pins', () => {
   const workspaceDependencies = LINT_TOOLCHAIN_WORKSPACES.flatMap((workspace) =>
-    listDependencies(readRepositoryPackageJson(workspace) ?? NO_DEPENDENCIES).map((dependency) => ({
+    listRepositoryDependencies(workspace).map((dependency) => ({
       ...dependency,
       label: `${workspace} ${dependency.field} ${dependency.name}`,
     })),
   );
-  const rootDependencies = listDependencies(readRepositoryPackageJson(ROOT_WORKSPACE) ?? NO_DEPENDENCIES)
+  const rootDependencies = listRepositoryDependencies(ROOT_WORKSPACE)
     .filter(({ name }) => ROOT_LINT_TOOL_NAMES.includes(name))
     .map((dependency) => ({ ...dependency, label: `${ROOT_WORKSPACE} ${dependency.field} ${dependency.name}` }));
   const toolchainDependencies = [...workspaceDependencies, ...rootDependencies];

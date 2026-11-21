@@ -20,6 +20,22 @@ export const DEPENDENCY_FIELDS = [
   'peerDependencies',
 ] as const satisfies readonly (keyof iPackageJsonContribution)[];
 
+function isDependencyRecord(value: unknown): value is Record<string, string> {
+  return (
+    typeof value === 'object' && value !== null && Object.values(value).every((version) => typeof version === 'string')
+  );
+}
+
+/** Every dependency of a package.json across all dependency fields, with the field it is declared in. */
+export function listDependencyEntries(packageJson: iPackageJson) {
+  return DEPENDENCY_FIELDS.flatMap((field) => {
+    const dependencies = packageJson[field];
+    return isDependencyRecord(dependencies)
+      ? Object.entries(dependencies).map(([name, version]) => ({ field, name, version }))
+      : [];
+  });
+}
+
 /** Conventional package.json key order; unknown keys follow alphabetically. */
 const KEY_ORDER = [
   'name',

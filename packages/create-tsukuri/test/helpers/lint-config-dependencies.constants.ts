@@ -6,6 +6,8 @@ import { REPOSITORY_ROOT } from './temp-dir';
 
 export const LINT_CONFIG_ROOT = path.join(REPOSITORY_ROOT, LINT_CONFIG_WORKSPACE);
 
+export const LINT_CONFIG_WORKSPACE_ESLINT_CONFIG = path.join(LINT_CONFIG_ROOT, 'eslint.config.mjs');
+
 export const LINT_CONFIG_SOURCE_ROOT = path.join(LINT_CONFIG_ROOT, 'src');
 
 export const LINT_CONFIG_SOURCE_EXTENSIONS = ['.mjs', '.js', '.cjs', '.ts', '.mts', '.cts', '.jsx', '.tsx'];
