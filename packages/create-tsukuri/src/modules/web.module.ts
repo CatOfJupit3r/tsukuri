@@ -61,6 +61,7 @@ const WEB_SOURCE_FILES = [
   'utils/is-on-client.ts',
   'utils/query-helpers.ts',
   'utils/seo.ts',
+  'utils/server-render-fetch.types.ts',
 ];
 
 export const webModule = defineModule({
