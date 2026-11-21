@@ -53,7 +53,12 @@ function splitList(value: string) {
     .filter(Boolean);
 }
 
-function parseIds<T>(flag: string, value: string, parse: (raw: string) => { success: boolean; data?: T }) {
+interface iIdParseResult<T> {
+  success: boolean;
+  data?: T;
+}
+
+function parseIds<T>(flag: string, value: string, parse: (raw: string) => iIdParseResult<T>) {
   return splitList(value).map((raw) => {
     const parsed = parse(raw);
     if (!parsed.success || parsed.data === undefined) invalid(`--${flag}: "${raw}" is not a known id`);

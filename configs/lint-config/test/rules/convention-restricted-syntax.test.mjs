@@ -87,6 +87,35 @@ describe('convention restricted syntax', () => {
       expect(lintMessages('abstract class C { public abstract run(): { a: string }; }')).toHaveLength(1);
     });
 
+    it.each([
+      'type F = (options: { a: string }) => void;',
+      'type F = new (options: { a: string }) => object;',
+      'interface iX { run(options: { a: string }): void }',
+      'interface iX { (options: { a: string }): void }',
+      'interface iX { new (options: { a: string }): object }',
+      'type T = { run(options: { a: string }): void };',
+    ])('reports an inline parameter type in the signature %s', (code) => {
+      expect(lintMessages(code).filter((message) => message.includes('parameter type'))).toHaveLength(1);
+    });
+
+    it.each([
+      'type F = () => { a: string };',
+      'type F = new () => { a: string };',
+      'interface iX { run(): { a: string } }',
+      'interface iX { (): { a: string } }',
+      'interface iX { new (): { a: string } }',
+    ])('reports an inline return type in the signature %s', (code) => {
+      expect(lintMessages(code).filter((message) => message.includes('return type'))).toHaveLength(1);
+    });
+
+    it('allows named types in function types and method signatures', () => {
+      expect(
+        lintMessages(
+          'interface iOptions { a: string }\ntype F = (options: iOptions) => iOptions;\ninterface iX { run(options: iOptions): iOptions }',
+        ),
+      ).toEqual([]);
+    });
+
     it('reports an inline return type', () => {
       expectViolation('function f(): { a: string } { return { a: "x" }; }', 'return type');
     });

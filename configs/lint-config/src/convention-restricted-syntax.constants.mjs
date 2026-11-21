@@ -3,7 +3,7 @@
  * `void`, no empty `catch`, no TypeScript `enum`, and named types instead of inline object types.
  */
 const FUNCTION_NODES =
-  ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression, TSDeclareFunction, TSEmptyBodyFunctionExpression)';
+  ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression, TSDeclareFunction, TSEmptyBodyFunctionExpression, TSFunctionType, TSConstructorType, TSMethodSignature, TSCallSignatureDeclaration, TSConstructSignatureDeclaration)';
 const PARAMETER_NODES = ':matches(Identifier, ObjectPattern, ArrayPattern, RestElement)';
 const INLINE_OBJECT_TYPE = '[typeAnnotation.typeAnnotation.type="TSTypeLiteral"]';
 

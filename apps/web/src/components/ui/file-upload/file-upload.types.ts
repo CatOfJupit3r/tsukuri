@@ -1,20 +1,19 @@
 import type { TextDirection } from '@base-ui/react/direction-provider';
 import type { ComponentProps } from 'react';
 
+export interface iFileUploadProgressCallbacks {
+  onProgress: (file: File, progress: number) => unknown;
+  onSuccess: (file: File) => unknown;
+  onError: (file: File, error: Error) => unknown;
+}
+
 export interface iFileUploadCallbackProps {
   onValueChange?: (files: File[]) => unknown;
   onAccept?: (files: File[]) => unknown;
   onFileAccept?: (file: File) => unknown;
   onFileReject?: (file: File, message: string) => unknown;
   onFileValidate?: (file: File) => string | null | undefined;
-  onUpload?: (
-    files: File[],
-    options: {
-      onProgress: (file: File, progress: number) => unknown;
-      onSuccess: (file: File) => unknown;
-      onError: (file: File, error: Error) => unknown;
-    },
-  ) => unknown;
+  onUpload?: (files: File[], options: iFileUploadProgressCallbacks) => unknown;
 }
 
 export interface iFileUploadProps
