@@ -118,6 +118,7 @@ export const baseModule = defineModule({
         'eslint-plugin-sonarjs': '4.2.2',
       },
       devDependencies: {
+        '@typescript-eslint/parser': '8.73.0',
         vitest: 'catalog:',
       },
       peerDependencies: {
