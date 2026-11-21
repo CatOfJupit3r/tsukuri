@@ -33,6 +33,7 @@ export const ssrRenderSecretModule = defineModule({
     { source: `${API_WORKSPACE}/src/features/render-secret` },
     { source: `${API_WORKSPACE}/test/unit/internal-render-secret-task.test.ts` },
     { source: `${API_WORKSPACE}/test/unit/internal-render-secret-authenticator.test.ts` },
+    { source: `${WEB_WORKSPACE}/test/utils/server-env.test.ts` },
   ],
   contributions: [
     {

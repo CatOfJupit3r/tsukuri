@@ -15,7 +15,10 @@ const ENV_DIR = path.resolve(__dirname, '../..');
 
 export default defineConfig(({ mode }) => {
   const processEnv = loadEnv(mode, ENV_DIR);
-  const env = z.object(generatedEnvShape).parse(processEnv);
+  // Only the variables the build and dev server use.
+  const env = z
+    .object({ VITE_HOST: generatedEnvShape.VITE_HOST, VITE_PORT: generatedEnvShape.VITE_PORT })
+    .parse(processEnv);
   // Set when a backend is installed; the dev server then forwards `/api` to it.
   const { VITE_SERVER_URL: serverUrl } = processEnv;
 

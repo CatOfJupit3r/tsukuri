@@ -35,6 +35,7 @@ export const webSsrRemoteBackendModule = defineModule({
   autoInclude: { modules: [MODULE_IDS.WEB_SSR], capabilities: [CAPABILITIES.REMOTE_BACKEND] },
   files: [
     { source: `${WEB_WORKSPACE}/src/utils/backend-url.ts` },
+    { source: `${WEB_WORKSPACE}/src/utils/server-env.ts` },
     { source: `${WEB_WORKSPACE}/src/utils/server-render-secret-fetch.ts` },
     { source: `${WEB_WORKSPACE}/test/utils/server-render-secret-fetch.test.ts` },
   ],

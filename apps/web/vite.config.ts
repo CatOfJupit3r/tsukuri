@@ -15,7 +15,10 @@ const ENV_DIR = path.resolve(__dirname, '../..');
 
 export default defineConfig(({ mode }) => {
   const processEnv = loadEnv(mode, ENV_DIR, '');
-  const env = z.object(generatedEnvShape).parse(processEnv);
+  // Only the variables the build and dev server use; server-only ones are validated when the server render starts.
+  const env = z
+    .object({ VITE_HOST: generatedEnvShape.VITE_HOST, VITE_PORT: generatedEnvShape.VITE_PORT })
+    .parse(processEnv);
   // The server render reads its variables from `process.env`, which in development only the root `.env` fills.
   for (const name of Object.keys(generatedEnvShape)) {
     const value = processEnv[name];

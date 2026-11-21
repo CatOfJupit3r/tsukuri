@@ -2,6 +2,7 @@ import { createIsomorphicFn } from '@tanstack/react-start';
 import { getRequestHeaders } from '@tanstack/react-start/server';
 
 import { clientAbsoluteLink } from '#~/utils/client-absolute-link';
+import { assertServerEnv } from '#~/utils/server-env';
 import type { iServerRenderFetch } from '#~/utils/server-render-fetch.types';
 import { createServerRenderSecretFetch } from '#~/utils/server-render-secret-fetch';
 
@@ -21,4 +22,7 @@ export const getForwardedRequestHeaders = createIsomorphicFn()
  */
 export const getServerRenderFetch = createIsomorphicFn()
   .client((): iServerRenderFetch | undefined => undefined)
-  .server((): iServerRenderFetch | undefined => createServerRenderSecretFetch(process.env.INTERNAL_RENDER_SECRET));
+  .server((): iServerRenderFetch | undefined => {
+    assertServerEnv(process.env);
+    return createServerRenderSecretFetch(process.env.INTERNAL_RENDER_SECRET);
+  });

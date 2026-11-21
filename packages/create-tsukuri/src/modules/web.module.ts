@@ -76,7 +76,10 @@ export const webModule = defineModule({
     { source: 'scripts/verify-styles.ts' },
     { source: `${WEB_WORKSPACE}/public` },
     // Ships with the module that provides the util it tests.
-    { source: `${WEB_WORKSPACE}/test`, exclude: ['utils/server-render-secret-fetch.test.ts'] },
+    {
+      source: `${WEB_WORKSPACE}/test`,
+      exclude: ['utils/server-render-secret-fetch.test.ts', 'utils/server-env.test.ts'],
+    },
     ...WEB_SOURCE_FILES.map((file) => ({ source: `${WEB_WORKSPACE}/src/${file}` })),
   ],
   packageJson: [
