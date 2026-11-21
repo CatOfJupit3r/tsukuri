@@ -71,6 +71,8 @@ describe('convention restricted syntax', () => {
       'function f([first]: { a: string }) { return first; }',
       'class C { public run(options: { a: string }) { return options; } }',
       'declare function f(options: { a: string }): void;',
+      'class C { public run(options: { a: string }): void; public run(options: unknown): void {} }',
+      'abstract class C { public abstract run(options: { a: string }): void; }',
       'function f(options: { a: string } = { a: "x" }) { return options; }',
       'const f = ({ a }: { a: string } = { a: "x" }) => a;',
       'class C { public constructor(private options: { a: string }) {} }',
@@ -82,6 +84,7 @@ describe('convention restricted syntax', () => {
     it('reports an inline return type of a class method and a declared function', () => {
       expect(lintMessages('class C { public run(): { a: string } { return { a: "x" }; } }')).toHaveLength(1);
       expect(lintMessages('declare function f(): { a: string };')).toHaveLength(1);
+      expect(lintMessages('abstract class C { public abstract run(): { a: string }; }')).toHaveLength(1);
     });
 
     it('reports an inline return type', () => {

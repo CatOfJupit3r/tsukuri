@@ -39,6 +39,7 @@
     "typescript": "catalog:"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "8.73.0",
     "vitest": "catalog:"
   }
 }

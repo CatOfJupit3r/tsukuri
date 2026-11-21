@@ -2,7 +2,8 @@
  * `no-restricted-syntax` entries for the small strict conventions: no re-exports, no boolean default values, no bare
  * `void`, no empty `catch`, no TypeScript `enum`, and named types instead of inline object types.
  */
-const FUNCTION_NODES = ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression, TSDeclareFunction)';
+const FUNCTION_NODES =
+  ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression, TSDeclareFunction, TSEmptyBodyFunctionExpression)';
 const PARAMETER_NODES = ':matches(Identifier, ObjectPattern, ArrayPattern, RestElement)';
 const INLINE_OBJECT_TYPE = '[typeAnnotation.typeAnnotation.type="TSTypeLiteral"]';
 
