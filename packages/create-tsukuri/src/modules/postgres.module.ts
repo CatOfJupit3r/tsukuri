@@ -52,7 +52,7 @@ export const postgresModule = defineModule({
         pg: '^8.16.3',
       },
       devDependencies: {
-        '@electric-sql/pglite': '0.5.4',
+        '@electric-sql/pglite': 'catalog:',
         '@swc-node/register': 'catalog:',
         '@types/pg': '^8.15.5',
         dotenv: 'catalog:',
@@ -62,6 +62,7 @@ export const postgresModule = defineModule({
   ],
   pnpmWorkspace: {
     catalog: {
+      '@electric-sql/pglite': '0.5.17',
       '@swc-node/register': '1.11.1',
       dotenv: '17.4.2',
     },

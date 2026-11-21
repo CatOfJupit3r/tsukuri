@@ -192,6 +192,12 @@ catalogs:
     '@cloudflare/workers-types':
       specifier: 5.20261016.1
       version: 5.20261016.1
+    '@electric-sql/pglite':
+      specifier: 0.5.17
+      version: 0.5.17
+    '@electric-sql/pglite-socket':
+      specifier: 0.2.20
+      version: 0.2.20
     '@orpc/client':
       specifier: 1.14.7
       version: 1.14.7
@@ -461,7 +467,7 @@ importers:
         version: 2.4.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       better-auth:
         specifier: 'catalog:'
-        version: 1.6.23(@cloudflare/workers-types@5.20261016.1)(@tanstack/react-start@1.168.27(esbuild@0.28.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.5)(supports-color@7.2.0)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.0)(yaml@2.9.0)))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))(pg@8.22.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(solid-js@1.9.14)(vitest@4.1.10)
+        version: 1.6.23(@cloudflare/workers-types@5.20261016.1)(@tanstack/react-start@1.168.27(esbuild@0.28.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.5)(supports-color@7.2.0)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.0)(yaml@2.9.0)))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))(pg@8.22.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(solid-js@1.9.14)(vitest@4.1.10)
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -720,7 +726,7 @@ importers:
     dependencies:
       '@better-auth/drizzle-adapter':
         specifier: 1.6.23
-        version: 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))
+        version: 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))
       '@orpc/openapi':
         specifier: 'catalog:'
         version: 1.14.7(ws@8.21.0)
@@ -738,10 +744,10 @@ importers:
         version: link:../server-contract
       better-auth:
         specifier: 'catalog:'
-        version: 1.6.23(@cloudflare/workers-types@5.20261016.1)(@tanstack/react-start@1.168.27(esbuild@0.28.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.5)(supports-color@7.2.0)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.0)(yaml@2.9.0)))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))(pg@8.22.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(solid-js@1.9.14)(vitest@4.1.10)
+        version: 1.6.23(@cloudflare/workers-types@5.20261016.1)(@tanstack/react-start@1.168.27(esbuild@0.28.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.5)(supports-color@7.2.0)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.0)(yaml@2.9.0)))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))(pg@8.22.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(solid-js@1.9.14)(vitest@4.1.10)
       drizzle-orm:
         specifier: ^0.45.2
-        version: 0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0)
+        version: 0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0)
       enumwaii:
         specifier: 1.2.0
         version: 1.2.0(nuqs@2.10.2(@tanstack/react-router@1.170.17(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7))(valibot@1.4.2(typescript@6.0.3))(zod@4.4.3)
@@ -771,8 +777,11 @@ importers:
         specifier: 'catalog:'
         version: 5.20261016.1
       '@electric-sql/pglite':
-        specifier: 0.5.4
-        version: 0.5.4
+        specifier: 'catalog:'
+        version: 0.5.17
+      '@electric-sql/pglite-socket':
+        specifier: 'catalog:'
+        version: 0.2.20(@electric-sql/pglite-age@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pg_hashids@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pg_ivm@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pg_textsearch@0.0.19(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pg_uuidv7@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pgtap@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pgvector@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite@0.5.17)
       '@startername/lint-config':
         specifier: workspace:*
         version: link:../../configs/lint-config
@@ -1485,8 +1494,56 @@ packages:
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
 
-  '@electric-sql/pglite@0.5.4':
-    resolution: {integrity: sha512-yYZUyyXrHU7tPlCjwZQJ6hIG9DscdCCn7Uk0mYKwC1FeHX286AbcmFveMiRBEak8e9iPupjsoVImN3yJZVed2g==}
+  '@electric-sql/pglite-age@0.0.18':
+    resolution: {integrity: sha512-JVuUqMEmF3Kb2MUETJ0X7uRxfmeIA5+tYMrYrckDzpFdhx4JptbIdJ5RyVV3E+z+ok+A81tf/fgiBNzdrQE3Mg==}
+    peerDependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pg_hashids@0.0.18':
+    resolution: {integrity: sha512-yFDB0tS1SxGd4dETU+DXbJx38PsSDyVOQBUJd8RajSPrv/HpUnplj/4w9MCGmT/gkI/UAEvVILLpkfnQGhQoUQ==}
+    peerDependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pg_ivm@0.0.18':
+    resolution: {integrity: sha512-wrSd3jLfvF3ST1BTHAPSwesYE3SwHnyqgdWwMH7NJpp1UpYFwcJLcwTTf9CcvUjn0HGsf7ousp+p7TgZWzwMVg==}
+    peerDependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pg_textsearch@0.0.19':
+    resolution: {integrity: sha512-4P3+iJQOf/yoWrjOLCveuMT9u/Je9b4tNdyY+OTIyS2CQaIesMfVjgTkxbMJWmZA0PooyCSj4L6VjZsc5nk6Bg==}
+    peerDependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pg_uuidv7@0.0.18':
+    resolution: {integrity: sha512-HIMMW1VKQmSWS+cVkIoo0uHKsN704iDfGldfRkrmUUeqhD8nE6OA0SZhH3g8c80oz1vQT9dI/UT1WSox18Mf1A==}
+    peerDependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pgtap@0.0.18':
+    resolution: {integrity: sha512-EG3chLw5hlzhdd2+lpoq0Voa1DVVUnSenXCrIiZVpOxHJ6LF9vUlxcu43j4RAkPxQBSIUaXlmbSLQJl6+hXQTw==}
+    peerDependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pgvector@0.0.18':
+    resolution: {integrity: sha512-G2d2rFS/rsRTXl7fvTuVIhD/fA6MIdDQB3l/xzIyRcDIVUl4KAcAEcqXPPTAXwJlqLViNGHFX+d1yn63V91xpQ==}
+    peerDependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-socket@0.2.20':
+    resolution: {integrity: sha512-ES5Zf3oZLUHJkeKabfNWlhG6BLYZOu0iHXt7eGgwMp+aTsymSY4aoU3v4SGDaKV1j0YlgORrPSHHvOzv1iH5yw==}
+    hasBin: true
+    peerDependencies:
+      '@electric-sql/pglite': 0.5.17
+      '@electric-sql/pglite-age': 0.0.18
+      '@electric-sql/pglite-pg_hashids': 0.0.18
+      '@electric-sql/pglite-pg_ivm': 0.0.18
+      '@electric-sql/pglite-pg_textsearch': 0.0.19
+      '@electric-sql/pglite-pg_uuidv7': 0.0.18
+      '@electric-sql/pglite-pgtap': 0.0.18
+      '@electric-sql/pglite-pgvector': 0.0.18
+
+  '@electric-sql/pglite@0.5.17':
+    resolution: {integrity: sha512-8SvKjiUjaU+0O0dbxjOfN+jXz14TEqDWbwDkYOW1aQ11y/ph2JvFVI27ABBo5nfw+ZfSqy4hKCNlbnbB1TDE+g==}
 
   '@emnapi/core@1.10.0':
     resolution: {integrity: sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==}
@@ -7848,12 +7905,12 @@ snapshots:
     optionalDependencies:
       '@cloudflare/workers-types': 5.20261016.1
 
-  '@better-auth/drizzle-adapter@1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))':
+  '@better-auth/drizzle-adapter@1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))':
     dependencies:
       '@better-auth/core': 1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0)
       '@better-auth/utils': 0.4.2
     optionalDependencies:
-      drizzle-orm: 0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0)
+      drizzle-orm: 0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0)
 
   '@better-auth/kysely-adapter@1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(kysely@0.29.3)':
     dependencies:
@@ -8123,7 +8180,46 @@ snapshots:
 
   '@drizzle-team/brocli@0.10.2': {}
 
-  '@electric-sql/pglite@0.5.4': {}
+  '@electric-sql/pglite-age@0.0.18(@electric-sql/pglite@0.5.17)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pg_hashids@0.0.18(@electric-sql/pglite@0.5.17)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pg_ivm@0.0.18(@electric-sql/pglite@0.5.17)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pg_textsearch@0.0.19(@electric-sql/pglite@0.5.17)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pg_uuidv7@0.0.18(@electric-sql/pglite@0.5.17)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pgtap@0.0.18(@electric-sql/pglite@0.5.17)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-pgvector@0.0.18(@electric-sql/pglite@0.5.17)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.17
+
+  '@electric-sql/pglite-socket@0.2.20(@electric-sql/pglite-age@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pg_hashids@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pg_ivm@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pg_textsearch@0.0.19(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pg_uuidv7@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pgtap@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite-pgvector@0.0.18(@electric-sql/pglite@0.5.17))(@electric-sql/pglite@0.5.17)':
+    dependencies:
+      '@electric-sql/pglite': 0.5.17
+      '@electric-sql/pglite-age': 0.0.18(@electric-sql/pglite@0.5.17)
+      '@electric-sql/pglite-pg_hashids': 0.0.18(@electric-sql/pglite@0.5.17)
+      '@electric-sql/pglite-pg_ivm': 0.0.18(@electric-sql/pglite@0.5.17)
+      '@electric-sql/pglite-pg_textsearch': 0.0.19(@electric-sql/pglite@0.5.17)
+      '@electric-sql/pglite-pg_uuidv7': 0.0.18(@electric-sql/pglite@0.5.17)
+      '@electric-sql/pglite-pgtap': 0.0.18(@electric-sql/pglite@0.5.17)
+      '@electric-sql/pglite-pgvector': 0.0.18(@electric-sql/pglite@0.5.17)
+
+  '@electric-sql/pglite@0.5.17': {}
 
   '@emnapi/core@1.10.0':
     dependencies:
@@ -10709,10 +10805,10 @@ snapshots:
 
   baseline-browser-mapping@2.10.42: {}
 
-  better-auth@1.6.23(@cloudflare/workers-types@5.20261016.1)(@tanstack/react-start@1.168.27(esbuild@0.28.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.5)(supports-color@7.2.0)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.0)(yaml@2.9.0)))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))(pg@8.22.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(solid-js@1.9.14)(vitest@4.1.10):
+  better-auth@1.6.23(@cloudflare/workers-types@5.20261016.1)(@tanstack/react-start@1.168.27(esbuild@0.28.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.5)(supports-color@7.2.0)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.0)(yaml@2.9.0)))(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))(pg@8.22.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(solid-js@1.9.14)(vitest@4.1.10):
     dependencies:
       '@better-auth/core': 1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0)
-      '@better-auth/drizzle-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))
+      '@better-auth/drizzle-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0))
       '@better-auth/kysely-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(kysely@0.29.3)
       '@better-auth/memory-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)
       '@better-auth/mongo-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@cloudflare/workers-types@5.20261016.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)
@@ -10731,7 +10827,7 @@ snapshots:
     optionalDependencies:
       '@tanstack/react-start': 1.168.27(esbuild@0.28.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.5)(supports-color@7.2.0)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.0)(yaml@2.9.0))
       drizzle-kit: 0.31.10
-      drizzle-orm: 0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0)
+      drizzle-orm: 0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0)
       pg: 8.22.0
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
@@ -11106,10 +11202,10 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.0
 
-  drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.4)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0):
+  drizzle-orm@0.45.2(@cloudflare/workers-types@5.20261016.1)(@electric-sql/pglite@0.5.17)(@types/pg@8.20.0)(kysely@0.29.3)(pg@8.22.0):
     optionalDependencies:
       '@cloudflare/workers-types': 5.20261016.1
-      '@electric-sql/pglite': 0.5.4
+      '@electric-sql/pglite': 0.5.17
       '@types/pg': 8.20.0
       kysely: 0.29.3
       pg: 8.22.0

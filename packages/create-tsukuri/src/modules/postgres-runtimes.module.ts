@@ -33,6 +33,13 @@ export const postgresHyperdriveModule = defineModule({
     { source: `${HYPERDRIVE_VARIANT}/${DATABASE_FEATURE}`, target: `${API_WORKSPACE}/${DATABASE_FEATURE}` },
     { source: `${HYPERDRIVE_VARIANT}/test`, target: `${API_WORKSPACE}/test` },
   ],
+  packageJson: [
+    {
+      workspace: API_WORKSPACE,
+      devDependencies: { '@electric-sql/pglite-socket': 'catalog:' },
+    },
+  ],
+  pnpmWorkspace: { catalog: { '@electric-sql/pglite-socket': '0.2.20' } },
   contributions: [
     {
       kind: CONNECTION_POINT_KINDS.WORKER_BINDING,

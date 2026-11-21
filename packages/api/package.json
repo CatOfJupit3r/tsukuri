@@ -47,7 +47,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
-    "@electric-sql/pglite": "0.5.4",
+    "@electric-sql/pglite": "catalog:",
+    "@electric-sql/pglite-socket": "catalog:",
     "@startername/lint-config": "workspace:*",
     "@startername/prettier-config": "workspace:*",
     "@startername/swc-config": "workspace:*",
