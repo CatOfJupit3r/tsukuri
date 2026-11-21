@@ -12,9 +12,8 @@ type _Optional<T> = T | undefined;
 type _ValueOf<T> = T[keyof T];
 type _Awaitable<T> = T | PromiseLike<T>;
 type _EmptyObject = Record<never, never>;
-type _Prettify<T> = {
-  [K in keyof T]: T[K];
-};
+// The conditional re-maps each nested alias too, so hover shows plain object types.
+type _Prettify<T> = T extends infer Resolved ? { [K in keyof Resolved]: Resolved[K] } : never;
 type _Mutable<T> = {
   -readonly [P in keyof T]: T[P];
 };

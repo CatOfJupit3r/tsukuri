@@ -1,3 +1,7 @@
+import { createLogger } from '#~/lib/logging/logger';
+
+const logger = createLogger('detached-promise');
+
 export function reportDetachedError(error: unknown) {
-  console.error('Detached promise rejected:', error);
+  logger.error('Detached promise rejected', error);
 }
