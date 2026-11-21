@@ -26,7 +26,9 @@ const PACKAGE_LOADING_SELECTORS = [
   `MemberExpression[computed=true] > .property:not(${LEGAL_COMPUTED_KEY})`,
   `Property[computed=true] > .key:not(${LEGAL_COMPUTED_KEY})`,
   // importPlugin is only called directly with a string literal so the dependency test can read the package name.
-  "CallExpression[callee.name='importPlugin'][arguments.0.type!='Literal']",
+  "CallExpression[callee.name='importPlugin']:not([arguments.0.type='Literal'][arguments.0.value=type(string)])",
+  // module / node:module only exists to load packages, so it is never imported.
+  'ImportDeclaration[source.value=/^(node:)?module$/]',
   'Identifier[name=importPlugin]:not(CallExpression > Identifier.callee):not(VariableDeclarator > Identifier.id)',
 ];
 
