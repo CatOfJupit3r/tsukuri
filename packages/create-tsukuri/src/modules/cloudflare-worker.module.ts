@@ -7,12 +7,25 @@ import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
 import { API_WORKSPACE } from './api.module';
+import { CORS_ORIGIN_VARIABLE, SERVER_WORKSPACE } from './node-hono.module';
 
 export const WORKER_WORKSPACE = 'apps/worker';
 const WORKER_PACKAGE_NAME = 'worker';
-/** The Worker app only exists in generated projects, so its sources live outside the workspaces here. */
+export const WORKER_FILTER = `--filter=${WORKER_PACKAGE_NAME}`;
+/** The Worker's own files; it only exists in generated projects, so they live outside the workspaces here. */
 const WORKER_VARIANT = 'variants/cloudflare-worker/apps/worker';
-const LINT_STAGED_SOURCE = 'lintstagedrc.cjs';
+const API_WORKER_VARIANT = `${API_WORKSPACE}/variants/cloudflare-worker`;
+/** The Worker runs the same Hono app and workspace setup as the Node server. */
+const SHARED_SERVER_FILES = [
+  '.gitignore',
+  '.lintstagedrc.cjs',
+  'eslint.config.mjs',
+  'oxlint.config.mjs',
+  'tsconfig.json',
+  'vitest.config.ts',
+  'src/app.ts',
+  'src/constants/env.ts',
+];
 
 export const cloudflareWorkerModule = defineModule({
   id: MODULE_IDS.CLOUDFLARE_WORKER,
@@ -23,10 +36,13 @@ export const cloudflareWorkerModule = defineModule({
   requires: [MODULE_IDS.API],
   provides: [CAPABILITIES.BACKEND_TARGET, CAPABILITIES.REMOTE_BACKEND, CAPABILITIES.WORKER_RUNTIME],
   files: [
-    { source: WORKER_VARIANT, target: WORKER_WORKSPACE, exclude: [LINT_STAGED_SOURCE] },
-    // Stored without the dot so lint-staged here does not load a config whose paths only resolve in a project.
-    { source: `${WORKER_VARIANT}/${LINT_STAGED_SOURCE}`, target: `${WORKER_WORKSPACE}/.lintstagedrc.cjs` },
-    { source: `${API_WORKSPACE}/test/helpers/cloudflare-platform.ts` },
+    // `src/generated` holds the connection points this repository type-checks the Worker against.
+    { source: WORKER_VARIANT, target: WORKER_WORKSPACE, exclude: ['src/generated'] },
+    ...SHARED_SERVER_FILES.map((file) => ({
+      source: `${SERVER_WORKSPACE}/${file}`,
+      target: `${WORKER_WORKSPACE}/${file}`,
+    })),
+    { source: `${API_WORKER_VARIANT}/test/helpers`, target: `${API_WORKSPACE}/test/helpers` },
   ],
   packageJson: [
     {
@@ -103,13 +119,7 @@ export const cloudflareWorkerModule = defineModule({
     { document: MARKDOWN_DOCUMENTS.AGENTS, source: templatePath('fragments/cloudflare-worker/agents.md.hbs') },
   ],
   contributions: [
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: WORKER_WORKSPACE,
-      name: 'CORS_ORIGIN',
-      schema: "z.url().or(z.literal('')).default('')",
-      example: 'http://localhost:3030',
-    },
+    { ...CORS_ORIGIN_VARIABLE, workspace: WORKER_WORKSPACE },
     { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: WORKER_PACKAGE_NAME },
     { kind: CONNECTION_POINT_KINDS.BUILD_TASK, filter: WORKER_PACKAGE_NAME },
   ],

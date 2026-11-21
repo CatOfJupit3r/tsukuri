@@ -1,12 +1,19 @@
 import { presetIdsEnumwaii } from '#~/enums/preset-ids.enums';
 import { PROMPT_META, promptIdsEnumwaii } from '#~/enums/prompt-ids.enums';
+import type { iModuleOption } from '#~/manifest/module-manifest.schema';
 
 import { CREATE_COMMAND } from './command-line';
 import { NONE_FLAG_VALUE } from './create-args';
 import { PRESETS } from './presets';
 
 /** Usage text for `create --help`; module ids per prompt are listed by the prompts themselves. */
-export function renderCreateHelp() {
+export function renderCreateHelp(options: readonly iModuleOption[]) {
+  const optionFlags = options.map(
+    (option) =>
+      `${`  --${option.id} <${option.choices.map((choice) => choice.value).join('|')}>`.padEnd(
+        34,
+      )}${option.message} (default: ${option.defaultValue})`,
+  );
   const promptFlags = promptIdsEnumwaii.values.map((id) => {
     const meta = PROMPT_META.get(id);
     const value = meta.isMultiple ? '<ids>' : `<id|${NONE_FLAG_VALUE}>`;
@@ -21,6 +28,9 @@ export function renderCreateHelp() {
     '',
     'Module prompts:',
     ...promptFlags,
+    '',
+    'Module options (asked when their module is selected):',
+    ...optionFlags,
     '',
     'Other flags:',
     '  --preset <id>                   Answer several prompts at once',

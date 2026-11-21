@@ -4,7 +4,8 @@ import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
-const API_WORKSPACE = 'packages/api';
+import { API_WORKSPACE } from './api.module';
+
 const CONTRACT_WORKSPACE = 'packages/server-contract';
 const FEATURES = '#~/features';
 

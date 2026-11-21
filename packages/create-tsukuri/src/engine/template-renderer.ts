@@ -12,6 +12,8 @@ import { ModuleSourceReader } from './module-source-reader';
 export interface iTemplateContext {
   /** Installed module ids, read by the `module` helper. */
   installedModules: readonly ModuleId[];
+  /** The project's name, as `starter.json` records it. */
+  projectName: string;
   [key: string]: unknown;
 }
 

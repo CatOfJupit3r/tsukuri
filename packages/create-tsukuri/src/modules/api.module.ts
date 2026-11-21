@@ -3,12 +3,26 @@ import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
+import { MODULE_OPTION_IDS } from '#~/enums/module-option-ids.enums';
+import {
+  ORIGIN_GUARD_MODE_META,
+  ORIGIN_GUARD_MODES,
+  originGuardModesEnumwaii,
+} from '#~/enums/origin-guard-modes.enums';
 import { SKILL_IDS } from '#~/enums/skill-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
 export const API_WORKSPACE = 'packages/api';
+export const API_FILTER = '--filter=@startername/api';
+/** Where drizzle-kit writes migrations, relative to the API package. */
+export const API_MIGRATIONS_FOLDER = 'src/db/migrations';
 const CONTRACT_WORKSPACE = 'packages/server-contract';
 const COMMON_WORKSPACE = 'packages/common';
+const REQUEST_ORIGIN_MODES_FILE = '#~/features/http/request-origin-modes.enums';
+const REQUEST_ORIGIN_MODE_IMPORTS = [
+  { name: 'requestOriginModeSchema', from: REQUEST_ORIGIN_MODES_FILE },
+  { name: 'REQUEST_ORIGIN_MODES', from: REQUEST_ORIGIN_MODES_FILE },
+];
 
 /** Workspace-level files every package of this module ships. */
 const WORKSPACE_TOOLING_FILES = [
@@ -64,7 +78,8 @@ export const apiModule = defineModule({
         version: '0.0.0',
         private: true,
         type: 'module',
-        imports: { '#~/*': './src/*.js' },
+        // Tests that a module ships beside another module's test helpers import them through `#test/`.
+        imports: { '#~/*': './src/*.js', '#test/*': './test/*.js' },
         exports: { './*': './src/*.ts' },
         engines: { node: '>=26.0.0' },
         prettier: '@startername/prettier-config',
@@ -223,7 +238,8 @@ export const apiModule = defineModule({
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: API_WORKSPACE,
       name: 'NODE_ENV',
-      schema: `nodeEnvironmentSchema.default(NODE_ENVIRONMENTS.DEVELOPMENT)`,
+      // Unset means production, so a deployment that forgets NODE_ENV never runs development-only tools.
+      schema: `nodeEnvironmentSchema.default(NODE_ENVIRONMENTS.PRODUCTION)`,
       imports: [
         { name: 'nodeEnvironmentSchema', from: '#~/constants/node-environments.enums' },
         { name: 'NODE_ENVIRONMENTS', from: '#~/constants/node-environments.enums' },
@@ -231,10 +247,51 @@ export const apiModule = defineModule({
       example: 'development',
     },
     {
+      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
+      workspace: API_WORKSPACE,
+      name: 'TRUSTED_ORIGINS',
+      // Comma-separated web app origins that call the API from another origin; empty when they share its origin.
+      schema:
+        "z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean))",
+      example: 'http://localhost:3030',
+    },
+    {
       kind: CONNECTION_POINT_KINDS.ERROR_CODE,
       workspace: COMMON_WORKSPACE,
       code: 'INTERNAL_SERVER_ERROR',
       message: 'An unexpected server error occurred',
+    },
+    {
+      kind: CONNECTION_POINT_KINDS.ERROR_CODE,
+      workspace: COMMON_WORKSPACE,
+      code: 'REQUEST_ORIGIN_NOT_ALLOWED',
+      message: 'Requests that change data must come from a trusted origin',
+    },
+  ],
+  options: [
+    {
+      id: MODULE_OPTION_IDS.ORIGIN_GUARD,
+      message: 'Cross-site protection for requests that change data',
+      defaultValue: ORIGIN_GUARD_MODES.LENIENT,
+      // The choice is the default of REQUEST_ORIGIN_MODE, which can be changed later in the env.
+      choices: originGuardModesEnumwaii.values.map((mode) => {
+        const { label, hint, enumMember } = ORIGIN_GUARD_MODE_META.get(mode);
+        return {
+          value: mode,
+          label,
+          hint,
+          contributions: [
+            {
+              kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
+              workspace: API_WORKSPACE,
+              name: 'REQUEST_ORIGIN_MODE',
+              schema: `requestOriginModeSchema.default(REQUEST_ORIGIN_MODES.${enumMember})`,
+              imports: REQUEST_ORIGIN_MODE_IMPORTS,
+              example: mode,
+            },
+          ],
+        };
+      }),
     },
   ],
   hosts: [

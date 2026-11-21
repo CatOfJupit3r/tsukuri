@@ -5,12 +5,14 @@ import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { SKILL_IDS } from '#~/enums/skill-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
-const API_WORKSPACE = 'packages/api';
-const API_FILTER = '--filter=@startername/api';
+import { API_FILTER, API_WORKSPACE } from './api.module';
+
 /** Both dialects ship a `DatabaseMigrator` at the same path, so `db:migrate` is the same script. */
 export const DATABASE_MIGRATE_SCRIPT =
   'node --env-file-if-exists=../../.env --conditions=workspace-source --import @swc-node/register/esm-register ./src/features/database/migrate-database.ts';
 const POSTGRES_VOLUME = 'postgres-data';
+/** The compose Postgres, which `POSTGRES_URL` points at by default. */
+export const LOCAL_POSTGRES_URL = 'postgresql://postgres:postgres@localhost:5432/startername';
 
 export const postgresModule = defineModule({
   id: MODULE_IDS.POSTGRES,
@@ -70,8 +72,8 @@ export const postgresModule = defineModule({
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
       workspace: API_WORKSPACE,
       name: 'POSTGRES_URL',
-      schema: "z.string().default('postgresql://postgres:postgres@localhost:5432/startername')",
-      example: 'postgresql://postgres:postgres@localhost:5432/startername',
+      schema: `z.string().default('${LOCAL_POSTGRES_URL}')`,
+      example: LOCAL_POSTGRES_URL,
     },
     {
       kind: CONNECTION_POINT_KINDS.STARTUP_TASK,

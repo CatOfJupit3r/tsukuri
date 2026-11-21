@@ -4,6 +4,9 @@ import path from 'node:path';
 import { inject, injectable } from 'tsyringe';
 
 import { GeneratorError } from '#~/engine/generator-error';
+import { ModuleOptionResolver } from '#~/engine/module-option-resolver';
+import type { iModuleOptionValues } from '#~/engine/module-option-resolver';
+import { ModuleRegistry } from '#~/engine/module-registry';
 import type { iResolvedModules } from '#~/engine/module-resolver';
 import { ModuleResolver } from '#~/engine/module-resolver';
 import { ProjectGenerator } from '#~/engine/project-generator';
@@ -11,6 +14,7 @@ import { getProjectNameProblem } from '#~/engine/project-identity';
 import { ProjectTargetGuard } from '#~/engine/project-target-guard';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import type { ModuleId } from '#~/enums/module-ids.enums';
+import type { ModuleOptionId } from '#~/enums/module-option-ids.enums';
 import type { PromptId } from '#~/enums/prompt-ids.enums';
 import { PROMPT_META, promptIdsEnumwaii } from '#~/enums/prompt-ids.enums';
 import type { SkillId } from '#~/enums/skill-ids.enums';
@@ -41,6 +45,8 @@ interface iCreatePlan {
   /** Answers per prompt that was asked or answered by a flag or preset. */
   answers: iPromptAnswers;
   resolved: iResolvedModules;
+  /** A value for every option of the resolved modules. */
+  options: iModuleOptionValues;
   excludedSkills: SkillId[];
   shouldInitGit: boolean;
   shouldInstall: boolean;
@@ -66,6 +72,8 @@ export class CreateCommand {
   constructor(
     private readonly planner: SelectionPlanner,
     private readonly resolver: ModuleResolver,
+    private readonly registry: ModuleRegistry,
+    private readonly optionResolver: ModuleOptionResolver,
     private readonly generator: ProjectGenerator,
     private readonly targetGuard: ProjectTargetGuard,
     @inject(PROMPTER_TOKEN) private readonly prompter: iPrompter,
@@ -76,7 +84,7 @@ export class CreateCommand {
   public async run(argv: string[]) {
     const args = parseCreateArgs(argv);
     if (args.isHelp) {
-      this.prompter.info(renderCreateHelp());
+      this.prompter.info(renderCreateHelp(this.optionResolver.optionsOf(this.registry.list())));
       return null;
     }
 
@@ -90,6 +98,7 @@ export class CreateCommand {
       projectName: plan.projectName,
       modules: plan.resolved.modules.map((manifest) => manifest.id),
       excludedSkills: plan.excludedSkills,
+      options: plan.options,
     });
     spinner.stop(`Wrote ${plan.directory}`);
 
@@ -158,6 +167,7 @@ export class CreateCommand {
       projectName: path.basename(directory),
       answers,
       resolved,
+      options: await this.askOptions(args, resolved, previous),
       excludedSkills: await this.askSkills(args, resolved, previous),
       shouldInitGit: await this.askStep(
         args.shouldInitGit,
@@ -248,6 +258,35 @@ export class CreateCommand {
     return choice === null ? [] : [choice];
   }
 
+  /** Every option of the resolved modules: its flag, the default under `--yes`, or a prompt. */
+  private async askOptions(args: iCreateArgs, resolved: iResolvedModules, previous: iCreatePlan | null) {
+    const values = new Map<ModuleOptionId, string>();
+
+    for (const option of this.optionResolver.optionsOf(resolved.modules)) {
+      const given = args.options.get(option.id);
+      if (given !== undefined) {
+        this.optionResolver.assertChoice(option, given);
+        values.set(option.id, given);
+        continue;
+      }
+      if (args.isYes) {
+        values.set(option.id, option.defaultValue);
+        continue;
+      }
+
+      values.set(
+        option.id,
+        await this.prompter.select({
+          message: option.message,
+          options: option.choices.map((choice) => ({ value: choice.value, label: choice.label, hint: choice.hint })),
+          initialValue: previous?.options.get(option.id) ?? option.defaultValue,
+        }),
+      );
+    }
+
+    return values;
+  }
+
   private async askSkills(args: iCreateArgs, resolved: iResolvedModules, previous: iCreatePlan | null) {
     const applicable = this.planner.applicableSkills(resolved.modules);
 
@@ -318,6 +357,7 @@ export class CreateCommand {
       `Folder:  ${plan.targetDir}`,
       `Modules:`,
       ...modules,
+      `Options: ${[...plan.options].map(([id, value]) => `${id}=${value}`).join(', ') || 'none'}`,
       `Skills:  ${skills.length > 0 ? skills.join(', ') : 'none'}`,
       `Steps:   ${[plan.shouldInitGit && 'git init', plan.shouldInstall && 'pnpm install', plan.shouldVerify && 'pnpm run verify'].filter(Boolean).join(', ') || 'none'}`,
       '',

@@ -7,7 +7,8 @@ import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
 
-const API_WORKSPACE = 'packages/api';
+import { API_WORKSPACE } from './api.module';
+
 const CONTRACT_WORKSPACE = 'packages/server-contract';
 const COMMON_WORKSPACE = 'packages/common';
 const AUTH_FEATURE = '#~/features/auth';
@@ -115,15 +116,6 @@ export const betterAuthModule = defineModule({
       name: 'BETTER_AUTH_URL',
       schema: 'z.url()',
       example: 'http://localhost:5050',
-    },
-    {
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name: 'AUTH_TRUSTED_ORIGINS',
-      // Comma-separated origins of the web apps that sign in through this API; empty for same-origin apps.
-      schema:
-        "z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean))",
-      example: 'http://localhost:3030',
     },
     {
       kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,

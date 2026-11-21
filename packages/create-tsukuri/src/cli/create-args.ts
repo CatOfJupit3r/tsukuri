@@ -2,8 +2,10 @@ import { parseArgs } from 'node:util';
 import type { ParseArgsConfig } from 'node:util';
 
 import { GeneratorError } from '#~/engine/generator-error';
+import type { iModuleOptionValues } from '#~/engine/module-option-resolver';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import { moduleIdSchema } from '#~/enums/module-ids.enums';
+import { moduleOptionIdsEnumwaii } from '#~/enums/module-option-ids.enums';
 import type { PresetId } from '#~/enums/preset-ids.enums';
 import { presetIdSchema } from '#~/enums/preset-ids.enums';
 import type { PromptId } from '#~/enums/prompt-ids.enums';
@@ -21,6 +23,8 @@ export interface iCreateArgs {
   preset: PresetId | null;
   /** Only the prompts answered by a flag. */
   answers: iPromptAnswers;
+  /** Only the module options answered by a flag; values are checked once the modules are known. */
+  options: iModuleOptionValues;
   skills: SkillId[] | null;
   excludedSkills: SkillId[] | null;
   isYes: boolean;
@@ -40,6 +44,7 @@ const OPTIONS = {
   verify: { type: 'boolean' },
   help: { type: 'boolean', short: 'h' },
   ...Object.fromEntries(promptIdsEnumwaii.values.map((id) => [id, { type: 'string' }])),
+  ...Object.fromEntries(moduleOptionIdsEnumwaii.values.map((id) => [id, { type: 'string' }])),
 } satisfies ParseArgsConfig['options'];
 
 function invalid(message: string): never {
@@ -93,6 +98,13 @@ export function parseCreateArgs(argv: string[]): iCreateArgs {
     if (value !== null) answers.set(promptId, parsePromptAnswer(promptId, value));
   }
 
+  const options = new Map(
+    moduleOptionIdsEnumwaii.values.flatMap((optionId) => {
+      const value = flagValue(optionId);
+      return value === null ? [] : [[optionId, value] as const];
+    }),
+  );
+
   const preset = flagValue('preset');
   const skills = flagValue('skills');
   const excludedSkills = flagValue('exclude-skills');
@@ -102,6 +114,7 @@ export function parseCreateArgs(argv: string[]): iCreateArgs {
     directory: positionals[0] ?? null,
     preset: preset === null ? null : (parseIds('preset', preset, (raw) => presetIdSchema.safeParse(raw))[0] ?? null),
     answers,
+    options,
     skills: skills === null ? null : parseIds('skills', skills, (raw) => skillIdSchema.safeParse(raw)),
     excludedSkills:
       excludedSkills === null

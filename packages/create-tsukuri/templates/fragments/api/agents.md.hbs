@@ -6,3 +6,5 @@
 - A feature lives in `packages/api/src/features/<feature>/` with its router (`<feature>.router.ts`), service, repository and tokens. Startup work implements `iStartupTask`; request-scoped data is read through `context.resolve`.
 - Error codes are declared per module and generated into `@startername/common/generated/error-codes`.
 - Every app loads the root `.env`; `.env.example` lists the variables of the installed modules, and tests read it as their environment.
+- `ApiRequestHandler` refuses a POST, PUT, PATCH or DELETE whose `Origin` is neither the API's own nor in `TRUSTED_ORIGINS` (403, `REQUEST_ORIGIN_NOT_ALLOWED`). `REQUEST_ORIGIN_MODE=strict` also refuses those without an `Origin`; `lenient` lets them through for server-to-server calls. List every web app origin that calls the API from elsewhere in `TRUSTED_ORIGINS`.
+- `NODE_ENV` defaults to `production`; development-only tools (such as user impersonation) run only when it is `development` or `test`.
