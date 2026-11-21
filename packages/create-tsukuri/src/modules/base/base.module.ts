@@ -104,7 +104,6 @@ export const baseModule = defineModule({
         '@eslint/compat': '2.1.1',
         '@eslint/js': '9.39.5',
         '@oxlint/migrate': '1.94.0',
-        '@stylistic/eslint-plugin': '6.0.1',
         '@tanstack/eslint-plugin-query': '5.108.1',
         '@tanstack/eslint-plugin-router': '1.162.0',
         '@typescript-eslint/eslint-plugin': '8.73.0',
@@ -151,7 +150,7 @@ export const baseModule = defineModule({
         },
       },
       dependencies: {
-        '@trivago/prettier-plugin-sort-imports': '^6.0.2',
+        '@trivago/prettier-plugin-sort-imports': '6.0.2',
       },
       peerDependencies: {
         prettier: 'catalog:',
