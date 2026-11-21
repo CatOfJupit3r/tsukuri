@@ -10,9 +10,9 @@ export interface iWorkerBindings {
   KV: KVNamespace;
 }
 
-const GENERATED_BINDINGS = [
+const GENERATED_BINDINGS: readonly (readonly [InjectionToken<unknown>, keyof iWorkerBindings])[] = [
   [KV_NAMESPACE_TOKEN, 'KV'],
-] as const satisfies readonly (readonly [InjectionToken<unknown>, keyof iWorkerBindings])[];
+];
 
 /** Registers every binding under the token the services of its module inject. */
 export function registerWorkerBindings(container: DependencyContainer, bindings: iWorkerBindings) {

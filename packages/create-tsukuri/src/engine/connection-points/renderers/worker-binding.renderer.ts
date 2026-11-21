@@ -1,10 +1,12 @@
 import path from 'node:path';
 import { injectable } from 'tsyringe';
 
+import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import { WORKER_BINDING_TYPE_META } from '#~/enums/worker-bindings.enums';
 import type { WranglerBindingSection } from '#~/enums/worker-bindings.enums';
 import type { iWorkerBindingContribution } from '#~/manifest/connection-point.schema';
 
+import { GeneratorError } from '../../generator-error';
 import type { iTemplateContext } from '../../template-renderer';
 import {
   CONNECTION_POINT_TEMPLATES,
@@ -20,6 +22,7 @@ import { GeneratedSourceFiles } from '../generated-source-files';
 const NON_WORKER_NAME_CHARACTERS = /[^a-z0-9-]/g;
 const WORKER_NAME_SEPARATOR = '-';
 const TRAILING_SEPARATORS = /-+$/;
+const LEADING_DIGIT = /^[0-9]/;
 
 /**
  * Per Worker workspace: `src/generated/worker-bindings.ts`, which types the bindings and registers them
@@ -73,11 +76,21 @@ export class WorkerBindingRenderer implements iConnectionPointRenderer<iWorkerBi
     return `// ${GENERATED_HEADER}\n${JSON.stringify(config, null, 2)}\n`;
   }
 
-  /** The project name as a Worker name: dots and underscores become dashes, cut to Cloudflare's length limit. */
+  /**
+   * The project name as a Worker name: dots and underscores become dashes, cut to Cloudflare's length limit.
+   * A name that is empty afterwards or starts with a digit is refused rather than changed further.
+   */
   private toWorkerName(projectName: string) {
-    return projectName
+    const workerName = projectName
       .replaceAll(NON_WORKER_NAME_CHARACTERS, WORKER_NAME_SEPARATOR)
       .slice(0, MAX_WORKER_NAME_LENGTH)
       .replace(TRAILING_SEPARATORS, '');
+    if (workerName.length === 0 || LEADING_DIGIT.test(workerName)) {
+      throw new GeneratorError(
+        GENERATOR_ERROR_CODES.INVALID_PROJECT_NAME,
+        `Project name "${projectName}" cannot name a Cloudflare Worker: it must start with a letter`,
+      );
+    }
+    return workerName;
   }
 }

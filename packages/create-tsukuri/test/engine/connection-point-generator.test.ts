@@ -7,7 +7,7 @@ import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 import { HTTP_METHODS } from '#~/enums/http-methods.enums';
 import { WEB_SLOTS } from '#~/enums/web-slots.enums';
-import { WORKER_BINDING_NAMES, WORKER_BINDING_TYPES } from '#~/enums/worker-bindings.enums';
+import { WORKER_BINDING_NAMES, WORKER_BINDING_TYPES, WRANGLER_BINDING_SECTIONS } from '#~/enums/worker-bindings.enums';
 import type { iConnectionPointContributionInput } from '#~/manifest/connection-point.schema';
 import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
 import type { iModuleManifestInput } from '#~/manifest/module-manifest.schema';
@@ -375,6 +375,30 @@ describe('ConnectionPointGenerator', () => {
     const result = await generator.generate(modules, { installedModules: [ALPHA], projectName });
 
     expect(wranglerConfig(result)).toEqual(expect.objectContaining({ name: workerName }));
+  });
+
+  it.each(['3d-app', '___', '42'])(
+    'refuses project %s as a Worker name instead of renaming it further',
+    async (projectName) => {
+      const modules = [moduleManifestSchema.parse(createManifest(ALPHA, { contributions: [D1_BINDING] }))];
+
+      await expect(generator.generate(modules, { installedModules: [ALPHA], projectName })).rejects.toThrow(
+        expect.objectContaining({ code: GENERATOR_ERROR_CODES.INVALID_PROJECT_NAME }),
+      );
+    },
+  );
+
+  it('deploys the Worker with NODE_ENV production so development tools stay off', async () => {
+    const modules = [moduleManifestSchema.parse(createManifest(ALPHA, { contributions: [D1_BINDING] }))];
+    const result = await generator.generate(modules, { installedModules: [ALPHA], projectName: 'acme' });
+
+    expect(wranglerConfig(result)).toEqual(expect.objectContaining({ vars: { NODE_ENV: 'production' } }));
+  });
+
+  it('keeps every binding section out of the base wrangler keys a module cannot override', () => {
+    const baseKeys = Object.keys(WRANGLER_CONFIG);
+
+    expect(Object.values(WRANGLER_BINDING_SECTIONS).filter((section) => baseKeys.includes(section))).toEqual([]);
   });
 
   it('rejects two modules adding the same Worker binding', async () => {
