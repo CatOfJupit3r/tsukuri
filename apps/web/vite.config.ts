@@ -14,8 +14,13 @@ import { generatedEnvShape } from './src/generated/env.schema';
 const ENV_DIR = path.resolve(__dirname, '../..');
 
 export default defineConfig(({ mode }) => {
-  const processEnv = loadEnv(mode, ENV_DIR);
+  const processEnv = loadEnv(mode, ENV_DIR, '');
   const env = z.object(generatedEnvShape).parse(processEnv);
+  // The server render reads its variables from `process.env`, which in development only the root `.env` fills.
+  for (const name of Object.keys(generatedEnvShape)) {
+    const value = processEnv[name];
+    if (value !== undefined) process.env[name] ??= value;
+  }
   // Set when the API runs as a separate server; the dev server then forwards `/api` to it.
   const { VITE_SERVER_URL: serverUrl } = processEnv;
 

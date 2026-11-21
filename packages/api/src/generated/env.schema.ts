@@ -11,6 +11,7 @@ export const generatedEnvShape = {
   NODE_ENV: nodeEnvironmentSchema.default(NODE_ENVIRONMENTS.PRODUCTION),
   TRUSTED_ORIGINS: z.string().default('').transform((origins) => origins.split(',').map((origin) => origin.trim()).filter(Boolean)),
   REQUEST_ORIGIN_MODE: requestOriginModeSchema.default(REQUEST_ORIGIN_MODES.LENIENT),
+  INTERNAL_RENDER_SECRET: z.string().min(32),
   POSTGRES_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/startername'),
   BETTER_AUTH_SECRET: z.string().min(32),
   TRUSTED_IP_HEADER: z.string().transform((header) => header || undefined).optional(),

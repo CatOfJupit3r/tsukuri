@@ -1,5 +1,7 @@
 import { container } from 'tsyringe';
 
+import { INTERNAL_RENDER_SECRET_HEADER } from '@startername/common/constants/internal-render-secret';
+
 import { env } from '#~/constants/env';
 import { NODE_ENVIRONMENTS } from '#~/constants/node-environments.enums';
 import { AuthPasswordHasher } from '#~/features/auth/auth-password-hasher';
@@ -10,8 +12,10 @@ import { DatabaseService } from '#~/features/database/database.service';
 import { EventBus } from '#~/features/events/event-bus';
 import { ApiRequestHandler } from '#~/features/http/api-request-handler';
 import { CLIENT_IP_HEADER } from '#~/features/http/client-ip.constants';
+import { RequestOriginGuard } from '#~/features/http/request-origin.guard';
 import { ServerRenderRequestRegistry } from '#~/features/http/server-render-request.registry';
 import { LoggerFactory } from '#~/features/logger/logger.factory';
+import { InternalRenderSecretAuthenticator } from '#~/features/render-secret/internal-render-secret.authenticator';
 import { RequestContextStorage } from '#~/features/request-context/request-context.storage';
 
 const BASE_URL = 'http://localhost';
@@ -31,11 +35,36 @@ function signInAttempt() {
   });
 }
 
-async function statusesOf(requests: Request[], options: Parameters<ApiRequestHandler['handle']>[1]) {
-  const handler = container.resolve(ApiRequestHandler);
+async function statusesOf(
+  requests: Request[],
+  options: Parameters<ApiRequestHandler['handle']>[1],
+  handler = container.resolve(ApiRequestHandler),
+) {
   const statuses: Array<number | undefined> = [];
   for (const request of requests) statuses.push((await handler.handle(request, options))?.status);
   return statuses;
+}
+
+function createHandlerVerifyingTheRenderSecret() {
+  return new ApiRequestHandler(
+    container.resolve(LoggerFactory),
+    container.resolve(RequestContextStorage),
+    container.resolve(RequestOriginGuard),
+    container.resolve(ServerRenderRequestRegistry),
+    new InternalRenderSecretAuthenticator(),
+  );
+}
+
+function lookupWithSecret(secret?: string) {
+  const headers = new Headers();
+  if (secret !== undefined) headers.set(INTERNAL_RENDER_SECRET_HEADER, secret);
+  return new Request(`${BASE_URL}/auth/get-session`, { headers });
+}
+
+function signInWithSecret() {
+  const request = signInAttempt();
+  request.headers.set(INTERNAL_RENDER_SECRET_HEADER, env.INTERNAL_RENDER_SECRET);
+  return request;
 }
 
 function createAuthServiceCountingRequests() {
@@ -108,5 +137,46 @@ describe('rate limits on session lookups', () => {
     const statuses = await statusesOf(forged, { clientIp: '203.0.113.53' });
 
     expect(statuses).toContain(TOO_MANY_REQUESTS_STATUS);
+  });
+
+  describe('from a web app in another process', () => {
+    const handler = createHandlerVerifyingTheRenderSecret();
+    const lookupsBeyondTheLimit = (createRequest: () => Request) =>
+      Array.from({ length: SESSION_LOOKUPS_BEYOND_THE_LIMIT }, createRequest);
+    const limitedCount = (statuses: Array<number | undefined>) =>
+      statuses.filter((status) => status === TOO_MANY_REQUESTS_STATUS).length;
+
+    it('lets session lookups carrying the shared secret run far beyond the per-address limit', async () => {
+      const statuses = await statusesOf(
+        lookupsBeyondTheLimit(() => lookupWithSecret(env.INTERNAL_RENDER_SECRET)),
+        { clientIp: '203.0.113.60' },
+        handler,
+      );
+
+      expect(limitedCount(statuses)).toBe(0);
+    });
+
+    it.each([
+      ['a wrong secret', 'wrong-secret'],
+      ['no secret', undefined],
+    ])('limits session lookups carrying %s like any visitor', async (_label, secret) => {
+      const statuses = await statusesOf(
+        lookupsBeyondTheLimit(() => lookupWithSecret(secret)),
+        { clientIp: secret === undefined ? '203.0.113.62' : '203.0.113.61' },
+        handler,
+      );
+
+      expect(limitedCount(statuses)).toBe(SESSION_LOOKUPS_BEYOND_THE_LIMIT - SESSION_LOOKUP_LIMIT);
+    });
+
+    it('keeps the limit on sign-in even when the request carries the shared secret', async () => {
+      const statuses = await statusesOf(
+        Array.from({ length: 6 }, signInWithSecret),
+        { clientIp: '203.0.113.63' },
+        handler,
+      );
+
+      expect(limitedCount(statuses)).toBeGreaterThan(0);
+    });
   });
 });

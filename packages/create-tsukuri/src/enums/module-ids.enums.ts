@@ -27,6 +27,7 @@ export const moduleIdsEnumwaii = em({
   WEB_REMOTE_BACKEND: 'web-remote-backend',
   WEB_SSR_REMOTE_BACKEND: 'web-ssr-remote-backend',
   BETTER_AUTH_WEB: 'better-auth-web',
+  SSR_RENDER_SECRET: 'ssr-render-secret',
   EXAMPLE_DOMAIN_WEB: 'example-domain-web',
 });
 

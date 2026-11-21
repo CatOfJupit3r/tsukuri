@@ -18,6 +18,7 @@ import { nodeHonoModule } from './node-hono.module';
 import { postgresHyperdriveModule, postgresNodeModule } from './postgres-runtimes.module';
 import { postgresModule } from './postgres.module';
 import { sqliteModule } from './sqlite.module';
+import { ssrRenderSecretModule } from './ssr-render-secret.module';
 import { tanstackStartModule } from './tanstack-start.module';
 import { valkeyModule } from './valkey.module';
 import { webApiModule } from './web-api.module';
@@ -53,5 +54,6 @@ export const MODULE_MANIFESTS: iModuleManifestInput[] = [
   webRemoteBackendModule,
   webSsrRemoteBackendModule,
   betterAuthWebModule,
+  ssrRenderSecretModule,
   exampleDomainWebModule,
 ];
