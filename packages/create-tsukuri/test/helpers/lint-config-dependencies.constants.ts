@@ -10,11 +10,8 @@ export const LINT_CONFIG_SOURCE_ROOT = path.join(LINT_CONFIG_ROOT, 'src');
 
 export const LINT_CONFIG_SOURCE_EXTENSIONS = ['.mjs', '.js', '.cjs', '.ts', '.mts', '.cts', '.jsx', '.tsx'];
 
-/** Calls that load a package by a string argument, next to dynamic `import()` and `import.meta.resolve()`. */
-export const PACKAGE_LOADING_FUNCTION_NAMES = ['importPlugin', 'require'];
-
-/** Factory whose result (and that result's `.resolve`) loads a package by a string argument. */
-export const REQUIRE_FACTORY_FUNCTION_NAME = 'createRequire';
+/** Helper that loads a package by a string argument; the only package-loading call allowed besides static imports. */
+export const PACKAGE_LOADING_FUNCTION_NAME = 'importPlugin';
 
 export const NON_PACKAGE_SPECIFIER_PATTERN = /^(?:[./#]|node:)/;
 
