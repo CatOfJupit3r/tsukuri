@@ -4,26 +4,30 @@ const STATIC_IMPORT_MESSAGE =
 const ALLOWED_IMPORT_META_PROPERTIES = ['url', 'dirname', 'filename'];
 const ALLOWED_IMPORT_META_PROPERTIES_PATTERN = ALLOWED_IMPORT_META_PROPERTIES.join('|');
 
+const MODULE_LOADING_NAMES = ['require', 'createRequire', 'getBuiltinModule', 'module'];
+const MODULE_LOADING_NAMES_PATTERN = MODULE_LOADING_NAMES.join('|');
+
+// A computed key is legal when it is a number, a string literal that is not a module loading name, a variable, or a template
+// literal with an expression (array[0], object['key'], config[key], `${NAMESPACE}/rule`). A static template literal is reported.
+const LEGAL_COMPUTED_KEY = `:matches([type='Literal'][value=type(number)], [type='Literal'][value=/^(?!(${MODULE_LOADING_NAMES_PATTERN})$)/], Identifier, TemplateLiteral[expressions.length>0])`;
+
 const PACKAGE_LOADING_SELECTORS = [
   'ImportExpression',
   'TSImportEqualsDeclaration',
-  // A bare require / createRequire identifier (import specifiers, calls, aliases, arguments), but not an object key or a
-  // non-call property name such as { require: value } or object.require.
-  'Identifier[name=/^(require|createRequire)$/]:not(MemberExpression[computed=false] > Identifier.property):not(Property[computed=false] > Identifier.key)',
-  // The same names reached through a member: module.require(...), namespace.createRequire, and destructuring them.
-  'CallExpression > MemberExpression.callee > Identifier.property[name=/^(require|createRequire)$/]',
-  "MemberExpression > Identifier.property[name='createRequire']",
-  'ObjectPattern > Property[computed=false] > Identifier.key[name=/^(require|createRequire)$/]',
-  'MemberExpression[computed=true] > Literal.property[value=/^(require|createRequire)$/]',
-  'Property[computed=true] > Literal.key[value=/^(require|createRequire)$/]',
-  // Anything on import.meta except the file location properties, and any destructuring of import.meta.
-  `MemberExpression[object.type='MetaProperty'][computed=false][property.name!=/^(${ALLOWED_IMPORT_META_PROPERTIES_PATTERN})$/]`,
-  `MemberExpression[object.type='MetaProperty'][computed=true][property.value!=/^(${ALLOWED_IMPORT_META_PROPERTIES_PATTERN})$/]`,
-  "MemberExpression[object.type='MetaProperty'][computed=true][property.type!='Literal']",
-  "VariableDeclarator[id.type='ObjectPattern'][init.type='MetaProperty']",
-  "AssignmentExpression[left.type='ObjectPattern'][right.type='MetaProperty']",
-  // importPlugin takes a string literal so the dependency test can read the package name.
+  // Every import.meta except the object of a plain read of url, dirname or filename.
+  `MetaProperty[meta.name='import']:not(MemberExpression[computed=false][property.name=/^(${ALLOWED_IMPORT_META_PROPERTIES_PATTERN})$/] > MetaProperty.object)`,
+  // The module loading names as identifiers (import specifiers, calls, aliases, arguments), but not object keys or
+  // non-call property names such as { require: value } or object.require.
+  `Identifier[name=/^(${MODULE_LOADING_NAMES_PATTERN})$/]:not(MemberExpression[computed=false] > Identifier.property):not(Property[computed=false] > Identifier.key)`,
+  // The same names reached through a member or a destructuring pattern.
+  'CallExpression > MemberExpression.callee > Identifier.property[name=/^(require|createRequire|getBuiltinModule)$/]',
+  'MemberExpression > Identifier.property[name=/^(createRequire|getBuiltinModule)$/]',
+  `ObjectPattern > Property[computed=false] > Identifier.key[name=/^(${MODULE_LOADING_NAMES_PATTERN})$/]`,
+  `MemberExpression[computed=true] > .property:not(${LEGAL_COMPUTED_KEY})`,
+  `Property[computed=true] > .key:not(${LEGAL_COMPUTED_KEY})`,
+  // importPlugin is only called directly with a string literal so the dependency test can read the package name.
   "CallExpression[callee.name='importPlugin'][arguments.0.type!='Literal']",
+  'Identifier[name=importPlugin]:not(CallExpression > Identifier.callee):not(VariableDeclarator > Identifier.id)',
 ];
 
 export default [

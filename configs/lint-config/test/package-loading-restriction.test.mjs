@@ -32,6 +32,14 @@ describe('lint-config package loading restriction', () => {
     ],
     ['destructured createRequire', 'const { createRequire } = nodeModule;'],
     ['require passed as a value', 'load(require);'],
+    ['import.meta alias', "const meta = import.meta;\nmeta.resolve('globals');"],
+    ['import.meta as an argument', 'load(import.meta);'],
+    ['import.meta parameter default', "function load({ resolve } = import.meta) {\n  return resolve('globals');\n}"],
+    ['template literal createRequire key', 'const create = nodeModule[`createRequire`];'],
+    ['computed getBuiltinModule chain', "process.getBuiltinModule('node:module')[`createRequire`];"],
+    ['getBuiltinModule call', "process.getBuiltinModule('node:module');"],
+    ['module.require', "module.require('globals');"],
+    ['importPlugin as a value', 'const load = importPlugin;'],
     ['importPlugin with an identifier', 'await importPlugin(pluginName);'],
     ['importPlugin with a template expression', 'await importPlugin(`plugin-${name}`);'],
   ])('reports a %s in a lint-config source with the static import message', (_form, code) => {
@@ -47,6 +55,10 @@ describe('lint-config package loading restriction', () => {
     ['import.meta.filename', 'const file = import.meta.filename;'],
     ['an object key named require', 'const mapping = { require: value, createRequire: other };'],
     ['a property named require', 'const value = options.require;'],
+    ['a variable computed access', 'const value = config[key];'],
+    ['a template computed key with an expression', 'const rule = { [`${NAMESPACE}/rule`]: 1 };'],
+    ['a numeric computed access', 'const first = array[0];'],
+    ['a string computed access', "const value = options['key'];"],
     ['importPlugin with a string literal', "await importPlugin('eslint-plugin-example');"],
   ])('allows %s in a lint-config source', (_form, code) => {
     expect(lint(code, SOURCE_FILE_NAME)).toEqual([]);
