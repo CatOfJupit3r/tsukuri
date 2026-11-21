@@ -5,6 +5,7 @@ import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
+import { envVariableContributions } from '#~/manifest/env-variable-contributions';
 
 import { CORS_ENV_SHAPE } from './api.module';
 
@@ -107,12 +108,7 @@ export const nodeHonoModule = defineModule({
       shape: { name: 'nodeHonoEnvShape', from: '#~/constants/node-hono.env' },
     },
     { kind: CONNECTION_POINT_KINDS.ENV_SHAPE, workspace: SERVER_WORKSPACE, shape: CORS_ENV_SHAPE },
-    ...ENV_VARIABLES.map(([name, example]) => ({
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: SERVER_WORKSPACE,
-      name,
-      example,
-    })),
+    ...envVariableContributions(SERVER_WORKSPACE, ENV_VARIABLES),
     { kind: CONNECTION_POINT_KINDS.DEV_TASK, filter: SERVER_PACKAGE_NAME },
     { kind: CONNECTION_POINT_KINDS.BUILD_TASK, filter: SERVER_PACKAGE_NAME },
   ],

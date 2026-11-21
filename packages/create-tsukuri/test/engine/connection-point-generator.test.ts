@@ -165,7 +165,52 @@ describe('ConnectionPointGenerator', () => {
         createManifest(ALPHA, { contributions: [variable] }),
         createManifest(BETA, { contributions: [variable] }),
       ),
-    ).rejects.toThrow(expect.objectContaining({ code: GENERATOR_ERROR_CODES.MERGE_CONFLICT }));
+    ).rejects.toMatchObject({
+      code: GENERATOR_ERROR_CODES.MERGE_CONFLICT,
+      message: `apps/server: more than one module declares env variable "PORT" (${ALPHA} and ${BETA})`,
+    });
+  });
+
+  it('rejects two modules exporting the same env shape name in one workspace', async () => {
+    const shape = {
+      kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+      workspace: 'apps/server',
+      shape: { name: 'sharedEnvShape', from: '#~/constants/shared.env' },
+    } as const;
+
+    await expect(
+      generate(createManifest(ALPHA, { contributions: [shape] }), createManifest(BETA, { contributions: [shape] })),
+    ).rejects.toMatchObject({
+      code: GENERATOR_ERROR_CODES.MERGE_CONFLICT,
+      message: 'apps/server: more than one module exports the env shape "sharedEnvShape"',
+    });
+  });
+
+  it('generates an env schema for each hosted workspace and each workspace with shapes, and for no other', async () => {
+    const result = await generate(
+      createManifest(ALPHA, {
+        hosts: [{ kind: CONNECTION_POINT_KINDS.ENV_SHAPE, workspace: 'apps/server' }],
+        contributions: [
+          {
+            kind: CONNECTION_POINT_KINDS.ENV_SHAPE,
+            workspace: 'packages/api',
+            shape: { name: 'alphaEnvShape', from: '#~/constants/alpha.env' },
+          },
+          { kind: CONNECTION_POINT_KINDS.ENV_VARIABLE, workspace: 'apps/web', name: 'VITE_SERVER_URL' },
+        ],
+      }),
+    );
+
+    const envSchemaPaths = result.files
+      .map((file) => file.path)
+      .filter((filePath) => filePath.endsWith('env.schema.ts'));
+    expect(envSchemaPaths.toSorted()).toEqual([
+      'apps/server/src/generated/env.schema.ts',
+      'packages/api/src/generated/env.schema.ts',
+    ]);
+    expect(fileContent(result, 'apps/server/src/generated/env.schema.ts')).toContain(
+      'export const generatedEnvShape = {',
+    );
   });
 
   it('builds the compose file, CI workflow and root scripts', async () => {

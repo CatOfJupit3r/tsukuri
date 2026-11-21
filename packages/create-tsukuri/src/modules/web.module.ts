@@ -5,6 +5,7 @@ import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { SKILL_IDS } from '#~/enums/skill-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
+import { envVariableContributions } from '#~/manifest/env-variable-contributions';
 
 export const WEB_WORKSPACE = 'apps/web';
 export const WEB_PACKAGE_NAME = 'web';
@@ -191,12 +192,7 @@ export const webModule = defineModule({
       workspace: WEB_WORKSPACE,
       shape: { name: 'webEnvShape', from: '#~/env/web.env' },
     },
-    ...ENV_VARIABLES.map(([name, example]) => ({
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: WEB_WORKSPACE,
-      name,
-      example,
-    })),
+    ...envVariableContributions(WEB_WORKSPACE, ENV_VARIABLES),
     {
       kind: CONNECTION_POINT_KINDS.CI_STEP,
       name: 'Verify styles (tokens, raw colors, stylesheet allowlist)',

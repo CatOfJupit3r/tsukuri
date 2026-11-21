@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import z from 'zod';
 
 import { createGeneratorContainer } from '#~/di/container';
 import { ModuleSourceReader } from '#~/engine/module-source-reader';
@@ -12,6 +13,7 @@ import { MODULE_MANIFESTS } from '#~/modules/module-manifests';
 import { REPOSITORY_ROOT } from '../helpers/temp-dir';
 
 const WORKSPACE_IMPORT_PREFIX = '#~/';
+const packageNameFieldsSchema = z.object({ name: z.string() });
 
 const manifests = MODULE_MANIFESTS.map((input) => moduleManifestSchema.parse(input));
 const reader = createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT }).resolve(ModuleSourceReader);
@@ -19,9 +21,10 @@ const reader = createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT }).resolve
 /** Workspace of every package a module names, so `@scope/package/path` imports can be followed. */
 const workspaceByPackageName = new Map(
   manifests.flatMap((manifest) =>
-    manifest.packageJson.flatMap(({ workspace, fields }) =>
-      typeof fields.name === 'string' ? [[fields.name, workspace] as const] : [],
-    ),
+    manifest.packageJson.flatMap(({ workspace, fields }) => {
+      const parsed = packageNameFieldsSchema.safeParse(fields);
+      return parsed.success ? [[parsed.data.name, workspace] as const] : [];
+    }),
   ),
 );
 
@@ -94,5 +97,49 @@ describe('module env shapes', () => {
     const keys = (await Promise.all(testCase.shapes.map((shape) => loadShapeKeys(shape, sourcesByTarget)))).flat();
 
     expect(keys.toSorted()).toEqual(testCase.variables.toSorted());
+  });
+});
+
+async function loadEnvSchema(sourcePath: string, shapeName: string) {
+  const exports: unknown = await import(pathToFileURL(path.join(REPOSITORY_ROOT, sourcePath)).href);
+  const shape: unknown = typeof exports === 'object' && exports ? Reflect.get(exports, shapeName) : null;
+  const parsedShape = z
+    .record(
+      z.string(),
+      z.custom<z.ZodType>((value) => value instanceof z.ZodType),
+    )
+    .safeParse(shape);
+  if (!parsedShape.success) throw new Error(`${sourcePath} does not export ${shapeName}`);
+  return z.object(parsedShape.data);
+}
+
+describe('module env shape values', () => {
+  it('better-auth splits the trusted origins list into trimmed origins and treats empty as none', async () => {
+    const schema = await loadEnvSchema('packages/api/src/features/auth/better-auth.env.ts', 'betterAuthEnvShape');
+    const required = { BETTER_AUTH_SECRET: 'x'.repeat(32), BETTER_AUTH_URL: 'http://localhost:5050' };
+
+    expect(
+      schema.parse({ ...required, AUTH_TRUSTED_ORIGINS: ' http://a.test , ,http://b.test' }).AUTH_TRUSTED_ORIGINS,
+    ).toEqual(['http://a.test', 'http://b.test']);
+    expect(schema.parse(required).AUTH_TRUSTED_ORIGINS).toEqual([]);
+    expect(schema.safeParse({ ...required, BETTER_AUTH_SECRET: 'short' }).success).toBe(false);
+  });
+
+  it('node-hono coerces the server port and rejects ports outside 1-65535', async () => {
+    const schema = await loadEnvSchema('apps/server/src/constants/node-hono.env.ts', 'nodeHonoEnvShape');
+
+    expect(schema.parse({ SERVER_PORT: '8080' }).SERVER_PORT).toBe(8080);
+    expect(schema.parse({}).SERVER_PORT).toBe(5050);
+    expect(schema.safeParse({ SERVER_PORT: '0' }).success).toBe(false);
+    expect(schema.safeParse({ SERVER_PORT: '65536' }).success).toBe(false);
+    expect(schema.safeParse({ SERVER_PORT: '80.5' }).success).toBe(false);
+  });
+
+  it('valkey coerces the database index to an integer', async () => {
+    const schema = await loadEnvSchema('packages/api/src/features/valkey/valkey.env.ts', 'valkeyEnvShape');
+
+    expect(schema.parse({ VALKEY_DB: '3' }).VALKEY_DB).toBe(3);
+    expect(schema.parse({}).VALKEY_DB).toBe(0);
+    expect(schema.safeParse({ VALKEY_DB: '1.5' }).success).toBe(false);
   });
 });

@@ -109,7 +109,7 @@ export const diRegistrationContributionSchema = z.object({
 });
 
 /** A variable the installed modules read, listed in the generated `.env.example`. */
-export const envVariableContributionSchema = z.object({
+export const envVariableContributionSchema = z.strictObject({
   kind: z.literal(CONNECTION_POINT_KINDS.ENV_VARIABLE),
   workspace: workspaceSchema,
   name: z.string().regex(/^[A-Z][A-Z0-9_]*$/, 'Env variable names are CONSTANT_CASE'),

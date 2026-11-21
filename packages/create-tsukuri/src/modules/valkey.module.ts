@@ -3,6 +3,7 @@ import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
+import { envVariableContributions } from '#~/manifest/env-variable-contributions';
 
 const API_WORKSPACE = 'packages/api';
 const VALKEY_VOLUME = 'valkey-data';
@@ -40,12 +41,7 @@ export const valkeyModule = defineModule({
       workspace: API_WORKSPACE,
       shape: { name: 'valkeyEnvShape', from: '#~/features/valkey/valkey.env' },
     },
-    ...ENV_VARIABLES.map(([name, example]) => ({
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name,
-      example,
-    })),
+    ...envVariableContributions(API_WORKSPACE, ENV_VARIABLES),
     {
       kind: CONNECTION_POINT_KINDS.DI_REGISTRATION,
       workspace: API_WORKSPACE,

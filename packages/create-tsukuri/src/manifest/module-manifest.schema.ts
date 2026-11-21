@@ -1,13 +1,14 @@
 import z from 'zod';
 
 import { capabilitySchema } from '#~/enums/capabilities.enums';
+import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
 import { markdownDocumentSchema } from '#~/enums/markdown-documents.enums';
 import { moduleCategorySchema } from '#~/enums/module-categories.enums';
 import { moduleIdSchema } from '#~/enums/module-ids.enums';
 import { skillIdSchema } from '#~/enums/skill-ids.enums';
 
 import { connectionPointContributionSchema, connectionPointHostSchema } from './connection-point.schema';
-import type { iConnectionPointContributionInput } from './connection-point.schema';
+import type { iConnectionPointContributionInput, iEnvShapeContribution } from './connection-point.schema';
 
 const relativePathSchema = z
   .string()
@@ -17,6 +18,20 @@ const relativePathSchema = z
   });
 
 const dependencyMapSchema = z.record(z.string(), z.string());
+
+const ROOT_VARIANTS_PREFIX = 'variants/';
+const WORKSPACE_IMPORT_PREFIX = '#~/';
+
+/** Where a workspace-local env shape import lands in a generated project; package imports are not followed. */
+function envShapeTargetPath({ workspace, shape }: iEnvShapeContribution) {
+  if (!shape.from.startsWith(WORKSPACE_IMPORT_PREFIX)) return null;
+  return `${workspace}/src/${shape.from.slice(WORKSPACE_IMPORT_PREFIX.length)}.ts`;
+}
+
+function isSameOrInside(filePath: string | null, directoryOrFile: string) {
+  if (filePath === null) return false;
+  return filePath === directoryOrFile || filePath.startsWith(`${directoryOrFile}/`);
+}
 
 export const moduleFileEntrySchema = z.object({
   /** File or directory in the module sources, relative to the source root. */
@@ -51,44 +66,63 @@ export const markdownFragmentSchema = z.object({
   source: relativePathSchema,
 });
 
-export const moduleManifestSchema = z.object({
-  id: moduleIdSchema,
-  /** Semver of the module itself; recorded in the project module record. */
-  version: z.string().regex(/^\d+\.\d+\.\d+(?:-[\w.]+)?$/, 'Must be a semver version'),
-  name: z.string().min(1),
-  description: z.string().min(1),
-  category: moduleCategorySchema,
-  /** Installed in every project. */
-  isAlwaysIncluded: z.boolean().default(false),
-  requires: z.array(moduleIdSchema).default([]),
-  /**
-   * Makes this a glue module: never chosen directly, it is installed exactly while every listed module is
-   * installed and every listed capability is provided (for example a backend's web client).
-   */
-  autoInclude: z
-    .object({
-      modules: z.array(moduleIdSchema).default([]),
-      capabilities: z.array(capabilitySchema).default([]),
-    })
-    .nullable()
-    .default(null),
-  requiresCapabilities: z.array(capabilitySchema).default([]),
-  conflicts: z.array(moduleIdSchema).default([]),
-  provides: z.array(capabilitySchema).default([]),
-  files: z.array(moduleFileEntrySchema).default([]),
-  packageJson: z.array(packageJsonContributionSchema).default([]),
-  pnpmWorkspace: pnpmWorkspaceContributionSchema.default({
-    packages: [],
-    catalog: {},
-    allowBuilds: {},
-    onlyBuiltDependencies: [],
-    minimumReleaseAgeExclude: [],
-  }),
-  skills: z.array(skillIdSchema).default([]),
-  markdown: z.array(markdownFragmentSchema).default([]),
-  contributions: z.array(connectionPointContributionSchema).default([]),
-  hosts: z.array(connectionPointHostSchema).default([]),
-});
+export const moduleManifestSchema = z
+  .object({
+    id: moduleIdSchema,
+    /** Semver of the module itself; recorded in the project module record. */
+    version: z.string().regex(/^\d+\.\d+\.\d+(?:-[\w.]+)?$/, 'Must be a semver version'),
+    name: z.string().min(1),
+    description: z.string().min(1),
+    category: moduleCategorySchema,
+    /** Installed in every project. */
+    isAlwaysIncluded: z.boolean().default(false),
+    requires: z.array(moduleIdSchema).default([]),
+    /**
+     * Makes this a glue module: never chosen directly, it is installed exactly while every listed module is
+     * installed and every listed capability is provided (for example a backend's web client).
+     */
+    autoInclude: z
+      .object({
+        modules: z.array(moduleIdSchema).default([]),
+        capabilities: z.array(capabilitySchema).default([]),
+      })
+      .nullable()
+      .default(null),
+    requiresCapabilities: z.array(capabilitySchema).default([]),
+    conflicts: z.array(moduleIdSchema).default([]),
+    provides: z.array(capabilitySchema).default([]),
+    files: z.array(moduleFileEntrySchema).default([]),
+    packageJson: z.array(packageJsonContributionSchema).default([]),
+    pnpmWorkspace: pnpmWorkspaceContributionSchema.default({
+      packages: [],
+      catalog: {},
+      allowBuilds: {},
+      onlyBuiltDependencies: [],
+      minimumReleaseAgeExclude: [],
+    }),
+    skills: z.array(skillIdSchema).default([]),
+    markdown: z.array(markdownFragmentSchema).default([]),
+    contributions: z.array(connectionPointContributionSchema).default([]),
+    hosts: z.array(connectionPointHostSchema).default([]),
+  })
+  .superRefine((manifest, context) => {
+    const envShapes = manifest.contributions.filter(
+      (contribution): contribution is iEnvShapeContribution => contribution.kind === CONNECTION_POINT_KINDS.ENV_SHAPE,
+    );
+    for (const contribution of envShapes) {
+      const shapeTarget = envShapeTargetPath(contribution);
+      const isUnderRootVariants = manifest.files.some(
+        (entry) =>
+          entry.source.startsWith(ROOT_VARIANTS_PREFIX) && isSameOrInside(shapeTarget, entry.target ?? entry.source),
+      );
+      if (isUnderRootVariants) {
+        context.addIssue({
+          code: 'custom',
+          message: `Env shape "${contribution.shape.name}" lives in ${shapeTarget}, which the root variants/ folder writes; no workspace type-checks or lints that folder, so keep env files in a workspace's src or in packages/api/variants/`,
+        });
+      }
+    }
+  });
 
 export type iModuleManifest = z.output<typeof moduleManifestSchema>;
 export type iModuleFileEntry = z.output<typeof moduleFileEntrySchema>;

@@ -6,6 +6,7 @@ import { MARKDOWN_DOCUMENTS } from '#~/enums/markdown-documents.enums';
 import { MODULE_CATEGORIES } from '#~/enums/module-categories.enums';
 import { MODULE_IDS } from '#~/enums/module-ids.enums';
 import { defineModule } from '#~/manifest/define-module';
+import { envVariableContributions } from '#~/manifest/env-variable-contributions';
 
 const API_WORKSPACE = 'packages/api';
 const CONTRACT_WORKSPACE = 'packages/server-contract';
@@ -116,12 +117,7 @@ export const betterAuthModule = defineModule({
       workspace: API_WORKSPACE,
       shape: { name: 'betterAuthEnvShape', from: `${AUTH_FEATURE}/better-auth.env` },
     },
-    ...ENV_VARIABLES.map(([name, example]) => ({
-      kind: CONNECTION_POINT_KINDS.ENV_VARIABLE,
-      workspace: API_WORKSPACE,
-      name,
-      example,
-    })),
+    ...envVariableContributions(API_WORKSPACE, ENV_VARIABLES),
     ...ERROR_CODES.map(([code, message]) => ({
       kind: CONNECTION_POINT_KINDS.ERROR_CODE,
       workspace: COMMON_WORKSPACE,
