@@ -9,7 +9,7 @@ import { {{names}} } from '{{from}}';
 /** Request context the installed modules add to every API call. */
 export type iGeneratedContext = {{#each providers}}Awaited<ReturnType<typeof {{provider.name}}>> & {{/each}}Record<never, never>;
 
-export async function createGeneratedContext(request: Request): Promise<iGeneratedContext> {
+export async function createGeneratedContext({{#if providers.length}}request{{else}}_request{{/if}}: Request): Promise<iGeneratedContext> {
 {{#if providers.length}}
   return {
 {{#each providers}}
@@ -17,7 +17,6 @@ export async function createGeneratedContext(request: Request): Promise<iGenerat
 {{/each}}
   };
 {{else}}
-  void request;
   return {};
 {{/if}}
 }

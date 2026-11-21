@@ -10,12 +10,7 @@ import { useLazyValue } from '#~/hooks/react-utilities/use-lazy-value';
 
 type iUseFileUploadStoreProps = Pick<iFileUploadProps, 'defaultValue' | 'isInvalid' | 'onValueChange' | 'value'>;
 
-export function useFileUploadStore({
-  defaultValue,
-  isInvalid = false,
-  onValueChange,
-  value,
-}: iUseFileUploadStoreProps) {
+export function useFileUploadStore({ defaultValue, isInvalid, onValueChange, value }: iUseFileUploadStoreProps) {
   const listeners = useLazyValue<Set<() => unknown>>(() => new Set());
   const fileMap = useLazyValue<Map<File, iFileState>>(() => new Map());
   const urlCache = useLazyValue(() => new WeakMap<File, string>());

@@ -33,22 +33,24 @@ function CalendarWeekNumber({ children, ...props }: WeekNumberProps) {
   );
 }
 
+interface iCalendarExtraProps {
+  buttonVariant?: ComponentProps<typeof Button>['variant'];
+  shouldHideOutsideDays?: boolean;
+}
+
 function Calendar({
   className,
   classNames,
-  showOutsideDays = true,
+  shouldHideOutsideDays,
   captionLayout = 'label',
   buttonVariant = 'ghost',
   locale,
   formatters,
   components,
   ...props
-}: ComponentProps<typeof DayPicker> & {
-  buttonVariant?: ComponentProps<typeof Button>['variant'];
-}) {
+}: ComponentProps<typeof DayPicker> & iCalendarExtraProps) {
   return (
     <DayPicker
-      showOutsideDays={showOutsideDays}
       className={cn(
         'group/calendar bg-background p-2 [--cell-radius:var(--radius-md)] [--cell-size:--spacing(7)] in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent',
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
@@ -77,6 +79,7 @@ function Calendar({
         ...components,
       }}
       {...props}
+      showOutsideDays={!shouldHideOutsideDays}
     />
   );
 }

@@ -40,13 +40,13 @@ interface iResponsiveDialogContentProps
   extends
     Pick<ComponentProps<'div'>, 'className' | 'children' | 'aria-label'>,
     Pick<DialogPrimitive.Popup.Props, 'initialFocus'> {
-  showCloseButton?: boolean;
+  shouldHideCloseButton?: boolean;
 }
 
 export function ResponsiveDialogContent({
   className,
   children,
-  showCloseButton = true,
+  shouldHideCloseButton,
   ...props
 }: iResponsiveDialogContentProps) {
   const isDrawer = useIsResponsiveDialogDrawer();
@@ -64,12 +64,12 @@ export function ResponsiveDialogContent({
       <DialogPrimitive.Backdrop data-slot="dialog-overlay" className={OVERLAY_BACKDROP_CLASS_NAME} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
-        data-close-button={showCloseButton ? '' : undefined}
+        data-close-button={shouldHideCloseButton ? undefined : ''}
         className={cn(RESPONSIVE_DIALOG_POPUP_CLASS_NAME, className)}
         {...props}
       >
         {children}
-        {showCloseButton ? (
+        {shouldHideCloseButton ? null : (
           <DialogPrimitive.Close
             data-slot="dialog-close"
             className="absolute top-4 right-4 flex size-6 items-center justify-center rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-open:bg-accent data-open:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
@@ -77,7 +77,7 @@ export function ResponsiveDialogContent({
             <LuX />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
-        ) : null}
+        )}
       </DialogPrimitive.Popup>
     </DialogPrimitive.Portal>
   );

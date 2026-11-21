@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { inject, injectable } from 'tsyringe';
+import type z from 'zod';
 
 import { GeneratorError } from '#~/engine/generator-error';
 import { ProjectUpdater } from '#~/engine/project-updater';
@@ -35,9 +36,9 @@ function invalid(message: string): never {
   throw new GeneratorError(GENERATOR_ERROR_CODES.INVALID_ARGUMENTS, message);
 }
 
-function parseWith<T>(raw: string, schema: { safeParse: (value: unknown) => { success: boolean; data?: T } }) {
+function parseWith<T>(raw: string, schema: z.ZodType<T>) {
   const parsed = schema.safeParse(raw);
-  if (!parsed.success || parsed.data === undefined) invalid(`"${raw}" is not a known id`);
+  if (!parsed.success) invalid(`"${raw}" is not a known id`);
   return parsed.data;
 }
 

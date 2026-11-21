@@ -7,6 +7,13 @@ import type { iPackageJsonContribution } from '#~/manifest/module-manifest.schem
 
 import { GeneratorError } from '../generator-error';
 
+interface iMergeValueContext {
+  location: string;
+  moduleId: ModuleId;
+  owners: Map<string, ModuleId>;
+  path: string;
+}
+
 export interface iOwnedContribution<T> {
   moduleId: ModuleId;
   contribution: T;
@@ -146,11 +153,7 @@ export class PackageJsonMerger {
   }
 
   /** Objects merge key by key, arrays are unioned, and differing scalars are a conflict. */
-  private mergeValue(
-    current: unknown,
-    incoming: unknown,
-    context: { location: string; moduleId: ModuleId; owners: Map<string, ModuleId>; path: string },
-  ): unknown {
+  private mergeValue(current: unknown, incoming: unknown, context: iMergeValueContext): unknown {
     if (current === undefined) {
       context.owners.set(context.path, context.moduleId);
       return incoming;

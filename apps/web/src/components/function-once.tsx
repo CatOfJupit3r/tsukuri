@@ -1,5 +1,10 @@
 import { ScriptOnce } from '@tanstack/react-router';
 
-export function FunctionOnce<T = unknown>({ children, param }: { children: (param: T) => unknown; param?: T }) {
+interface iFunctionOnceProps<T> {
+  children: (param: T) => unknown;
+  param?: T;
+}
+
+export function FunctionOnce<T = unknown>({ children, param }: iFunctionOnceProps<T>) {
   return <ScriptOnce>{`(${children.toString()})(${JSON.stringify(param)})`}</ScriptOnce>;
 }

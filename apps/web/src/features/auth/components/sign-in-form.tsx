@@ -5,7 +5,11 @@ import { useAppForm } from '#~/components/ui/form/field';
 
 import { useLogin } from '../hooks/use-login';
 
-export function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => unknown }) {
+interface iSignInFormProps {
+  onSwitchToSignUp: () => unknown;
+}
+
+export function SignInForm({ onSwitchToSignUp }: iSignInFormProps) {
   const { mutate } = useLogin();
 
   const form = useAppForm({

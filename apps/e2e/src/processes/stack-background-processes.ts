@@ -85,7 +85,8 @@ export class StackBackgroundProcesses {
     }
     void Promise.all(exits)
       .then(this.options.onStop)
-      .finally(() => this.stopped.resolve(undefined));
+      .finally(() => this.stopped.resolve(undefined))
+      .catch((error: unknown) => console.error('[e2e-stack] Background process shutdown failed:', error));
   }
 
   private start({ command, args, cwd, env }: iBackgroundCommand) {

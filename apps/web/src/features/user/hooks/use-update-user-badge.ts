@@ -4,6 +4,7 @@ import { BadgeIdSchema } from '@startername/common/constants/badges';
 
 import { toastError, toastSuccess } from '#~/components/toastifications/create-jsx-toasts';
 import type { ORPCOutputs } from '#~/utils/orpc';
+import { reportDetachedError } from '#~/utils/report-detached-error';
 import { tanstackRPC } from '#~/utils/tanstack-orpc';
 
 export type UserProfileQueryReturnType = ORPCOutputs['user']['getUserProfile'];
@@ -32,7 +33,7 @@ export const updateUserBadgeMutationOptions = tanstackRPC.user.updateUserBadge.m
     if (context?.previous) {
       ctx.client.setQueryData<UserProfileQueryReturnType>(key, context.previous);
     } else {
-      void ctx.client.invalidateQueries({ queryKey: key });
+      void ctx.client.invalidateQueries({ queryKey: key }).catch(reportDetachedError);
     }
 
     toastError('Failed to update badge');

@@ -37,9 +37,9 @@ export class UnexpectedServerError extends Error {
 
 const ORPC_ERROR_METADATA = Symbol.for('@startername/orpc-error-metadata');
 
-type iORPCErrorWithMetadata = ORPCError<string, unknown> & {
+interface iORPCErrorWithMetadata extends ORPCError<string, unknown> {
   [ORPC_ERROR_METADATA]?: iORPCErrorMetadata;
-};
+}
 
 function attachORPCErrorMetadata<T extends ORPCError<string, unknown>>(
   error: T,

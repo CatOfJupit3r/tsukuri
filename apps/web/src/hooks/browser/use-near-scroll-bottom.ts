@@ -3,7 +3,11 @@ import type { RefObject } from 'react';
 
 const THRESHOLD = 50; // px from bottom to consider "near bottom"
 
-export function useNearScrollBottom(ref: RefObject<HTMLElement | null>, callback?: () => unknown, isEnabled = true) {
+export function useNearScrollBottom(
+  ref: RefObject<HTMLElement | null>,
+  callback: (() => unknown) | undefined,
+  isEnabled: boolean,
+) {
   const handleScroll = useEffectEvent(() => {
     const el = ref.current;
     if (!el || !isEnabled) return;

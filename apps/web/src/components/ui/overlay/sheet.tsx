@@ -38,11 +38,11 @@ function SheetContent({
   className,
   children,
   side = SHEET_SIDES.RIGHT,
-  showCloseButton = true,
+  shouldHideCloseButton,
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: SheetSide;
-  showCloseButton?: boolean;
+  shouldHideCloseButton?: boolean;
 }) {
   return (
     <SheetPortal>
@@ -57,7 +57,7 @@ function SheetContent({
         {...props}
       >
         {children}
-        {showCloseButton ? (
+        {shouldHideCloseButton ? null : (
           <SheetPrimitive.Close
             data-slot="sheet-close"
             render={<Button variant="ghost" className="absolute top-3 right-3 size-8" size="icon" />}
@@ -65,7 +65,7 @@ function SheetContent({
             <LuX />
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>
-        ) : null}
+        )}
       </SheetPrimitive.Popup>
     </SheetPortal>
   );

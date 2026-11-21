@@ -11,6 +11,11 @@ import type { iModuleManifest } from '#~/manifest/module-manifest.schema';
 import { GeneratorError } from '../generator-error';
 import { ModuleRegistry } from './module-registry';
 
+interface iResolveOptions {
+  /** Capabilities nobody provides yet are allowed: later prompts may still add the provider. */
+  isPartialSelection?: boolean;
+}
+
 export interface iResolvedModules {
   /** Every module to install, dependencies first. */
   modules: iModuleManifest[];
@@ -35,13 +40,10 @@ export class ModuleResolver {
 
   /**
    * Expands `selected` with always-included and required modules, validates the set, and orders
-   * it. With `shouldRequireCapabilities: false`, capabilities nobody provides yet are allowed,
+   * it. With `isPartialSelection: true`, capabilities nobody provides yet are allowed,
    * which is how a partial selection is checked while later prompts are still unanswered.
    */
-  public resolve(
-    selected: readonly ModuleId[],
-    { shouldRequireCapabilities = true }: { shouldRequireCapabilities?: boolean } = {},
-  ): iResolvedModules {
+  public resolve(selected: readonly ModuleId[], options: iResolveOptions = {}): iResolvedModules {
     // Glue modules follow their triggers, so a recorded one is recomputed rather than kept.
     const chosen = selected.filter((id) => !this.registry.get(id).autoInclude);
     const selectedSet = new Set(chosen);
@@ -57,7 +59,7 @@ export class ModuleResolver {
 
     const modules = [...included.values()];
     this.assertNoConflicts(modules);
-    this.assertCapabilities(modules, shouldRequireCapabilities);
+    this.assertCapabilities(modules, !options.isPartialSelection);
 
     return {
       modules: this.order(modules),
@@ -99,7 +101,7 @@ export class ModuleResolver {
   /** Whether `candidate` can join `selected` without a conflict (unmet capabilities are fine). */
   public isCompatible(selected: readonly ModuleId[], candidate: ModuleId) {
     try {
-      this.resolve([...selected, candidate], { shouldRequireCapabilities: false });
+      this.resolve([...selected, candidate], { isPartialSelection: true });
       return true;
     } catch (error) {
       if (error instanceof GeneratorError && INCOMPATIBLE_CODES.has(error.code)) return false;

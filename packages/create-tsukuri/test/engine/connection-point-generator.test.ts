@@ -260,6 +260,20 @@ describe('ConnectionPointGenerator', () => {
     expect(apiContext).toContain('    ...(await provideSession(request)),');
   });
 
+  it('generates an API context with an unused request parameter when no module provides context', async () => {
+    const result = await generate(
+      createManifest(ALPHA, {
+        hosts: [{ kind: CONNECTION_POINT_KINDS.CONTEXT_PROVIDER, workspace: 'packages/api' }],
+      }),
+    );
+
+    const apiContext = fileContent(result, 'packages/api/src/generated/api-context.ts');
+    expect(apiContext).toContain('export type iGeneratedContext = Record<never, never>;');
+    expect(apiContext).toContain(
+      'export async function createGeneratedContext(_request: Request): Promise<iGeneratedContext> {\n  return {};\n}',
+    );
+  });
+
   it('generates the database schema and the error code enum with escaped messages', async () => {
     const result = await generate(
       createManifest(ALPHA, {

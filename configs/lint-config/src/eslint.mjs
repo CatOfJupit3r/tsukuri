@@ -17,6 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createConventionRulesConfig } from './convention-rules.mjs';
+import { CONVENTION_RESTRICTED_SYNTAX } from './convention-restricted-syntax.constants.mjs';
 import { createOxlintConfigFromEslintConfig, withoutOxlintRules } from './oxlint.mjs';
 
 const [publishedEnumwaiiTypeCheckedPreset] = enumwaiiPlugin.configs['flat/recommended-type-checked'];
@@ -60,15 +61,12 @@ const createWorkspaceIgnorePattern = (workspaceName) => {
 };
 
 const SHARED_RESTRICTED_SYNTAX = [
+  ...CONVENTION_RESTRICTED_SYNTAX,
   {
     selector:
       'TSVoidKeyword:not(TSInterfaceDeclaration TSVoidKeyword, TSAbstractMethodDefinition TSVoidKeyword, TSAbstractPropertyDefinition TSVoidKeyword, TSTypeAliasDeclaration TSVoidKeyword, TSDeclareFunction TSVoidKeyword, TSMethodSignature TSVoidKeyword, MethodDefinition:not([value.body]) TSVoidKeyword)',
     message:
       'Using explicit `void` or `Promise<void>` is not encouraged. Please either do not specify a return type or specify the type.',
-  },
-  {
-    selector: 'TSEnumDeclaration',
-    message: 'Avoid TypeScript enum. Declare the closed set with Enumwaii and use its exported accessor and schema.',
   },
 ];
 
@@ -172,7 +170,7 @@ const getBaseConfig = (options) => {
       'import-x/no-cycle': 'error',
       'no-restricted-syntax': ['error', ...SHARED_RESTRICTED_SYNTAX],
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-floating-promises': ['error', { ignoreVoid: true }],
+      '@typescript-eslint/no-floating-promises': ['error', { ignoreVoid: false }],
       'no-void': ['error', { allowAsStatement: true }],
       'import-x/no-named-as-default': 'off',
       'class-methods-use-this': 'off',

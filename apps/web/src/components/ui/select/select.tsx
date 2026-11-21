@@ -155,14 +155,14 @@ export const MenuList = (props: MenuListProps<iOptionType>) => {
 };
 
 const BaseSelect = <IsMulti extends boolean = false>(
-  props: Props<iOptionType, IsMulti> & { isMulti?: IsMulti; isDOMTarget?: boolean },
+  props: Props<iOptionType, IsMulti> & { isMulti?: IsMulti; shouldRenderMenuInPlace?: boolean },
   ref: Ref<SelectInstance<iOptionType, IsMulti, GroupBase<iOptionType>>>,
 ) => {
   const {
     styles = DEFAULT_SELECT_STYLES,
     classNames = {},
     components: componentsFromProps = {},
-    isDOMTarget = true,
+    shouldRenderMenuInPlace,
     ...rest
   } = props;
   const instanceId = useId();
@@ -178,7 +178,7 @@ const BaseSelect = <IsMulti extends boolean = false>(
           matchFrom: 'any',
           stringify: (option) => option.label,
         })}
-        menuPortalTarget={isDOMTarget && isOnClient ? (portalContainer ?? document.body) : undefined}
+        menuPortalTarget={shouldRenderMenuInPlace || !isOnClient ? undefined : (portalContainer ?? document.body)}
         menuPlacement="auto"
         menuShouldScrollIntoView={false}
         components={{
@@ -325,7 +325,7 @@ function MultiSelectRender<TValue extends string = string>(
     onValueChange,
     onOptionChange,
     options,
-    closeMenuOnSelect = false,
+    closeMenuOnSelect,
     maxMenuHeight = MAX_MENU_HEIGHT,
     ...rest
   }: iMultiSelectProps<TValue>,

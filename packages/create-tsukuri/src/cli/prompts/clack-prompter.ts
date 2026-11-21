@@ -3,7 +3,7 @@ import { confirm, intro, isCancel, log, multiselect, note, outro, select, spinne
 import { GeneratorError } from '#~/engine/generator-error';
 import { GENERATOR_ERROR_CODES } from '#~/enums/generator-error-codes.enums';
 
-import type { iPrompter, iPromptOption } from './prompter';
+import type { iConfirmPromptOptions, iMultiselectPromptOptions, iPrompter, iSelectPromptOptions } from './prompter';
 
 /** Turns clack's cancel symbol into a `CANCELLED` error; prompt values are never symbols here. */
 function unwrap<T>(value: T): Exclude<T, symbol> {
@@ -52,7 +52,7 @@ export class ClackPrompter implements iPrompter {
     );
   }
 
-  public async select<T>(options: { message: string; options: iPromptOption<T>[]; initialValue?: T }): Promise<T> {
+  public async select<T>(options: iSelectPromptOptions<T>): Promise<T> {
     return unwrap<T | symbol>(
       await select<T>({
         message: options.message,
@@ -62,11 +62,7 @@ export class ClackPrompter implements iPrompter {
     );
   }
 
-  public async multiselect<T>(options: {
-    message: string;
-    options: iPromptOption<T>[];
-    initialValues: T[];
-  }): Promise<T[]> {
+  public async multiselect<T>(options: iMultiselectPromptOptions<T>): Promise<T[]> {
     return unwrap<T[] | symbol>(
       await multiselect<T>({
         message: options.message,
@@ -77,7 +73,7 @@ export class ClackPrompter implements iPrompter {
     );
   }
 
-  public async confirm(options: { message: string; initialValue: boolean }) {
+  public async confirm(options: iConfirmPromptOptions) {
     return unwrap(await confirm(options));
   }
 

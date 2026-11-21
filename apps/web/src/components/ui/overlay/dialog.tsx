@@ -34,9 +34,9 @@ function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) 
 function DialogContent({
   className,
   children,
-  showCloseButton = true,
+  shouldHideCloseButton,
   ...props
-}: DialogPrimitive.Popup.Props & { showCloseButton?: boolean }) {
+}: DialogPrimitive.Popup.Props & { shouldHideCloseButton?: boolean }) {
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -49,7 +49,7 @@ function DialogContent({
         {...props}
       >
         {children}
-        {showCloseButton ? (
+        {shouldHideCloseButton ? null : (
           <DialogPrimitive.Close
             data-slot="dialog-close"
             className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
@@ -57,7 +57,7 @@ function DialogContent({
             <LuX />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
-        ) : null}
+        )}
       </DialogPrimitive.Popup>
     </DialogPortal>
   );

@@ -8,20 +8,20 @@ import { cn } from '#~/lib/utils';
 function NavigationMenu({
   className,
   children,
-  viewport = true,
+  shouldHideViewport,
   ...props
 }: ComponentProps<typeof NavigationMenuPrimitive.Root> & {
-  viewport?: boolean;
+  shouldHideViewport?: boolean;
 }) {
   return (
     <NavigationMenuPrimitive.Root
       data-slot="navigation-menu"
-      data-viewport={viewport}
+      data-viewport={!shouldHideViewport}
       className={cn('group/navigation-menu relative flex max-w-max flex-1 items-center justify-center', className)}
       {...props}
     >
       {children}
-      {viewport ? <NavigationMenuViewport /> : null}
+      {shouldHideViewport ? null : <NavigationMenuViewport />}
     </NavigationMenuPrimitive.Root>
   );
 }

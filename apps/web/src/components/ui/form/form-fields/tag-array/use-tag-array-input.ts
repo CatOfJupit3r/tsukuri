@@ -16,14 +16,14 @@ interface iUseTagArrayInputProps {
 export function useTagArrayInput({ maxItems, onBlur, onChange, onCommit, values }: iUseTagArrayInputProps) {
   const [inputValue, setInputValue] = useState('');
 
-  const finishWithoutChange = (shouldBlur: boolean) => {
+  const finishWithoutChange = (shouldBlur?: boolean) => {
     if (shouldBlur) {
       onBlur();
       onCommit?.();
     }
   };
 
-  const handleCommit = (nextValues: string[], shouldBlur = false) => {
+  const handleCommit = (nextValues: string[], shouldBlur?: boolean) => {
     onChange(nextValues);
 
     if (shouldBlur) {
@@ -33,7 +33,7 @@ export function useTagArrayInput({ maxItems, onBlur, onChange, onCommit, values 
     onCommit?.();
   };
 
-  const handleAdd = (shouldBlur = false) => {
+  const handleAdd = (shouldBlur?: boolean) => {
     const parsedValues = parseTagInput(inputValue);
 
     if (parsedValues.length === 0) {

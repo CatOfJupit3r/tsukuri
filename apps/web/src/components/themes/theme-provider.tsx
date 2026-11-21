@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { reportDetachedError } from '#~/utils/report-detached-error';
+
 import { USER_THEME } from './constants';
 import type { UserTheme } from './constants';
 import { ThemeContext } from './context';
@@ -28,7 +30,7 @@ export function ThemeProvider({ children, initialTheme }: iThemeProviderProps) {
 
   const setTheme = (newUserTheme: UserTheme) => {
     setUserTheme(newUserTheme);
-    void setStoredTheme({ data: newUserTheme });
+    void setStoredTheme({ data: newUserTheme }).catch(reportDetachedError);
   };
 
   const value = useMemo(() => ({ userTheme, appTheme, setTheme }), [userTheme, appTheme]);

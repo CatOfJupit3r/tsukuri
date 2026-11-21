@@ -7,7 +7,7 @@ import type { iFileUploadContextValue } from '#~/components/ui/file-upload/file-
 interface iUseFileUploadContextValueProps extends Pick<iFileUploadContextValue, 'urlCache'> {
   dir: TextDirection;
   inputRef: RefObject<HTMLInputElement | null>;
-  isDisabled: boolean;
+  isDisabled?: boolean;
 }
 
 export function useFileUploadContextValue({ dir, inputRef, isDisabled, urlCache }: iUseFileUploadContextValueProps) {
@@ -23,7 +23,7 @@ export function useFileUploadContextValue({ dir, inputRef, isDisabled, urlCache 
       listId,
       labelId,
       dir,
-      disabled: isDisabled,
+      disabled: isDisabled === true,
       inputRef,
       urlCache,
     }),

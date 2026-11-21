@@ -27,8 +27,9 @@ export function killProcessTree(pid: number) {
   }
   try {
     process.kill(-pid, 'SIGTERM');
-  } catch {
+  } catch (error) {
     // The process group already exited.
+    console.debug(`[e2e-stack] Process group ${pid} was already gone:`, error);
   }
 }
 

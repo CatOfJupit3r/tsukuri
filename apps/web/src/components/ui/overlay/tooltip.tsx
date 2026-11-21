@@ -19,7 +19,7 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
   );
 }
 function TooltipTrigger({
-  asChild = false,
+  asChild,
   children,
   render,
   ...props

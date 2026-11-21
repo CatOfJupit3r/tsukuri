@@ -7,17 +7,14 @@
  * @param options.image - URL of an image to be used in social media shares.
  * @returns An array of meta tag objects to be used in the page head.
  */
-export const seo = ({
-  title,
-  description,
-  keywords,
-  image,
-}: {
+interface iSeoOptions {
   title: string;
   description?: string;
   image?: string;
   keywords?: string;
-}) => {
+}
+
+export const seo = ({ title, description, keywords, image }: iSeoOptions) => {
   const tags = [
     { title },
     { name: 'apple-mobile-web-app-title', content: title },

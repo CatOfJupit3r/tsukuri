@@ -43,7 +43,7 @@ interface iInfiniteSelectBaseProps<TValue extends string = string, IsMulti exten
   /** Total count (optional, for display) */
   total?: number;
   /** Whether to use DOM portal target */
-  isDOMTarget?: boolean;
+  shouldRenderMenuInPlace?: boolean;
 }
 
 const OPTION_HEIGHT = 35;
@@ -66,7 +66,7 @@ function InfiniteMenuList({
 }) {
   const menuListRef = useRef<HTMLDivElement>(null);
 
-  useNearScrollBottom(menuListRef, onLoadMore, Boolean(hasMore));
+  useNearScrollBottom(menuListRef, onLoadMore, hasMore === true);
 
   const shouldShowAllLoaded = !hasMore && !isLoadingMore;
 
@@ -92,14 +92,14 @@ const BaseInfiniteSelect = <IsMulti extends boolean = false>(
 ) => {
   const {
     items,
-    isLoading = false,
-    isLoadingMore = false,
-    hasMore = false,
+    isLoading,
+    isLoadingMore,
+    hasMore,
     onLoadMore,
     styles = DEFAULT_SELECT_STYLES,
     classNames = {},
     components: componentsFromProps = {},
-    isDOMTarget = true,
+    shouldRenderMenuInPlace,
     maxMenuHeight = MAX_MENU_HEIGHT,
     ...rest
   } = props;
@@ -124,7 +124,7 @@ const BaseInfiniteSelect = <IsMulti extends boolean = false>(
           matchFrom: 'any',
           stringify: (option) => option.label,
         })}
-        menuPortalTarget={isDOMTarget && isOnClient ? (portalContainer ?? document.body) : undefined}
+        menuPortalTarget={shouldRenderMenuInPlace || !isOnClient ? undefined : (portalContainer ?? document.body)}
         maxMenuHeight={maxMenuHeight}
         isLoading={isLoading}
         options={items}
@@ -278,7 +278,7 @@ function InfiniteMultiSelectRender<TValue extends string = string>(
     onValueChange,
     onOptionChange,
     items,
-    closeMenuOnSelect = false,
+    closeMenuOnSelect,
     ...rest
   }: iInfiniteMultiSelectProps<TValue>,
   ref: Ref<SelectInstance<iOptionType<TValue>, true, GroupBase<iOptionType<TValue>>>>,

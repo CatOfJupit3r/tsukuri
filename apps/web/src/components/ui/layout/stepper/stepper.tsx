@@ -116,7 +116,7 @@ interface iStepperSeparatorProps extends ComponentProps<'span'> {
   isActive?: boolean;
 }
 
-export function StepperSeparator({ className, isActive = false, ...props }: iStepperSeparatorProps) {
+export function StepperSeparator({ className, isActive, ...props }: iStepperSeparatorProps) {
   return (
     <span
       role="separator"

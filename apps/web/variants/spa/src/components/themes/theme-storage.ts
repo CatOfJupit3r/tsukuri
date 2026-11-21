@@ -6,6 +6,10 @@ export async function getStoredTheme() {
   return userThemeValidator.parse(localStorage.getItem(THEME_COOKIE));
 }
 
-export async function setStoredTheme({ data }: { data: UserTheme }) {
+interface iSetStoredThemeOptions {
+  data: UserTheme;
+}
+
+export async function setStoredTheme({ data }: iSetStoredThemeOptions) {
   localStorage.setItem(THEME_COOKIE, data);
 }

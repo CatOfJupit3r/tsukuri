@@ -8,7 +8,7 @@ function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
 function PopoverTrigger({
-  asChild = false,
+  asChild,
   children,
   render,
   ...props
