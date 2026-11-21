@@ -43,6 +43,9 @@ describe('lint-config package loading restriction', () => {
     ['importPlugin with an identifier', 'await importPlugin(pluginName);'],
     ['default import of node:module', "import nodeModule from 'node:module';"],
     ['namespace import of module', "import * as nodeModule from 'module';"],
+    ['namespace re-export of node:module', "export * as nodeModule from 'node:module';"],
+    ['default re-export of module', "export { default as nodeModule } from 'module';"],
+    ['named re-export of node:module', "export { createRequire } from 'node:module';"],
     ['importPlugin with a number', 'await importPlugin(5);'],
     ['importPlugin with a template expression', 'await importPlugin(`plugin-${name}`);'],
   ])('reports a %s in a lint-config source with the static import message', (_form, code) => {
@@ -63,6 +66,7 @@ describe('lint-config package loading restriction', () => {
     ['a numeric computed access', 'const first = array[0];'],
     ['a string computed access', "const value = options['key'];"],
     ['an ordinary node:path import', "import path from 'node:path';"],
+    ['a local re-export', "export { x } from './local.mjs';"],
     ['importPlugin with a string literal', "await importPlugin('eslint-plugin-example');"],
   ])('allows %s in a lint-config source', (_form, code) => {
     expect(lint(code, SOURCE_FILE_NAME)).toEqual([]);
