@@ -50,20 +50,16 @@ const OPTION_HEIGHT = 35;
 const MAX_VISIBLE_OPTIONS = 6;
 const MAX_MENU_HEIGHT = OPTION_HEIGHT * MAX_VISIBLE_OPTIONS;
 
-/**
- * Custom MenuList with infinite scroll support
- */
-function InfiniteMenuList({
-  children,
-  hasMore,
-  isLoadingMore,
-  onLoadMore,
-  ...props
-}: MenuListProps<iOptionType> & {
+interface iInfiniteMenuListProps extends MenuListProps<iOptionType> {
   hasMore?: boolean;
   isLoadingMore?: boolean;
   onLoadMore?: () => unknown;
-}) {
+}
+
+/**
+ * Custom MenuList with infinite scroll support
+ */
+function InfiniteMenuList({ children, hasMore, isLoadingMore, onLoadMore, ...props }: iInfiniteMenuListProps) {
   const menuListRef = useRef<HTMLDivElement>(null);
 
   useNearScrollBottom(menuListRef, onLoadMore, hasMore === true);
@@ -86,8 +82,12 @@ function InfiniteMenuList({
   );
 }
 
+interface iBaseInfiniteSelectProps<IsMulti extends boolean> extends iInfiniteSelectBaseProps<string, IsMulti> {
+  isMulti?: IsMulti;
+}
+
 const BaseInfiniteSelect = <IsMulti extends boolean = false>(
-  props: iInfiniteSelectBaseProps<string, IsMulti> & { isMulti?: IsMulti },
+  props: iBaseInfiniteSelectProps<IsMulti>,
   ref: Ref<SelectInstance<iOptionType, IsMulti, GroupBase<iOptionType>>>,
 ) => {
   const {
@@ -149,19 +149,23 @@ const BaseInfiniteSelect = <IsMulti extends boolean = false>(
 
 const ForwardedInfiniteSelect = forwardRef(BaseInfiniteSelect);
 
+interface iForwardedInfiniteSelectSingleProps<TValue extends string> extends iInfiniteSelectBaseProps<TValue> {
+  ref?: Ref<SelectInstance<iOptionType<TValue>, false, GroupBase<iOptionType<TValue>>>>;
+}
+
 /** generic view over the shared infinite forwarded select, typed for single selection */
 type iForwardedInfiniteSelectSingle = <TValue extends string = string>(
-  p: iInfiniteSelectBaseProps<TValue> & {
-    ref?: Ref<SelectInstance<iOptionType<TValue>, false, GroupBase<iOptionType<TValue>>>>;
-  },
+  p: iForwardedInfiniteSelectSingleProps<TValue>,
 ) => ReactNode;
+
+interface iForwardedInfiniteSelectMultiProps<TValue extends string> extends iInfiniteSelectBaseProps<TValue, true> {
+  isMulti?: true;
+  ref?: Ref<SelectInstance<iOptionType<TValue>, true, GroupBase<iOptionType<TValue>>>>;
+}
 
 /** generic view over the shared infinite forwarded select, typed for multi selection */
 type iForwardedInfiniteSelectMulti = <TValue extends string = string>(
-  p: iInfiniteSelectBaseProps<TValue, true> & {
-    isMulti?: true;
-    ref?: Ref<SelectInstance<iOptionType<TValue>, true, GroupBase<iOptionType<TValue>>>>;
-  },
+  p: iForwardedInfiniteSelectMultiProps<TValue>,
 ) => ReactNode;
 
 const ForwardedInfiniteSelectSingle = ForwardedInfiniteSelect as iForwardedInfiniteSelectSingle;

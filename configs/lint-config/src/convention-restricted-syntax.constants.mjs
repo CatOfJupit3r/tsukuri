@@ -5,7 +5,27 @@
 const FUNCTION_NODES =
   ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression, TSDeclareFunction, TSEmptyBodyFunctionExpression, TSFunctionType, TSConstructorType, TSMethodSignature, TSCallSignatureDeclaration, TSConstructSignatureDeclaration)';
 const PARAMETER_NODES = ':matches(Identifier, ObjectPattern, ArrayPattern, RestElement)';
-const INLINE_OBJECT_TYPE = '[typeAnnotation.typeAnnotation.type="TSTypeLiteral"]';
+/** Type nodes an inline object type can sit inside of; a nested function type or object type is not listed, so its own signature is reported once, at the inner node. */
+const TYPE_WRAPPER_NODES =
+  ':matches(TSTypeReference, TSTypeParameterInstantiation, TSUnionType, TSIntersectionType, TSArrayType, TSTupleType, TSTypeOperator, TSOptionalType, TSRestType, TSNamedTupleMember)';
+/** Deepest wrapper chain checked, for example `Promise<Array<{ a: string }> | null>` has five wrappers. */
+const MAX_TYPE_WRAPPER_DEPTH = 8;
+const PARAMETER_ANNOTATION_ROOTS = [
+  `${FUNCTION_NODES} > ${PARAMETER_NODES} > TSTypeAnnotation`,
+  `${FUNCTION_NODES} > AssignmentPattern > ${PARAMETER_NODES} > TSTypeAnnotation`,
+  `${FUNCTION_NODES} > TSParameterProperty > ${PARAMETER_NODES} > TSTypeAnnotation`,
+  `${FUNCTION_NODES} > TSParameterProperty > AssignmentPattern > ${PARAMETER_NODES} > TSTypeAnnotation`,
+];
+const RETURN_ANNOTATION_ROOTS = [`${FUNCTION_NODES} > TSTypeAnnotation`];
+
+const buildInlineObjectTypeSelector = (annotationRoots) =>
+  Array.from({ length: MAX_TYPE_WRAPPER_DEPTH + 1 }, (_, depth) =>
+    [
+      `:matches(${annotationRoots.join(', ')})`,
+      ...Array.from({ length: depth }, () => TYPE_WRAPPER_NODES),
+      'TSTypeLiteral',
+    ].join(' > '),
+  ).join(', ');
 
 export const CONVENTION_RESTRICTED_SYNTAX = [
   {
@@ -23,16 +43,11 @@ export const CONVENTION_RESTRICTED_SYNTAX = [
     message: 'A detached promise needs a rejection handler: `void promise.catch(handler)`.',
   },
   {
-    selector: [
-      `${FUNCTION_NODES} > ${PARAMETER_NODES}${INLINE_OBJECT_TYPE}`,
-      `${FUNCTION_NODES} > AssignmentPattern[left.typeAnnotation.typeAnnotation.type="TSTypeLiteral"]`,
-      `${FUNCTION_NODES} > TSParameterProperty > ${PARAMETER_NODES}${INLINE_OBJECT_TYPE}`,
-      `${FUNCTION_NODES} > TSParameterProperty > AssignmentPattern[left.typeAnnotation.typeAnnotation.type="TSTypeLiteral"]`,
-    ].join(', '),
+    selector: buildInlineObjectTypeSelector(PARAMETER_ANNOTATION_ROOTS),
     message: 'Declare the parameter type as a named interface instead of an inline object type.',
   },
   {
-    selector: `${FUNCTION_NODES}[returnType.typeAnnotation.type="TSTypeLiteral"]`,
+    selector: buildInlineObjectTypeSelector(RETURN_ANNOTATION_ROOTS),
     message: 'Declare the return type as a named interface instead of an inline object type.',
   },
   {

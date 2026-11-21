@@ -3,12 +3,16 @@ import { STACK_SLOT_COUNT } from './stack-ports';
 /** Pins the slot; every process of one run shares it through this variable. */
 export const STACK_SLOT_ENV_NAME = 'E2E_STACK_SLOT';
 
+export interface iComposeSlotOwnership {
+  isOwn: boolean;
+}
+
 /** What choosing a slot asks the machine; injected so the choice can be exercised without Docker. */
 export interface iStackSlotProbe {
   /** The slot of the stack this checkout is running, if it runs one. */
   readRunningSlot: () => Promise<number | null>;
   /** The slot of each E2E compose project that still has containers, with whether this checkout started it. */
-  listComposeSlots: () => Promise<Map<number, { isOwn: boolean }>>;
+  listComposeSlots: () => Promise<Map<number, iComposeSlotOwnership>>;
   /** Whether a running stack holds the slot's lock. */
   isSlotLocked: (slot: number) => Promise<boolean>;
   isPortFree: (port: number) => Promise<boolean>;

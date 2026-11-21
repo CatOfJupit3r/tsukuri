@@ -14,6 +14,11 @@ interface iMergeValueContext {
   path: string;
 }
 
+interface iOwnedStringValue {
+  value: string;
+  moduleId: ModuleId;
+}
+
 export interface iOwnedContribution<T> {
   moduleId: ModuleId;
   contribution: T;
@@ -102,10 +107,10 @@ export class PackageJsonMerger {
   private mergeWorkspace(workspace: string, owned: iOwnedContribution<iPackageJsonContribution>[]) {
     let fields: Record<string, unknown> = {};
     const fieldOwners = new Map<string, ModuleId>();
-    const scripts = new Map<string, { value: string; moduleId: ModuleId }>();
+    const scripts = new Map<string, iOwnedStringValue>();
     const dependencies = Object.fromEntries(
-      DEPENDENCY_FIELDS.map((field) => [field, new Map<string, { value: string; moduleId: ModuleId }>()]),
-    ) as Record<(typeof DEPENDENCY_FIELDS)[number], Map<string, { value: string; moduleId: ModuleId }>>;
+      DEPENDENCY_FIELDS.map((field) => [field, new Map<string, iOwnedStringValue>()]),
+    ) as Record<(typeof DEPENDENCY_FIELDS)[number], Map<string, iOwnedStringValue>>;
 
     for (const { moduleId, contribution } of owned) {
       fields = this.mergeValue(fields, contribution.fields, {
@@ -135,7 +140,7 @@ export class PackageJsonMerger {
   }
 
   private mergeStringMap(
-    target: Map<string, { value: string; moduleId: ModuleId }>,
+    target: Map<string, iOwnedStringValue>,
     source: Record<string, string>,
     moduleId: ModuleId,
     location: string,

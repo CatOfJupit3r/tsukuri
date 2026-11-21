@@ -116,6 +116,54 @@ describe('convention restricted syntax', () => {
       ).toEqual([]);
     });
 
+    it.each([
+      'function f(o: Promise<{ a: string }>) { return o; }',
+      'function f(o: { a: string } | null) { return o; }',
+      'function f(o: iX & { a: string }) { return o; }',
+      'function f(o: { a: string }[]) { return o; }',
+      'function f(o: Array<{ a: string }>) { return o; }',
+      'function f(o: [string, { a: string }]) { return o; }',
+      'function f(o: Promise<Array<{ a: string } | null>>) { return o; }',
+      'function f(o: readonly { a: string }[]) { return o; }',
+      'function f(o: Promise<{ a: string }> = Promise.resolve({ a: "x" })) { return o; }',
+      'class C { public constructor(private o: Array<{ a: string }>) {} }',
+      'type F = (o: Promise<{ a: string }>) => void;',
+      'interface iX { run(o: { a: string } | null): void }',
+    ])('reports an inline object type nested in the parameter type of %s', (code) => {
+      expect(lintMessages(code).filter((message) => message.includes('parameter type'))).toHaveLength(1);
+    });
+
+    it.each([
+      'function f(): Promise<{ a: string }> { return Promise.resolve({ a: "x" }); }',
+      'function f(): { a: string } | null { return null; }',
+      'function f(): Array<{ a: string }> { return []; }',
+      'function f(): { a: string }[] { return []; }',
+      'function f(): [string, { a: string }] { return ["x", { a: "x" }]; }',
+      'class C { public run(): Promise<{ a: string } | undefined> { return Promise.resolve(undefined); } }',
+      'type F = () => Promise<{ a: string }>;',
+      'interface iX { run(): Array<{ a: string }> }',
+    ])('reports an inline object type nested in the return type of %s', (code) => {
+      expect(lintMessages(code).filter((message) => message.includes('return type'))).toHaveLength(1);
+    });
+
+    it('reports an inline type inside a nested function type once, at the inner signature', () => {
+      expect(lintMessages('function f(callback: (o: { a: string }) => void) { return callback; }')).toHaveLength(1);
+      expect(lintMessages('function f(callback: Array<(o: { a: string }) => void>) { return callback; }')).toHaveLength(1);
+      expect(lintMessages('function f(): Promise<() => { a: string }> { return Promise.reject(); }')).toHaveLength(1);
+    });
+
+    it('reports a nested object type inside an inline object type once', () => {
+      expect(lintMessages('function f(o: { a: { b: string }[] }) { return o; }')).toHaveLength(1);
+    });
+
+    it('allows named interfaces in generics, unions, arrays and tuples, and mapped types', () => {
+      expect(
+        lintMessages(
+          'interface iUser { a: string }\nfunction f(o: Promise<iUser>, p: iUser | null, q: iUser[], r: [string, iUser], s: Record<string, iUser>, t: { [K in keyof iUser]: string }): Array<iUser> { return [o, p, q, r, s, t]; }',
+        ),
+      ).toEqual([]);
+    });
+
     it('reports an inline return type', () => {
       expectViolation('function f(): { a: string } { return { a: "x" }; }', 'return type');
     });

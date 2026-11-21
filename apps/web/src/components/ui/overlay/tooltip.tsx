@@ -4,11 +4,16 @@ import type { ReactElement } from 'react';
 import { usePortalContainer } from '#~/components/ui/overlay/portal-container.context';
 import { cn } from '#~/lib/utils';
 
-function TooltipProvider({
-  delayDuration = 0,
-  ...props
-}: TooltipPrimitive.Provider.Props & { delayDuration?: number }) {
+interface iTooltipProviderProps extends TooltipPrimitive.Provider.Props {
+  delayDuration?: number;
+}
+
+function TooltipProvider({ delayDuration = 0, ...props }: iTooltipProviderProps) {
   return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delayDuration} {...props} />;
+}
+
+interface iTooltipProps extends TooltipPrimitive.Trigger.Props {
+  asChild?: boolean;
 }
 
 function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
@@ -18,12 +23,7 @@ function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
     </TooltipProvider>
   );
 }
-function TooltipTrigger({
-  asChild,
-  children,
-  render,
-  ...props
-}: TooltipPrimitive.Trigger.Props & { asChild?: boolean }) {
+function TooltipTrigger({ asChild, children, render, ...props }: iTooltipProps) {
   return (
     <TooltipPrimitive.Trigger
       data-slot="tooltip-trigger"

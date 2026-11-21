@@ -154,8 +154,13 @@ export const MenuList = (props: MenuListProps<iOptionType>) => {
   );
 };
 
+interface iBaseSelectProps<IsMulti extends boolean> extends Props<iOptionType, IsMulti> {
+  isMulti?: IsMulti;
+  shouldRenderMenuInPlace?: boolean;
+}
+
 const BaseSelect = <IsMulti extends boolean = false>(
-  props: Props<iOptionType, IsMulti> & { isMulti?: IsMulti; shouldRenderMenuInPlace?: boolean },
+  props: iBaseSelectProps<IsMulti>,
   ref: Ref<SelectInstance<iOptionType, IsMulti, GroupBase<iOptionType>>>,
 ) => {
   const {

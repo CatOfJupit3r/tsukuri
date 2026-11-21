@@ -12,13 +12,11 @@ interface iFormFieldMeta {
   errors?: unknown[];
 }
 
-export function Form({
-  children,
-  className,
-  ...props
-}: Omit<ComponentPropsWithoutRef<'form'>, 'onSubmit' | 'noValidate'> & {
+interface iFormProps extends Omit<ComponentPropsWithoutRef<'form'>, 'onSubmit' | 'noValidate'> {
   children?: ReactNode;
-}) {
+}
+
+export function Form({ children, className, ...props }: iFormProps) {
   const form = useFormContext();
   const [submissionAttempts, fieldMeta] = useSelector(form.store, (state) => [
     state.submissionAttempts,

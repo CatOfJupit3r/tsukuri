@@ -5,14 +5,11 @@ import { LuChevronDown } from 'react-icons/lu';
 
 import { cn } from '#~/lib/utils';
 
-function NavigationMenu({
-  className,
-  children,
-  shouldHideViewport,
-  ...props
-}: ComponentProps<typeof NavigationMenuPrimitive.Root> & {
+interface iNavigationMenuProps extends ComponentProps<typeof NavigationMenuPrimitive.Root> {
   shouldHideViewport?: boolean;
-}) {
+}
+
+function NavigationMenu({ className, children, shouldHideViewport, ...props }: iNavigationMenuProps) {
   return (
     <NavigationMenuPrimitive.Root
       data-slot="navigation-menu"
