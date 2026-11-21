@@ -7,8 +7,10 @@ import { afterEach } from 'vitest';
 import { D1_DATABASE_TOKEN } from '#~/features/database/d1-database.token';
 import { generatedDatabaseSchema } from '#~/generated/database-schema';
 
-const testD1Key = Symbol.for('startername.test.d1');
-const testGlobals = globalThis as typeof globalThis & { [testD1Key]?: Promise<D1Database> };
+declare global {
+  /** The local database the first test file of the run starts, shared by the rest. */
+  var starternameTestD1: Promise<D1Database> | undefined;
+}
 
 /** A local D1 database with the installed modules' tables, shared by every integration test file of the run. */
 async function createTestD1() {
@@ -21,8 +23,8 @@ async function createTestD1() {
   return database;
 }
 
-testGlobals[testD1Key] ??= createTestD1();
-const testD1 = await testGlobals[testD1Key];
+globalThis.starternameTestD1 ??= createTestD1();
+const testD1 = await globalThis.starternameTestD1;
 container.registerInstance(D1_DATABASE_TOKEN, testD1);
 
 afterEach(async () => {

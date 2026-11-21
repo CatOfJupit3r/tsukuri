@@ -4,8 +4,10 @@ import { container } from 'tsyringe';
 
 import { KV_NAMESPACE_TOKEN } from '#~/features/cloudflare-kv/kv-namespace.token';
 
-const testKvKey = Symbol.for('startername.test.kv');
-const testGlobals = globalThis as typeof globalThis & { [testKvKey]?: Promise<KVNamespace> };
+declare global {
+  /** The local namespace the first test file of the run starts, shared by the rest. */
+  var starternameTestKv: Promise<KVNamespace> | undefined;
+}
 
 /** A local KV namespace behind the KV key-value store, shared by every integration test file of the run. */
 async function createTestKv() {
@@ -13,5 +15,5 @@ async function createTestKv() {
   return binding;
 }
 
-testGlobals[testKvKey] ??= createTestKv();
-container.registerInstance(KV_NAMESPACE_TOKEN, await testGlobals[testKvKey]);
+globalThis.starternameTestKv ??= createTestKv();
+container.registerInstance(KV_NAMESPACE_TOKEN, await globalThis.starternameTestKv);

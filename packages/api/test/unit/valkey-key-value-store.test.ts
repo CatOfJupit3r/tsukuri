@@ -1,12 +1,29 @@
+import Redis from 'ioredis';
+import { container } from 'tsyringe';
+
+import { LoggerFactory } from '#~/features/logger/logger.factory';
 import { ValkeyKeyValueStore } from '#~/features/valkey/valkey-key-value-store';
-import type { ValkeyService } from '#~/features/valkey/valkey.service';
+import { ValkeyService } from '#~/features/valkey/valkey.service';
+
+/** A connected-looking service around a client that never opens a socket. */
+class ConnectedValkeyService extends ValkeyService {
+  constructor(private readonly redisClient: Redis) {
+    super(container.resolve(LoggerFactory));
+  }
+
+  public override get isConnected() {
+    return true;
+  }
+
+  public override getClient() {
+    return this.redisClient;
+  }
+}
 
 function createStore() {
-  const client = { set: vi.fn(async () => 'OK') };
-  const valkeyService = { isConnected: true, getClient: () => client };
-  // The store only reads `isConnected` and `getClient` from the service.
-  const store = new ValkeyKeyValueStore(valkeyService as unknown as ValkeyService);
-  return { store, client };
+  const client = new Redis({ lazyConnect: true });
+  const set = vi.spyOn(client, 'set').mockImplementation(async () => 'OK');
+  return { store: new ValkeyKeyValueStore(new ConnectedValkeyService(client)), client: { set } };
 }
 
 describe('ValkeyKeyValueStore.set', () => {

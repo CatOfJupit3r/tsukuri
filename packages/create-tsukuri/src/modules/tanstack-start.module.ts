@@ -7,7 +7,12 @@ import { WEB_WORKSPACE } from './web.module';
 
 const START_VARIANT = `${WEB_WORKSPACE}/variants/tanstack-start`;
 
-const START_BACKEND_FILES = ['src/load-env.ts', 'src/routes/api/$.ts', 'src/utils/backend-url.ts'];
+const START_BACKEND_FILES = [
+  'src/load-env.ts',
+  'src/routes/api/$.ts',
+  'src/utils/backend-url.ts',
+  'test/api-route.test.ts',
+];
 
 export const tanstackStartModule = defineModule({
   id: MODULE_IDS.TANSTACK_START,

@@ -1,23 +1,29 @@
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import ts from 'typescript';
 
 import { createGeneratorContainer } from '#~/di/container';
 import { ConnectionPointGenerator } from '#~/engine/connection-points/connection-point-generator';
-import { CONNECTION_POINT_KINDS } from '#~/enums/connection-point-kinds.enums';
-import { WORKER_BINDING_NAMES, WORKER_BINDING_TYPES } from '#~/enums/worker-bindings.enums';
-import type { iConnectionPointContributionInput } from '#~/manifest/connection-point.schema';
 import { moduleManifestSchema } from '#~/manifest/module-manifest.schema';
+import { cloudflareKvModule, d1Module } from '#~/modules/cloudflare-storage.module';
+import { cloudflareWorkerModule, WORKER_WORKSPACE } from '#~/modules/cloudflare-worker.module';
+import { postgresHyperdriveModule } from '#~/modules/postgres-runtimes.module';
 
-import { createManifest, testModuleId } from '../helpers/manifests';
 import { REPOSITORY_ROOT } from '../helpers/temp-dir';
 
-vi.mock('#~/enums/module-ids.enums', () => import('../helpers/test-module-ids'));
-
-const WORKER_WORKSPACE = 'apps/worker';
 const BINDINGS_FILE = `${WORKER_WORKSPACE}/src/generated/worker-bindings.ts`;
-const TOKENS_MODULE = './tokens';
 const COMPILE_TIMEOUT_MS = 60_000;
+const ESLINT_BINARY = path.join(
+  path.dirname(createRequire(import.meta.url).resolve('eslint/package.json')),
+  'bin/eslint.js',
+);
+const runProcess = promisify(execFile);
+const API_SOURCE_ROOTS = ['src', 'variants/d1/src', 'variants/postgres-hyperdrive/src'].map((root) =>
+  path.join(REPOSITORY_ROOT, 'packages/api', root, '*'),
+);
 
 /** The Worker types the rendered file imports, reduced to what it needs to compile. */
 const WORKERS_TYPES_STUB = `declare module '@cloudflare/workers-types' {
@@ -27,69 +33,31 @@ const WORKERS_TYPES_STUB = `declare module '@cloudflare/workers-types' {
 }
 `;
 
-const WORKER_BINDING_FIXTURES = {
-  D1: {
-    kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
-    workspace: WORKER_WORKSPACE,
-    binding: WORKER_BINDING_NAMES.DB,
-    type: WORKER_BINDING_TYPES.D1_DATABASE,
-    token: { name: 'D1_DATABASE_TOKEN', from: TOKENS_MODULE },
-    entry: { database_name: 'startername', database_id: 'local' },
-  },
-  KV: {
-    kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
-    workspace: WORKER_WORKSPACE,
-    binding: WORKER_BINDING_NAMES.KV,
-    type: WORKER_BINDING_TYPES.KV_NAMESPACE,
-    token: { name: 'KV_NAMESPACE_TOKEN', from: TOKENS_MODULE },
-    entry: { id: 'local' },
-  },
-  HYPERDRIVE: {
-    kind: CONNECTION_POINT_KINDS.WORKER_BINDING,
-    workspace: WORKER_WORKSPACE,
-    binding: WORKER_BINDING_NAMES.HYPERDRIVE,
-    type: WORKER_BINDING_TYPES.HYPERDRIVE,
-    token: { name: 'HYPERDRIVE_TOKEN', from: TOKENS_MODULE },
-    entry: { id: 'local', localConnectionString: 'postgresql://localhost:5432/startername' },
-  },
-} satisfies Record<string, iConnectionPointContributionInput>;
-
-const TOKENS_SOURCE = `import type { InjectionToken } from 'tsyringe';
-
-export const D1_DATABASE_TOKEN: InjectionToken<unknown> = Symbol('D1_DATABASE_TOKEN');
-export const KV_NAMESPACE_TOKEN: InjectionToken<unknown> = Symbol('KV_NAMESPACE_TOKEN');
-export const HYPERDRIVE_TOKEN: InjectionToken<unknown> = Symbol('HYPERDRIVE_TOKEN');
-`;
-
 const BINDING_COMBINATIONS = [
-  { name: 'no bindings', contributions: [] },
-  { name: 'D1 only', contributions: [WORKER_BINDING_FIXTURES.D1] },
-  { name: 'KV only', contributions: [WORKER_BINDING_FIXTURES.KV] },
-  { name: 'Hyperdrive only', contributions: [WORKER_BINDING_FIXTURES.HYPERDRIVE] },
-  {
-    name: 'D1, KV and Hyperdrive',
-    contributions: [WORKER_BINDING_FIXTURES.D1, WORKER_BINDING_FIXTURES.KV, WORKER_BINDING_FIXTURES.HYPERDRIVE],
-  },
+  { name: 'no bindings', bindingModules: [] },
+  { name: 'D1 only', bindingModules: [d1Module] },
+  { name: 'KV only', bindingModules: [cloudflareKvModule] },
+  { name: 'Hyperdrive only', bindingModules: [postgresHyperdriveModule] },
+  { name: 'D1, KV and Hyperdrive', bindingModules: [d1Module, cloudflareKvModule, postgresHyperdriveModule] },
 ];
 
 const generator = createGeneratorContainer({ sourceRoot: REPOSITORY_ROOT, manifests: [] }).resolve(
   ConnectionPointGenerator,
 );
 
-async function renderWorkerBindings(contributions: iConnectionPointContributionInput[]) {
-  const manifest = moduleManifestSchema.parse(
-    createManifest(testModuleId('alpha'), {
-      contributions,
-      hosts: [{ kind: CONNECTION_POINT_KINDS.WORKER_BINDING, workspace: WORKER_WORKSPACE }],
-    }),
-  );
-  const result = await generator.generate([manifest], { installedModules: [manifest.id], projectName: 'acme' });
+/** Renders the file from the real module manifests, the way a project with those modules gets it. */
+async function renderWorkerBindings(bindingModules: (typeof d1Module)[]) {
+  const manifests = [cloudflareWorkerModule, ...bindingModules].map((module) => moduleManifestSchema.parse(module));
+  const result = await generator.generate(manifests, {
+    installedModules: manifests.map((manifest) => manifest.id),
+    projectName: 'acme',
+  });
   const file = result.files.find((candidate) => candidate.path === BINDINGS_FILE);
   if (!file) throw new Error(`${BINDINGS_FILE} was not generated`);
   return file.content;
 }
 
-/** Compiles the files together under strict settings and returns what the compiler reports. */
+/** Compiles the file against the real token sources under strict settings and returns what the compiler reports. */
 function compileDiagnostics(rootNames: string[]) {
   const program = ts.createProgram({
     rootNames,
@@ -102,6 +70,7 @@ function compileDiagnostics(rootNames: string[]) {
       moduleResolution: ts.ModuleResolutionKind.Bundler,
       experimentalDecorators: true,
       types: [],
+      paths: { '@startername/api/*': API_SOURCE_ROOTS },
     },
   });
   return ts.getPreEmitDiagnostics(program).map((diagnostic) => ({
@@ -114,7 +83,7 @@ describe('generated worker-bindings.ts', () => {
   let projectDirectory: string;
 
   beforeEach(async () => {
-    // Inside this package so `tsyringe` resolves from its node_modules.
+    // Inside this package so `tsyringe` and the lint config resolve from its node_modules.
     const parentDirectory = path.join(REPOSITORY_ROOT, 'packages/create-tsukuri/node_modules/.cache');
     await mkdir(parentDirectory, { recursive: true });
     projectDirectory = await mkdtemp(path.join(parentDirectory, 'worker-bindings-'));
@@ -126,15 +95,49 @@ describe('generated worker-bindings.ts', () => {
 
   it.each(BINDING_COMBINATIONS)(
     'compiles with $name',
-    async ({ contributions }) => {
+    async ({ bindingModules }) => {
       const bindingsPath = path.join(projectDirectory, 'worker-bindings.ts');
-      const tokensPath = path.join(projectDirectory, 'tokens.ts');
       const stubPath = path.join(projectDirectory, 'workers-types.d.ts');
-      await writeFile(bindingsPath, await renderWorkerBindings(contributions));
-      await writeFile(tokensPath, TOKENS_SOURCE);
+      await writeFile(bindingsPath, await renderWorkerBindings(bindingModules));
       await writeFile(stubPath, WORKERS_TYPES_STUB);
 
-      expect(compileDiagnostics([bindingsPath, tokensPath, stubPath])).toEqual([]);
+      expect(compileDiagnostics([bindingsPath, stubPath])).toEqual([]);
+    },
+    COMPILE_TIMEOUT_MS,
+  );
+
+  it.each(BINDING_COMBINATIONS)(
+    'passes the repository lint with $name',
+    async ({ bindingModules }) => {
+      await writeFile(path.join(projectDirectory, 'worker-bindings.ts'), await renderWorkerBindings(bindingModules));
+      await writeFile(path.join(projectDirectory, '.gitignore'), '');
+      await writeFile(
+        path.join(projectDirectory, 'package.json'),
+        JSON.stringify({
+          name: 'worker-bindings-lint',
+          private: true,
+          type: 'module',
+          dependencies: { '@cloudflare/workers-types': '*', '@startername/api': '*', tsyringe: '*' },
+        }),
+      );
+      await writeFile(
+        path.join(projectDirectory, 'tsconfig.json'),
+        JSON.stringify({
+          extends: path.join(REPOSITORY_ROOT, 'packages/create-tsukuri/tsconfig.json'),
+          include: ['worker-bindings.ts'],
+        }),
+      );
+      await writeFile(
+        path.join(projectDirectory, 'eslint.config.mjs'),
+        "import { createBackendConfig } from '@startername/lint-config/eslint';\n\nexport default createBackendConfig({ rootDir: import.meta.url });\n",
+      );
+
+      // The CLI, not the API: the lint config resolves `packageDir` against the process working directory.
+      const lint = await runProcess(process.execPath, [ESLINT_BINARY, 'worker-bindings.ts'], {
+        cwd: projectDirectory,
+      }).catch((error: { stdout: string; stderr: string }) => error);
+
+      expect(lint).not.toHaveProperty('code');
     },
     COMPILE_TIMEOUT_MS,
   );

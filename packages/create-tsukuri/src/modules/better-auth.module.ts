@@ -131,7 +131,7 @@ export const betterAuthModule = defineModule({
       schema: 'z.string().transform((header) => header || undefined).optional()',
       example: '',
       comment:
-        'Behind a proxy that sets the real client address (for example x-forwarded-for), name that header so rate limits see it. Unset trusts no header: Node uses the socket address, a Worker uses cf-connecting-ip.',
+        'Behind a proxy that sets the real client address (for example x-forwarded-for), name that header so rate limits see it. Unset trusts no header: Node and TanStack Start use the connection address, a Worker uses cf-connecting-ip.',
     },
     {
       kind: CONNECTION_POINT_KINDS.STARTUP_TASK,
